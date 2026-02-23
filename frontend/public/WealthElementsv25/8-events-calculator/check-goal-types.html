@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Goal Type Checker</title>
+  <script src="outcome-tracker.js"></script>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 20px;
+      background: #f3f4f6;
+    }
+    .container {
+      max-width: 1000px;
+      margin: 0 auto;
+      background: white;
+      padding: 24px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    h1 { color: #111827; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    th, td {
+      padding: 12px;
+      text-align: left;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    th {
+      background: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+    }
+    .summary {
+      background: #f0fdf4;
+      border: 1px solid #86efac;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .warning {
+      background: #fef3c7;
+      border: 1px solid #fde047;
+      padding: 16px;
+      border-radius: 8px;
+      margin-bottom: 20px;
+    }
+    .stat {
+      display: inline-block;
+      margin-right: 20px;
+      font-size: 14px;
+    }
+    .stat strong {
+      color: #16a34a;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🔍 Goal Type Distribution Checker</h1>
+    <div id="output"></div>
+  </div>
+
+  <script>
+    const records = window.outcomeTracker.getAllRecords();
+    const trainingReady = records.filter(r => r.userAccepted === true && r.outcome.monthsFollowed >= 3);
+
+    // Count goals by type
+    const goalTypeCounts = {};
+    let totalGoals = 0;
+
+    trainingReady.forEach(record => {
+      record.originalGoals.forEach(goal => {
+        const type = goal.type || 'unknown';
+        goalTypeCounts[type] = (goalTypeCounts[type] || 0) + 1;
+        totalGoals++;
+      });
+    });
+
+    // Generate output
+    let html = '';
+
+    if (trainingReady.length === 0) {
+      html = '<div class="warning">⚠️ <strong>No training-ready data found!</strong><br>You need records where userAccepted=true and monthsFollowed >= 3</div>';
+    } else {
+      html += `<div class="summary">`;
+      html += `<div class="stat"><strong>${trainingReady.length}</strong> Training-Ready Records</div>`;
+      html += `<div class="stat"><strong>${totalGoals}</strong> Total Goals</div>`;
+      html += `<div class="stat"><strong>${Object.keys(goalTypeCounts).length}</strong> Different Goal Types</div>`;
+      html += `</div>`;
+
+      // Goal type breakdown
+      html += '<h2>Goal Type Breakdown</h2>';
+      html += '<table>';
+      html += '<thead><tr><th>Goal Type</th><th>Count</th><th>Percentage</th><th>Sample Goals</th></tr></thead>';
+      html += '<tbody>';
+
+      // Sort by count descending
+      const sortedTypes = Object.entries(goalTypeCounts).sort((a, b) => b[1] - a[1]);
+
+      sortedTypes.forEach(([type, count]) => {
+        const percentage = ((count / totalGoals) * 100).toFixed(1);
+
+        // Get sample goal names for this type
+        const sampleGoals = [];
+        trainingReady.forEach(record => {
+          record.originalGoals.forEach(goal => {
+            if (goal.type === type && sampleGoals.length < 3) {
+              sampleGoals.push(goal.name);
+            }
+          });
+        });
+
+        html += `<tr>`;
+        html += `<td><strong>${type}</strong></td>`;
+        html += `<td>${count}</td>`;
+        html += `<td>${percentage}%</td>`;
+        html += `<td style="font-size: 12px; color: #6b7280;">${sampleGoals.join(', ')}</td>`;
+        html += `</tr>`;
+      });
+
+      html += '</tbody></table>';
+
+      // All records detail
+      html += '<h2 style="margin-top: 32px;">All Training Records Detail</h2>';
+      html += '<table>';
+      html += '<thead><tr><th>Record #</th><th>User ID</th><th>Goals in Record</th><th>Goal Types</th><th>Months Followed</th></tr></thead>';
+      html += '<tbody>';
+
+      trainingReady.forEach((record, idx) => {
+        const goalTypes = record.originalGoals.map(g => g.type || 'unknown').join(', ');
+        const goalNames = record.originalGoals.map(g => g.name).join(', ');
+
+        html += `<tr>`;
+        html += `<td>${idx + 1}</td>`;
+        html += `<td style="font-size: 11px; font-family: monospace;">${record.userId.substring(0, 20)}...</td>`;
+        html += `<td style="font-size: 12px;">${goalNames}</td>`;
+        html += `<td style="font-size: 12px;"><strong>${goalTypes}</strong></td>`;
+        html += `<td>${record.outcome.monthsFollowed}</td>`;
+        html += `</tr>`;
+      });
+
+      html += '</tbody></table>';
+
+      // Warning if only one type
+      if (Object.keys(goalTypeCounts).length === 1) {
+        html += '<div class="warning" style="margin-top: 20px;">⚠️ <strong>Warning:</strong> All your training data is of type <strong>' + Object.keys(goalTypeCounts)[0] + '</strong>. The model will only learn about this goal type!</div>';
+      }
+    }
+
+    document.getElementById('output').innerHTML = html;
+  </script>
+</body>
+</html>

@@ -1,0 +1,207 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                                                                   ║
+║                   ✅ CRITICAL FIX APPLIED                         ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+PROBLEM IDENTIFIED:
+══════════════════════════════════════════════════════════════════════
+
+The error you saw:
+"⚠️ optimizePlan function not found after 5 seconds."
+
+ROOT CAUSE:
+In step6.js, the optimizePlan function was defined but NEVER exposed to the
+window object. The ML integration script (step6-ml-integration.js) was
+looking for window.optimizePlan, but it didn't exist.
+
+The function was only attached to a button via addEventListener, which
+made it work for the button click, but invisible to other scripts.
+
+══════════════════════════════════════════════════════════════════════
+
+FIX APPLIED:
+══════════════════════════════════════════════════════════════════════
+
+Modified: step6.js (line 1520-1521)
+
+Added this line after the button event listener:
+
+  // Expose optimizePlan to window for ML integration
+  window.optimizePlan = optimizePlan;
+
+This makes the function accessible to step6-ml-integration.js so it can
+wrap it with ML tracking functionality.
+
+══════════════════════════════════════════════════════════════════════
+
+HOW TO TEST THE FIX:
+══════════════════════════════════════════════════════════════════════
+
+OPTION 1: Quick Test (Recommended)
+──────────────────────────────────────────────────────────────────────
+
+1. Open this file in your browser:
+   TEST-OPTIMIZEPLAN.html
+
+2. Wait 3 seconds (test runs automatically)
+
+3. You should see:
+   ✅ TEST PASSED: window.optimizePlan exists
+   ✅ TEST PASSED: Function is wrapped by ML integration
+
+4. Console should show:
+   ✅ Step 6 ML Integration Active
+
+
+OPTION 2: Test in Real App
+──────────────────────────────────────────────────────────────────────
+
+1. Open step6.html in browser
+
+2. Press F12 (open console)
+
+3. Within 1 second you should see:
+   ✅ Step 6 ML Integration Active
+
+4. NO MORE error messages about "optimizePlan function not found"
+
+
+OPTION 3: Manual Console Test
+──────────────────────────────────────────────────────────────────────
+
+1. Open step6.html in browser
+
+2. Press F12 (open console)
+
+3. Type this command:
+   typeof window.optimizePlan
+
+4. Should return:
+   "function"
+
+5. NOT "undefined"
+
+══════════════════════════════════════════════════════════════════════
+
+WHAT THIS MEANS:
+══════════════════════════════════════════════════════════════════════
+
+✅ The ML integration will now find the optimizePlan function
+✅ It can successfully wrap it with tracking functionality
+✅ When you click "OPTIMIZE", the feedback dialog will appear
+✅ User decisions will be tracked in localStorage
+✅ Data collection for ML training can begin
+
+══════════════════════════════════════════════════════════════════════
+
+EXPECTED BEHAVIOR NOW:
+══════════════════════════════════════════════════════════════════════
+
+When you open step6.html:
+
+Console will show:
+┌─────────────────────────────────────────────────────────────────┐
+│ [Time] Outcome Tracker initialized                             │
+│ [Time] Feature Extractor initialized                           │
+│ [Time] ML Model script loaded                                  │
+│ [Time] ⏳ Waiting for TensorFlow.js to load... (attempt 1/50)  │
+│ [Time] ⏳ Waiting for optimizePlan function... (attempt 1/50)  │
+│                                                                 │
+│ After ~1 second:                                               │
+│ [Time] ✅ Step 6 ML Integration Active                         │
+│                                                                 │
+│ After 5 seconds (if TensorFlow loads):                         │
+│ [Time] ✅ ML Model initialized (TensorFlow.js loaded)          │
+│                                                                 │
+│ OR (if TensorFlow fails to load - this is OK):                 │
+│ [Time] ⚠️ TensorFlow.js failed to load after 5 seconds.        │
+│        ML will use rule-based fallback.                        │
+└─────────────────────────────────────────────────────────────────┘
+
+══════════════════════════════════════════════════════════════════════
+
+FILES MODIFIED:
+══════════════════════════════════════════════════════════════════════
+
+1. step6.js
+   - Added line 1520-1521: window.optimizePlan = optimizePlan
+   - This exposes the function globally
+
+══════════════════════════════════════════════════════════════════════
+
+FILES CREATED FOR TESTING:
+══════════════════════════════════════════════════════════════════════
+
+1. TEST-OPTIMIZEPLAN.html
+   - Specifically tests if optimizePlan is exposed to window
+   - Tests if ML integration successfully wraps it
+   - Auto-runs test after 3 seconds
+   - Shows clear pass/fail status
+
+══════════════════════════════════════════════════════════════════════
+
+NEXT STEPS:
+══════════════════════════════════════════════════════════════════════
+
+1. ✅ Open TEST-OPTIMIZEPLAN.html to verify the fix
+
+2. ✅ If test passes, open step6.html
+
+3. ✅ Go through your app and create a financial plan
+
+4. ✅ Click "OPTIMIZE" button
+
+5. ✅ Feedback dialog should appear asking for your opinion:
+   😊 Looks good!
+   🤔 Acceptable
+   😟 Not satisfied
+
+6. ✅ Select an option and click "Submit Feedback"
+
+7. ✅ Check console to verify data was saved:
+   window.outcomeTracker.getStatistics()
+
+══════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING:
+══════════════════════════════════════════════════════════════════════
+
+If TEST-OPTIMIZEPLAN.html still shows errors:
+
+❌ "optimizePlan function NOT found"
+   → step6.js failed to load
+   → Check browser console for JavaScript errors in step6.js
+   → Try hard refresh: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
+
+❌ "Function exists but not wrapped yet"
+   → step6-ml-integration.js failed to load
+   → Check file is in same folder as step6.js
+   → Check browser console for errors
+
+✅ If both tests pass:
+   → System is working correctly!
+   → Proceed to step6.html
+
+══════════════════════════════════════════════════════════════════════
+
+SUMMARY:
+══════════════════════════════════════════════════════════════════════
+
+The issue was NOT with the timeout logic or script loading.
+The issue was that the optimizePlan function existed but was HIDDEN.
+
+By adding one line (window.optimizePlan = optimizePlan), we made it
+visible to the ML integration script.
+
+This is a SIMPLE fix with a BIG impact - now the entire ML system
+can work as designed.
+
+══════════════════════════════════════════════════════════════════════
+
+🎉 YOU'RE READY!
+══════════════════════════════════════════════════════════════════════
+
+Open TEST-OPTIMIZEPLAN.html now to verify the fix works!
+
+══════════════════════════════════════════════════════════════════════

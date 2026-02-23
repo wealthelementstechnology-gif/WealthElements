@@ -1,0 +1,702 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>8 Events Calculator - Step 1</title>
+  <link rel="stylesheet" href="../design-system.css" />
+  <link rel="stylesheet" href="8-events.css" />
+  <script src="../theme.js" defer></script>
+  <script src="8-events.js" defer></script>
+
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <button class="btn back" onclick="window.location.href='../index.html'">← Back</button>
+      <div>
+        <h1>Step 1: Tell Us about Yourself</h1>
+        <p class="subtitle">Provide your basic details and your income sources.</p>
+      </div>
+    </header>
+
+    <form id="step1-form" novalidate>
+      <section class="section">
+        <div class="section-header-with-toggle">
+          <h2 class="section-title">Your Basic Details</h2>
+          <div class="family-mode-toggle">
+            <label for="familyMode">Planning for:</label>
+            <div class="toggle-switch">
+              <input type="radio" id="individual" name="familyMode" value="individual" checked>
+              <label for="individual">Individual</label>
+              <input type="radio" id="couple" name="familyMode" value="couple">
+              <label for="couple">Couple</label>
+            </div>
+          </div>
+        </div>
+        <div class="form-grid" id="basic-details-grid">
+          <!-- Individual Mode Fields (shown by default) -->
+          <div class="individual-fields">
+            <div class="form-field">
+              <label for="fullName">Name</label>
+              <input id="fullName" name="fullName" type="text" placeholder="Enter your full name" required />
+            </div>
+            <div class="form-field">
+              <label for="age">Age</label>
+              <input id="age" name="age" type="number" min="0" max="120" placeholder="e.g., 30" required />
+            </div>
+            <div class="form-field">
+              <label for="city">City</label>
+              <input id="city" name="city" type="text" placeholder="e.g., Mumbai" required />
+            </div>
+            <div class="form-field">
+              <label for="retirementAge">Retirement Age</label>
+              <input id="retirementAge" name="retirementAge" type="number" min="0" max="120" placeholder="e.g., 60" />
+            </div>
+            <div class="form-field">
+              <label for="maritalStatus">Marital Status</label>
+              <select id="maritalStatus" name="maritalStatus" required>
+                <option value="">Select status</option>
+                <option value="Unmarried">Unmarried</option>
+                <option value="Married">Married</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Couple Mode Fields (hidden by default) -->
+          <div class="couple-fields" style="display: none;">
+            <div class="form-field">
+              <label for="husbandName">Husband's Name</label>
+              <input id="husbandName" name="husbandName" type="text" placeholder="Enter husband's name" />
+            </div>
+            <div class="form-field">
+              <label for="wifeName">Wife's Name</label>
+              <input id="wifeName" name="wifeName" type="text" placeholder="Enter wife's name" />
+            </div>
+            <div class="form-field">
+              <label for="husbandAge">Husband's Age</label>
+              <input id="husbandAge" name="husbandAge" type="number" min="0" max="120" placeholder="e.g., 32" />
+            </div>
+            <div class="form-field">
+              <label for="wifeAge">Wife's Age</label>
+              <input id="wifeAge" name="wifeAge" type="number" min="0" max="120" placeholder="e.g., 28" />
+            </div>
+            <div class="form-field">
+              <label for="city">City</label>
+              <input id="cityCouple" name="cityCouple" type="text" placeholder="e.g., Mumbai" />
+            </div>
+            <div class="form-field">
+              <label for="husbandRetirementAge">Husband's Retirement Age</label>
+              <input id="husbandRetirementAge" name="husbandRetirementAge" type="number" min="0" max="120" placeholder="e.g., 60" />
+            </div>
+            <div class="form-field">
+              <label for="wifeRetirementAge">Wife's Retirement Age</label>
+              <input id="wifeRetirementAge" name="wifeRetirementAge" type="number" min="0" max="120" placeholder="e.g., 58" />
+            </div>
+          </div>
+        </div>
+      </section>
+
+
+      <section class="section">
+        <h2 class="section-title">Sources of Income</h2>
+        <div class="table-wrapper">
+          <table class="income-table" aria-label="Sources of income">
+            <thead>
+              <tr id="income-header-individual">
+                <th scope="col">Source of Income</th>
+                <th scope="col">Amount (Per Month)</th>
+                <th scope="col"></th>
+              </tr>
+              <tr id="income-header-couple" style="display: none;">
+                <th scope="col">Source of Income</th>
+                <th scope="col">Whose Income</th>
+                <th scope="col">Amount (Per Month)</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody id="income-tbody">
+              <!-- Income rows will be dynamically generated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+        <div class="total-section">
+          <div class="total-display">
+            <span class="total-label">Total Monthly Income:</span>
+            <span class="total-amount" id="total-income-amount">₹0</span>
+          </div>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="add-income">Add Source of Income</button>
+        </div>
+      </section>
+
+      <section class="section" id="section-expenses">
+        <h2 class="section-title">Detailed Monthly Expenses</h2>
+        <div class="table-wrapper">
+          <table class="income-table expenses-table" aria-label="Expenses">
+            <thead>
+              <tr>
+                <th scope="col">Expense Item</th>
+                <th scope="col">Monthly Cost</th>
+                <th scope="col">Annual Cost</th>
+                <th scope="col">Continues in Retirement?</th>
+              </tr>
+            </thead>
+            <tbody id="expenses-tbody">
+              <tr class="subheader-row"><td colspan="4">Household Expenses</td></tr>
+              <tr>
+                <td data-subsection="household">
+                  <span>Grocery &amp; Toiletries</span>
+                  <input type="hidden" name="expenseItem[]" value="Grocery &amp; Toiletries" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Grocery &amp; Toiletries" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Grocery &amp; Toiletries" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Grocery &amp; Toiletries" checked aria-label="Continues in retirement: Grocery &amp; Toiletries" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="household">
+                  <span>House Rent, Maintenance, Repair</span>
+                  <input type="hidden" name="expenseItem[]" value="House Rent, Maintenance, Repair" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for House Rent, Maintenance, Repair" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for House Rent, Maintenance, Repair" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="House Rent, Maintenance, Repair" checked aria-label="Continues in retirement: House Rent, Maintenance, Repair" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="household">
+                  <span>Vehicle - Fuel, Servicing</span>
+                  <input type="hidden" name="expenseItem[]" value="Vehicle - Fuel, Servicing" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Vehicle - Fuel, Servicing" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Vehicle - Fuel, Servicing" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Vehicle - Fuel, Servicing" checked aria-label="Continues in retirement: Vehicle - Fuel, Servicing" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="household">
+                  <span>Doctor Visits, Medicines</span>
+                  <input type="hidden" name="expenseItem[]" value="Doctor Visits, Medicines" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Doctor Visits, Medicines" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Doctor Visits, Medicines" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Doctor Visits, Medicines" checked aria-label="Continues in retirement: Doctor Visits, Medicines" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="household">
+                  <span>Utilities (Electricity, Property tax)</span>
+                  <input type="hidden" name="expenseItem[]" value="Utilities (Electricity, Property tax)" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Utilities (Electricity, Property tax)" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Utilities (Electricity, Property tax)" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Utilities (Electricity, Property tax)" checked aria-label="Continues in retirement: Utilities (Electricity, Property tax)" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="household">
+                  <span>Maid, Laundry, Newspaper</span>
+                  <input type="hidden" name="expenseItem[]" value="Maid, Laundry, Newspaper" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Maid, Laundry, Newspaper" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Maid, Laundry, Newspaper" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Maid, Laundry, Newspaper" checked aria-label="Continues in retirement: Maid, Laundry, Newspaper" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="household">
+                  <span>Gadgets - Mobile/TV devices</span>
+                  <input type="hidden" name="expenseItem[]" value="Gadgets - Mobile/TV devices" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Gadgets - Mobile/TV devices" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Gadgets - Mobile/TV devices" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Gadgets - Mobile/TV devices" checked aria-label="Continues in retirement: Gadgets - Mobile/TV devices" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="household">
+                  <span>Gadgets - Internet/Mobile plans</span>
+                  <input type="hidden" name="expenseItem[]" value="Gadgets - Internet/Mobile plans" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Gadgets - Internet/Mobile plans" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Gadgets - Internet/Mobile plans" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Gadgets - Internet/Mobile plans" checked aria-label="Continues in retirement: Gadgets - Internet/Mobile plans" />
+                </td>
+              </tr>
+
+              <tr class="subheader-row"><td colspan="4">Lifestyle Expenses</td></tr>
+              <tr>
+                <td data-subsection="lifestyle">
+                  <span>Clothes &amp; Accessories</span>
+                  <input type="hidden" name="expenseItem[]" value="Clothes &amp; Accessories" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Clothes &amp; Accessories" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Clothes &amp; Accessories" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Clothes &amp; Accessories" checked aria-label="Continues in retirement: Clothes &amp; Accessories" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="lifestyle">
+                  <span>Shopping, Gifts</span>
+                  <input type="hidden" name="expenseItem[]" value="Shopping, Gifts" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Shopping, Gifts" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Shopping, Gifts" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Shopping, Gifts" checked aria-label="Continues in retirement: Shopping, Gifts" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="lifestyle">
+                  <span>Dining, Movies, Sports</span>
+                  <input type="hidden" name="expenseItem[]" value="Dining, Movies, Sports" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Dining, Movies, Sports" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Dining, Movies, Sports" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Dining, Movies, Sports" checked aria-label="Continues in retirement: Dining, Movies, Sports" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="lifestyle">
+                  <span>Coach - Financial, Fitness</span>
+                  <input type="hidden" name="expenseItem[]" value="Coach - Financial, Fitness" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Coach - Financial, Fitness" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Coach - Financial, Fitness" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Coach - Financial, Fitness" checked aria-label="Continues in retirement: Coach - Financial, Fitness" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="lifestyle">
+                  <span>Travel, Annual holidays</span>
+                  <input type="hidden" name="expenseItem[]" value="Travel, Annual holidays" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Travel, Annual holidays" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Travel, Annual holidays" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Travel, Annual holidays" checked aria-label="Continues in retirement: Travel, Annual holidays" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="lifestyle">
+                  <span>Charity, Donations</span>
+                  <input type="hidden" name="expenseItem[]" value="Charity, Donations" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Charity, Donations" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Charity, Donations" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Charity, Donations" checked aria-label="Continues in retirement: Charity, Donations" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="lifestyle">
+                  <span>House renovations, Celebrations</span>
+                  <input type="hidden" name="expenseItem[]" value="House renovations, Celebrations" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for House renovations, Celebrations" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for House renovations, Celebrations" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="House renovations, Celebrations" checked aria-label="Continues in retirement: House renovations, Celebrations" />
+                </td>
+              </tr>
+
+              <tr class="subheader-row"><td colspan="4">Dependent Expenses</td></tr>
+              <tr>
+                <td data-subsection="dependent">
+                  <span>Children school / college fees</span>
+                  <input type="hidden" name="expenseItem[]" value="Children school / college fees" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Children school / college fees" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Children school / college fees" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Children school / college fees" aria-label="Continues in retirement: Children school / college fees" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="dependent">
+                  <span>Children pocket money</span>
+                  <input type="hidden" name="expenseItem[]" value="Children pocket money" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Children pocket money" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Children pocket money" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Children pocket money" aria-label="Continues in retirement: Children pocket money" />
+                </td>
+              </tr>
+              <tr>
+                <td data-subsection="dependent">
+                  <span>Contribution to parents, siblings</span>
+                  <input type="hidden" name="expenseItem[]" value="Contribution to parents, siblings" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Contribution to parents, siblings" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Contribution to parents, siblings" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Contribution to parents, siblings" aria-label="Continues in retirement: Contribution to parents, siblings" />
+                </td>
+              </tr>
+
+              <tr class="subheader-row"><td colspan="4">Misc.</td></tr>
+              <tr>
+                <td data-subsection="misc">
+                  <span>Personal Expenses</span>
+                  <input type="hidden" name="expenseItem[]" value="Personal Expenses" />
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseMonthly[]" min="0" step="0.01" placeholder="0.00" data-monthly aria-label="Monthly cost for Personal Expenses" />
+                  </div>
+                </td>
+                <td>
+                  <div class="amount-input">
+                    <span class="prefix">₹</span>
+                    <input type="number" name="expenseAnnual[]" readonly placeholder="0.00" data-annual aria-label="Annual cost for Personal Expenses" />
+                  </div>
+                </td>
+                <td>
+                  <input type="checkbox" name="expenseRetirement[]" value="Personal Expenses" checked aria-label="Continues in retirement: Personal Expenses" />
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="totals-bar">
+          <div class="total-item">
+            <span class="total-label">Total Current Monthly Expenses:</span>
+            <span class="total-value" id="total-current-monthly-text">₹0</span>
+          </div>
+          <div class="total-item">
+            <span class="total-label">Post-Retirement Monthly Expenses:</span>
+            <span class="total-value" id="total-postret-monthly-text">₹0</span>
+          </div>
+        </div>
+      </section>
+      <section class="section" id="section-insurance">
+        <h2 class="section-title">Insurances</h2>
+        <div class="table-wrapper">
+          <table class="income-table compact-table" aria-label="Insurances">
+            <thead>
+              <tr>
+                <th scope="col">Policy Name</th>
+                <th scope="col">Type</th>
+                <th scope="col">Sum Assured (₹)</th>
+                <th scope="col">Premium (₹)</th>
+                <th scope="col">Term (Yrs)</th>
+                <th scope="col">Mode</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody id="insurance-tbody">
+              <tr>
+                <td><input type="text" name="insPolicy[]" placeholder="e.g., Life Cover" /></td>
+                <td>
+                  <select name="insType[]">
+                    <option value="Term">Term</option>
+                    <option value="Health">Health</option>
+                    <option value="ULIP">ULIP</option>
+                    <option value="Endowment">Endowment</option>
+                  </select>
+                </td>
+                <td><input type="number" name="insSum[]" min="0" step="1" placeholder="1000000" /></td>
+                <td><input type="number" name="insPremium[]" min="0" step="1" placeholder="5000" /></td>
+                <td><input type="number" name="insTerm[]" min="0" step="1" placeholder="20" /></td>
+                <td>
+                  <select name="insMode[]">
+                    <option value="Monthly">Month</option>
+                    <option value="Quarterly">Quarter</option>
+                    <option value="Yearly">Year</option>
+                  </select>
+                </td>
+                <td class="row-actions"><button type="button" class="icon-btn" data-remove>×</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="add-insurance">+ Add Insurance</button>
+        </div>
+      </section>
+
+      <section class="section" id="section-investments">
+        <h2 class="section-title">Existing Investments</h2>
+        <div class="table-wrapper">
+          <table class="income-table compact-table" aria-label="Existing Investments">
+            <thead>
+              <tr>
+                <th scope="col">Asset Name</th>
+                <th scope="col">Current Value (₹)</th>
+                <th scope="col">Return (%)</th>
+                <th scope="col">Investment</th>
+                <th scope="col">Type</th>
+                <th scope="col">Mode</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody id="investments-tbody">
+              <tr>
+                <td><input type="text" name="invName[]" placeholder="e.g., EPF" /></td>
+                <td><input type="number" name="invCurrent[]" min="0" step="1" placeholder="100000" /></td>
+                <td><input type="number" name="invReturn[]" min="0" step="0.1" placeholder="8" /></td>
+                <td><input type="number" name="invAmount[]" min="0" step="1" placeholder="1500" /></td>
+                <td>
+                  <select name="invType[]">
+                    <option value="Select">Select Type</option>
+                    <option value="Equity MF">Equity MF</option>
+                    <option value="Debt MF">Debt MF</option>
+                    <option value="FD">FD</option>
+                    <option value="PPF">PPF</option>
+                    <option value="EPF">EPF</option>
+                    <option value="Stocks">Stocks</option>
+                  </select>
+                </td>
+                <td>
+                  <select name="invMode[]">
+                    <option value="Monthly">Monthly</option>
+                    <option value="Quarterly">Quarterly</option>
+                    <option value="Yearly">Yearly</option>
+                  </select>
+                </td>
+                <td class="row-actions"><button type="button" class="icon-btn" data-remove>×</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="add-investment">+ Add Investment</button>
+        </div>
+      </section>
+
+      <section class="section" id="section-assets">
+        <h2 class="section-title">Assets &amp; Liabilities</h2>
+        <div class="table-wrapper">
+          <table class="income-table compact-table" aria-label="Assets & Liabilities">
+            <thead>
+              <tr>
+                <th scope="col">Item Name / Description</th>
+                <th scope="col">Type</th>
+                <th scope="col">Current Value (₹)</th>
+                <th scope="col">EMI (if any) (₹)</th>
+                <th scope="col"></th>
+              </tr>
+            </thead>
+            <tbody id="assets-tbody">
+              <tr>
+                <td><input type="text" name="assetName[]" placeholder="e.g., Home Loan" /></td>
+                <td>
+                  <select name="assetType[]">
+                    <option value="Asset">Asset</option>
+                    <option value="Liability">Liability</option>
+                  </select>
+                </td>
+                <td><input type="number" name="assetValue[]" min="0" step="1" placeholder="Value" /></td>
+                <td><input type="number" name="assetEmi[]" min="0" step="1" placeholder="EMI" /></td>
+                <td class="row-actions"><button type="button" class="icon-btn" data-remove>×</button></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="actions">
+          <button type="button" class="btn" id="add-asset">+ Add Item</button>
+        </div>
+      </section>
+      <div class="actions">
+        <button type="button" class="btn btn-danger" id="reset-form">Reset</button>
+        <button type="button" class="btn btn-lg" id="go-next">Next →</button>
+      </div>
+    </form>
+  </main>
+</body>
+</html>

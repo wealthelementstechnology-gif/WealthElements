@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Financial Snapshot</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#10b981",
+            "primary-dark": "#059669",
+            "primary-light": "#ecfdf5",
+            "background-main": "#ffffff",
+            "background-subtle": "#f8fafc",
+            "card-white": "#ffffff",
+            "slate-heading": "#0f172a",
+            "slate-text": "#475569",
+            "slate-subtle": "#94a3b8",
+            "border-light": "#e2e8f0"
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "1rem",
+            "xl": "1.5rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style type="text/tailwindcss">
+    input[type=range] {
+      -webkit-appearance: none;
+      background: transparent;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: #ffffff;
+      border: 4px solid #10b981;
+      cursor: pointer;
+      margin-top: -10px;
+      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      width: 100%;
+      height: 4px;
+      cursor: pointer;
+      background: #e2e8f0;
+      border-radius: 2px;
+    }
+    input[type=range]:focus {
+      outline: none;
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="snapshot.js" defer></script>
+</head>
+<body class="bg-gray-100 font-display text-slate-heading antialiased selection:bg-primary selection:text-white">
+  <div class="mx-auto max-w-md min-h-screen relative pb-28 shadow-2xl overflow-hidden bg-background-main">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-border-light px-4 py-3 shadow-sm">
+      <div class="flex items-center gap-3 mb-1">
+        <button id="go-back" class="p-2 -ml-2 rounded-full hover:bg-gray-100 text-slate-heading transition-colors">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-lg font-bold leading-tight text-slate-heading">Step 2: Financial Snapshot</h1>
+        </div>
+        <div class="text-xs font-semibold text-primary bg-primary-light px-2 py-1 rounded-full border border-primary/20">2 of 8</div>
+      </div>
+      <p class="text-sm text-slate-text pl-10 leading-snug">Assets, Liabilities & Surplus at a glance</p>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="px-6 py-4 flex justify-between gap-1.5 bg-background-main">
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex flex-col gap-4 px-4 bg-background-subtle pt-2 pb-6">
+      <div class="flex gap-4">
+        <!-- Net Worth Card -->
+        <div class="flex flex-1 flex-col justify-between gap-2 rounded-xl p-5 bg-white shadow-sm border border-border-light">
+          <div class="flex items-start justify-between">
+            <p class="text-slate-text text-sm font-medium leading-normal">Net Worth</p>
+            <span class="material-symbols-outlined text-slate-subtle text-[20px]">account_balance_wallet</span>
+          </div>
+          <div>
+            <p id="card-networth" class="text-slate-heading tracking-tight text-2xl font-bold leading-tight">₹0</p>
+            <p class="text-slate-subtle text-xs font-medium leading-normal mt-1">Total Assets - Total Liabilities</p>
+          </div>
+        </div>
+
+        <!-- Surplus Card -->
+        <div class="flex flex-1 flex-col justify-between gap-2 rounded-xl p-5 bg-white shadow-sm border border-border-light">
+          <div class="flex items-start justify-between">
+            <p class="text-slate-text text-sm font-medium leading-normal">Surplus</p>
+            <span class="material-symbols-outlined text-slate-subtle text-[20px]">trending_up</span>
+          </div>
+          <div>
+            <p id="card-surplus" class="text-slate-heading tracking-tight text-2xl font-bold leading-tight">₹0</p>
+            <p class="text-slate-subtle text-xs font-medium leading-normal mt-1">Monthly Surplus Available</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Total EMIs Card -->
+      <div class="flex w-full flex-col gap-2 rounded-xl p-5 bg-[#fff1f0] border border-red-200 relative overflow-hidden">
+        <div class="absolute right-0 top-0 h-full w-24 bg-gradient-to-l from-red-500/5 to-transparent"></div>
+        <div class="flex items-center justify-between relative z-10">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="material-symbols-outlined text-red-600 text-[20px]">warning</span>
+              <p class="text-red-600 text-sm font-bold uppercase tracking-wider leading-normal">Total EMIs</p>
+            </div>
+            <p id="card-emis" class="text-slate-heading tracking-tight text-3xl font-bold leading-tight">₹0</p>
+            <p class="text-red-700/60 text-sm font-medium leading-normal mt-1">Sum of all monthly loan payments</p>
+          </div>
+          <div class="size-12 rounded-full bg-white/80 border border-red-100 flex items-center justify-center shadow-sm">
+            <span class="material-symbols-outlined text-red-500">payments</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="flex flex-col gap-6 px-4 py-2">
+      <!-- Net Worth Breakdown -->
+      <div class="flex flex-col gap-4">
+        <h3 class="text-slate-heading text-lg font-bold leading-tight">Net Worth Breakdown</h3>
+        <div class="bg-white rounded-xl p-6 border border-border-light shadow-sm">
+          <div class="flex flex-row items-center gap-6">
+            <div class="relative size-32 shrink-0">
+              <canvas id="chart-networth"></canvas>
+            </div>
+            <div id="networth-legend" class="flex flex-col justify-center gap-3 w-full">
+              <!-- Legend will be generated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Liabilities Overview -->
+      <div class="flex flex-col gap-4">
+        <h3 class="text-slate-heading text-lg font-bold leading-tight">Liabilities Overview</h3>
+        <div class="bg-white rounded-xl p-6 border border-border-light shadow-sm">
+          <div class="flex flex-row items-center gap-6">
+            <div class="relative size-32 shrink-0">
+              <canvas id="chart-liabilities"></canvas>
+            </div>
+            <div id="liabilities-legend" class="flex flex-col justify-center gap-3 w-full">
+              <!-- Legend will be generated by JS -->
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Monthly Cash Flow -->
+      <div class="flex flex-col gap-4">
+        <h3 class="text-slate-heading text-lg font-bold leading-tight">Monthly Cash Flow</h3>
+        <div class="bg-white rounded-xl p-6 border border-border-light shadow-sm flex flex-col gap-4">
+          <!-- Bar Chart -->
+          <div class="w-full overflow-x-auto pb-2">
+            <div class="flex h-48 min-w-full items-end gap-2 pb-2 border-b border-slate-100">
+              <div id="cash-flow-bars" class="flex w-full h-full items-end gap-2">
+                <!-- Bars will be generated by JS -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Labels -->
+          <div class="w-full overflow-x-auto -mt-2">
+            <div id="cash-flow-labels" class="flex gap-1 min-w-full">
+              <!-- Labels will be generated by JS -->
+            </div>
+          </div>
+
+          <!-- Detailed Breakdown -->
+          <div id="cash-flow-legend" class="flex flex-col gap-3 mt-2 bg-slate-50 rounded-lg p-4">
+            <!-- Legend will be generated by JS -->
+          </div>
+        </div>
+      </div>
+    </div>
+
+      <!-- Investment Rules -->
+      <section class="bg-card-white rounded-2xl p-5 border border-border-light shadow-sm">
+        <h3 class="text-slate-heading text-lg font-bold leading-tight mb-4">Investment Rules</h3>
+        <div class="bg-gray-50 rounded-xl p-6 border border-gray-200">
+        <div class="flex justify-between items-center mb-6">
+          <p class="text-slate-text font-medium">Investment Percentage</p>
+          <span id="investPctValue" class="bg-purple-50 text-primary px-3 py-1 rounded-full text-sm font-bold border border-purple-100">30%</span>
+        </div>
+        <div class="mb-8">
+          <input id="investPct" class="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer" max="100" min="0" type="range" value="30"/>
+          <div class="flex justify-between text-xs text-slate-subtle mt-2 font-medium">
+            <span>Conservative (20%)</span>
+            <span>Aggressive (80%)</span>
+          </div>
+        </div>
+        <div class="flex flex-col gap-1 bg-slate-50 p-4 rounded-lg border border-slate-100">
+          <p class="text-slate-subtle text-xs font-medium uppercase tracking-wider">Calculated Investment Amount</p>
+          <div class="flex items-end gap-2">
+            <span id="investAmount" class="text-3xl font-bold text-slate-heading tracking-tight">₹0</span>
+            <span class="text-sm text-slate-subtle mb-1.5 font-medium">/ month</span>
+          </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40">
+      <div class="absolute inset-0 bg-white/80 backdrop-blur-lg border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"></div>
+      <div class="relative mx-auto max-w-md px-4 py-4 flex items-center gap-4">
+        <button id="to-step3" class="flex-1 py-3.5 px-6 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2">
+          <span>Next</span>
+          <span class="material-symbols-outlined text-[20px]">arrow_forward</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+</body>
+</html>

@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ML Model Training Dashboard</title>
+  <link rel="stylesheet" href="../design-system.css">
+  <link rel="stylesheet" href="8-events.css">
+
+  <!-- TensorFlow.js with multiple fallbacks -->
+  <script>
+    // Try loading TensorFlow.js from multiple CDNs
+    (function loadTensorFlow() {
+      const cdnUrls = [
+        'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js',
+        'https://unpkg.com/@tensorflow/tfjs@4.11.0/dist/tf.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.11.0/tf.min.js'
+      ];
+
+      let currentIndex = 0;
+
+      function tryLoadScript() {
+        if (currentIndex >= cdnUrls.length) {
+          console.error('❌ All TensorFlow.js CDNs failed. ML features disabled.');
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = cdnUrls[currentIndex];
+        script.async = false;
+
+        script.onload = function() {
+          console.log('✅ TensorFlow.js loaded from:', cdnUrls[currentIndex]);
+        };
+
+        script.onerror = function() {
+          console.warn(`⚠️ Failed to load from ${cdnUrls[currentIndex]}, trying next...`);
+          currentIndex++;
+          tryLoadScript();
+        };
+
+        document.head.appendChild(script);
+      }
+
+      tryLoadScript();
+    })();
+  </script>
+
+
+  <!-- ML Scripts -->
+  <script src="outcome-tracker.js"></script>
+  <script src="ml-features.js"></script>
+  <script src="ml-model.js"></script>
+
+  <style>
+    .admin-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .admin-header {
+      margin-bottom: 32px;
+      text-align: center;
+    }
+
+    .admin-header h1 {
+      font-size: 32px;
+      font-weight: bold;
+      color: var(--text-primary);
+      margin: 0 0 8px 0;
+    }
+
+    .admin-header p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .section {
+      background: var(--bg-card);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      padding: 24px;
+      margin-bottom: 24px;
+    }
+
+    .section h2 {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary);
+      margin: 0 0 16px 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 20px;
+      text-align: center;
+    }
+
+    .stat-value {
+      font-size: 36px;
+      font-weight: bold;
+      color: var(--primary-500);
+      margin-bottom: 8px;
+    }
+
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .control-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      border: none;
+      font-size: 14px;
+    }
+
+    .btn-primary {
+      background: var(--primary-500);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-600);
+      transform: translateY(-1px);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-primary:disabled {
+      background: var(--bg-tertiary);
+      color: var(--text-muted);
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-secondary {
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-primary);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--primary-500);
+      color: var(--primary-500);
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .progress-box {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 16px;
+    }
+
+    .success-message {
+      background: rgba(34, 197, 94, 0.1);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #16a34a;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+
+    .error-message {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #dc2626;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+
+    .warning-message {
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      color: #d97706;
+      padding: 16px;
+      border-radius: 8px;
+      margin-top: 16px;
+    }
+
+    .info-box {
+      background: rgba(59, 130, 246, 0.1);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #2563eb;
+      padding: 16px;
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .metric-card {
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .metric-value {
+      font-size: 24px;
+      font-weight: bold;
+      color: var(--primary-500);
+    }
+
+    .metric-label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .predictions-table {
+      margin-top: 16px;
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    table th {
+      background: var(--bg-tertiary);
+      color: var(--text-secondary);
+      padding: 12px;
+      text-align: left;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border-primary);
+    }
+
+    table td {
+      padding: 12px;
+      border-bottom: 1px solid var(--border-primary);
+      color: var(--text-primary);
+    }
+
+    table tr:hover {
+      background: var(--bg-primary);
+    }
+
+    .model-info-badge {
+      display: inline-block;
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 8px;
+    }
+
+    .badge-active {
+      background: rgba(34, 197, 94, 0.1);
+      color: #16a34a;
+    }
+
+    .badge-fallback {
+      background: rgba(251, 191, 36, 0.1);
+      color: #d97706;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 24px;
+      background: var(--bg-primary);
+      border: 1px solid var(--border-primary);
+      border-radius: 12px;
+      overflow: hidden;
+      margin: 16px 0;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary-500), var(--primary-600));
+      transition: width 0.3s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .log-box {
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 16px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+
+    .log-entry {
+      margin: 4px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <div class="admin-header">
+      <h1>🤖 ML Model Training Dashboard</h1>
+      <p>Train and manage your optimization constraint prediction model</p>
+    </div>
+
+    <!-- Model Status Section -->
+    <section class="section">
+      <h2>
+        📊 Model Status
+        <span id="modelStatusBadge" class="model-info-badge badge-fallback">Rule-Based</span>
+      </h2>
+      <div id="modelStatusInfo"></div>
+    </section>
+
+    <!-- Data Statistics Section -->
+    <section class="section">
+      <h2>📈 Training Data Statistics</h2>
+
+      <!-- Primary Stats -->
+      <div class="stats-grid" id="dataStats"></div>
+
+      <!-- Detailed Breakdown -->
+      <div style="margin-top: 24px;">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">📊 Detailed Breakdown</h3>
+        <div class="stats-grid" id="detailedStats"></div>
+      </div>
+
+      <!-- Sentiment Analysis -->
+      <div style="margin-top: 24px;">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">💭 User Sentiment Analysis</h3>
+        <div class="stats-grid" id="sentimentStats"></div>
+      </div>
+
+      <!-- Data Quality Metrics -->
+      <div style="margin-top: 24px;">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">✅ Data Quality Metrics</h3>
+        <div class="stats-grid" id="qualityStats"></div>
+      </div>
+
+      <!-- Goal Type Distribution -->
+      <div style="margin-top: 24px;">
+        <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">🎯 Goal Type Distribution (Training Ready)</h3>
+        <div class="stats-grid" id="goalTypeStats"></div>
+      </div>
+
+      <div class="info-box" style="margin-top: 16px;">
+        <strong>ℹ️ Data Collection Tips:</strong><br>
+        • Need at least 50 accepted optimizations to train the model<br>
+        • Best results with 100+ samples from diverse user profiles<br>
+        • Users should follow plans for 3+ months for quality training data<br>
+        • Higher acceptance rate indicates better optimization quality
+      </div>
+    </section>
+
+    <!-- Training Controls Section -->
+    <section class="section">
+      <h2>🎓 Train Model</h2>
+
+      <div class="control-group">
+        <button id="trainModelBtn" class="btn btn-primary">
+          🚀 Train New Model
+        </button>
+        <button id="evaluateModelBtn" class="btn btn-secondary">
+          📊 Evaluate Model
+        </button>
+        <button id="exportDataBtn" class="btn btn-secondary">
+          💾 Export Data
+        </button>
+        <button id="deleteModelBtn" class="btn btn-danger">
+          🗑️ Delete Model
+        </button>
+        <button id="clearDataBtn" class="btn btn-danger">
+          ⚠️ Clear All Data
+        </button>
+      </div>
+
+      <div id="trainingProgress"></div>
+      <div id="trainingLog" class="log-box" style="display: none;"></div>
+    </section>
+
+    <!-- Model Performance Section -->
+    <section class="section">
+      <h2>📊 Model Performance</h2>
+      <div id="modelMetrics"></div>
+    </section>
+  </div>
+
+  <script>
+    // Initialize
+    let trainingInProgress = false;
+    const logEntries = [];
+
+    function log(message, type = 'info') {
+      const timestamp = new Date().toLocaleTimeString();
+      const entry = `[${timestamp}] ${message}`;
+      logEntries.push(entry);
+
+      const logBox = document.getElementById('trainingLog');
+      if (logBox) {
+        logBox.innerHTML = logEntries.slice(-50).map(e => `<div class="log-entry">${e}</div>`).join('');
+        logBox.scrollTop = logBox.scrollHeight;
+      }
+
+      console.log(message);
+    }
+
+    // Display model status
+    async function displayModelStatus() {
+      if (!window.mlModel) {
+        console.warn('⚠️ mlModel not available');
+        return;
+      }
+      
+      const info = window.mlModel.getModelInfo();
+      const badge = document.getElementById('modelStatusBadge');
+      const statusInfo = document.getElementById('modelStatusInfo');
+
+      if (info.loaded && !info.fallbackMode) {
+        badge.textContent = 'ML Active';
+        badge.className = 'model-info-badge badge-active';
+
+        statusInfo.innerHTML = `
+          <div class="success-message">
+            ✅ ML model is active and predicting constraints<br>
+            <small>Version: ${info.metadata?.version || 'Unknown'} | Trained: ${info.metadata?.trainedDate ? new Date(info.metadata.trainedDate).toLocaleString() : 'Unknown'}</small>
+          </div>
+        `;
+      } else {
+        badge.textContent = 'Rule-Based';
+        badge.className = 'model-info-badge badge-fallback';
+
+        statusInfo.innerHTML = `
+          <div class="warning-message">
+            ⚠️ Using rule-based fallback. Train a model to enable ML predictions.
+          </div>
+        `;
+      }
+    }
+
+    // Display data statistics
+    async function displayDataStats() {
+      // Wait for outcomeTracker to be available
+      if (!window.outcomeTracker) {
+        console.warn('⚠️ outcomeTracker not available, retrying...');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        if (!window.outcomeTracker) {
+          console.error('❌ outcomeTracker not available after waiting');
+          document.getElementById('dataStats').innerHTML = '<div class="error-message">Failed to load data. Please refresh the page.</div>';
+          return;
+        }
+      }
+
+      const stats = await window.outcomeTracker.getStatisticsAsync();
+      const records = await window.outcomeTracker.getAllRecords();
+
+      const trainingReadyRecords = records.filter(r =>
+        r.userAccepted === true && r.outcome.monthsFollowed >= 3
+      );
+
+      // Calculate detailed metrics
+      const acceptedRecords = records.filter(r => r.userAccepted === true);
+      const rejectedRecords = records.filter(r => r.userAccepted === false);
+      const pendingRecords = records.filter(r => r.userAccepted === null);
+
+      // Sentiment breakdown
+      const positiveSentiment = records.filter(r => r.userFeedback?.sentiment === 'positive').length;
+      const neutralSentiment = records.filter(r => r.userFeedback?.sentiment === 'neutral').length;
+      const negativeSentiment = records.filter(r => r.userFeedback?.sentiment === 'negative').length;
+      const noSentiment = records.filter(r => !r.userFeedback?.sentiment).length;
+
+      // Follow-through metrics
+      const following1Month = records.filter(r => r.outcome.monthsFollowed >= 1 && r.outcome.monthsFollowed < 3).length;
+      const following3Months = records.filter(r => r.outcome.monthsFollowed >= 3 && r.outcome.monthsFollowed < 6).length;
+      const following6Months = records.filter(r => r.outcome.monthsFollowed >= 6).length;
+
+      // With comments
+      const withComments = records.filter(r => r.userFeedback?.comments && r.userFeedback.comments.trim().length > 0).length;
+
+      // Primary Stats
+      const statsHTML = `
+        <div class="stat-card" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none;">
+          <div class="stat-value" style="color: white;">${stats.totalOptimizations}</div>
+          <div class="stat-label" style="color: rgba(255,255,255,0.9);">Total Optimizations</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%); color: white; border: none;">
+          <div class="stat-value" style="color: white;">${stats.acceptedOptimizations}</div>
+          <div class="stat-label" style="color: rgba(255,255,255,0.9);">Accepted by Users</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%); color: white; border: none;">
+          <div class="stat-value" style="color: white;">${trainingReadyRecords.length}</div>
+          <div class="stat-label" style="color: rgba(255,255,255,0.9);">Training Ready</div>
+        </div>
+        <div class="stat-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none;">
+          <div class="stat-value" style="color: white;">${stats.acceptanceRate}%</div>
+          <div class="stat-label" style="color: rgba(255,255,255,0.9);">Acceptance Rate</div>
+        </div>
+      `;
+
+      document.getElementById('dataStats').innerHTML = statsHTML;
+
+      // Detailed Breakdown Stats
+      const detailedHTML = `
+        <div class="stat-card">
+          <div class="stat-value" style="color: #10b981;">${acceptedRecords.length}</div>
+          <div class="stat-label">✅ Accepted</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #ef4444;">${rejectedRecords.length}</div>
+          <div class="stat-label">❌ Rejected</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #f59e0b;">${pendingRecords.length}</div>
+          <div class="stat-label">⏳ Pending Feedback</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #3b82f6;">${withComments}</div>
+          <div class="stat-label">💬 With Comments</div>
+        </div>
+      `;
+
+      document.getElementById('detailedStats').innerHTML = detailedHTML;
+
+      // Sentiment Analysis Stats
+      const sentimentHTML = `
+        <div class="stat-card">
+          <div class="stat-value" style="color: #10b981;">😊 ${positiveSentiment}</div>
+          <div class="stat-label">Positive Sentiment</div>
+          <div class="stat-label" style="margin-top: 4px; font-size: 11px;">
+            ${stats.totalOptimizations > 0 ? ((positiveSentiment / stats.totalOptimizations) * 100).toFixed(1) : 0}%
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #f59e0b;">🤔 ${neutralSentiment}</div>
+          <div class="stat-label">Neutral Sentiment</div>
+          <div class="stat-label" style="margin-top: 4px; font-size: 11px;">
+            ${stats.totalOptimizations > 0 ? ((neutralSentiment / stats.totalOptimizations) * 100).toFixed(1) : 0}%
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #ef4444;">😟 ${negativeSentiment}</div>
+          <div class="stat-label">Negative Sentiment</div>
+          <div class="stat-label" style="margin-top: 4px; font-size: 11px;">
+            ${stats.totalOptimizations > 0 ? ((negativeSentiment / stats.totalOptimizations) * 100).toFixed(1) : 0}%
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #6b7280;">❓ ${noSentiment}</div>
+          <div class="stat-label">No Sentiment Data</div>
+          <div class="stat-label" style="margin-top: 4px; font-size: 11px;">
+            ${stats.totalOptimizations > 0 ? ((noSentiment / stats.totalOptimizations) * 100).toFixed(1) : 0}%
+          </div>
+        </div>
+      `;
+
+      document.getElementById('sentimentStats').innerHTML = sentimentHTML;
+
+      // Data Quality Metrics
+      const qualityHTML = `
+        <div class="stat-card">
+          <div class="stat-value" style="color: #3b82f6;">${following1Month}</div>
+          <div class="stat-label">Following 1-3 Months</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #10b981;">${following3Months}</div>
+          <div class="stat-label">Following 3-6 Months</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #8b5cf6;">${following6Months}</div>
+          <div class="stat-label">Following 6+ Months</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" style="color: #ec4899;">${stats.successRate}%</div>
+          <div class="stat-label">Overall Success Rate</div>
+        </div>
+      `;
+
+      document.getElementById('qualityStats').innerHTML = qualityHTML;
+
+      // Goal Type Distribution
+      const goalTypeCounts = {};
+      trainingReadyRecords.forEach(record => {
+        record.originalGoals.forEach(goal => {
+          const type = goal.type || 'other';
+          goalTypeCounts[type] = (goalTypeCounts[type] || 0) + 1;
+        });
+      });
+
+      const goalTypeEmojis = {
+        'retirement': '🏖️',
+        'emergency': '🚨',
+        'marriage': '💍',
+        'education': '🎓',
+        'house': '🏠',
+        'vehicle': '🚗',
+        'vacation': '✈️',
+        'business': '💼',
+        'other': '📌'
+      };
+
+      const goalTypeHTML = Object.entries(goalTypeCounts)
+        .sort((a, b) => b[1] - a[1])
+        .map(([type, count]) => {
+          const emoji = goalTypeEmojis[type] || '📌';
+          const percentage = trainingReadyRecords.length > 0
+            ? ((count / trainingReadyRecords.reduce((sum, r) => sum + r.originalGoals.length, 0)) * 100).toFixed(1)
+            : 0;
+          return `
+            <div class="stat-card">
+              <div class="stat-value" style="font-size: 28px;">${emoji} ${count}</div>
+              <div class="stat-label">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+              <div class="stat-label" style="margin-top: 4px; font-size: 11px;">${percentage}% of goals</div>
+            </div>
+          `;
+        }).join('');
+
+      document.getElementById('goalTypeStats').innerHTML = goalTypeHTML || '<div class="warning-message">No training data available</div>';
+
+      // Update button state
+      const trainBtn = document.getElementById('trainModelBtn');
+      if (trainingReadyRecords.length < 50) {
+        trainBtn.disabled = true;
+        trainBtn.innerHTML = `🚀 Train (Need ${50 - trainingReadyRecords.length} more samples)`;
+      } else {
+        trainBtn.disabled = false;
+        trainBtn.innerHTML = `🚀 Train New Model`;
+      }
+    }
+
+    // Train model
+    document.getElementById('trainModelBtn').addEventListener('click', async () => {
+      if (trainingInProgress) {
+        alert('Training already in progress');
+        return;
+      }
+
+      if (!window.outcomeTracker) {
+        alert('Data tracker not available. Please refresh the page.');
+        return;
+      }
+
+      const records = await window.outcomeTracker.getAllRecords();
+      const trainingRecords = records.filter(r =>
+        r.userAccepted === true && r.outcome.monthsFollowed >= 3
+      );
+
+      if (trainingRecords.length < 50) {
+        alert(`Need at least 50 training samples. Currently have ${trainingRecords.length}. Please collect more data.`);
+        return;
+      }
+
+      if (!confirm(`Train model with ${trainingRecords.length} samples? This may take 2-5 minutes.`)) {
+        return;
+      }
+
+      const btn = document.getElementById('trainModelBtn');
+      const progressBox = document.getElementById('trainingProgress');
+      const logBox = document.getElementById('trainingLog');
+
+      btn.disabled = true;
+      btn.textContent = 'Training...';
+      trainingInProgress = true;
+      logBox.style.display = 'block';
+      logEntries.length = 0;
+
+      progressBox.innerHTML = `
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressFill" style="width: 0%">0%</div>
+        </div>
+        <div id="progressText" style="text-align: center; color: var(--text-secondary); font-size: 13px; margin-top: 8px;">
+          Initializing training...
+        </div>
+      `;
+
+      log('🎓 Starting model training...');
+      log(`📊 Training samples: ${trainingRecords.length}`);
+
+      try {
+        const result = await window.mlModel.trainModel(trainingRecords, {
+          epochs: 100,
+          batchSize: 32,
+          validationSplit: 0.2,
+          learningRate: 0.001,
+          onProgress: (epoch, logs) => {
+            const progress = (epoch / 100) * 100;
+            const progressFill = document.getElementById('progressFill');
+            const progressText = document.getElementById('progressText');
+
+            if (progressFill) {
+              progressFill.style.width = `${progress}%`;
+              progressFill.textContent = `${Math.round(progress)}%`;
+            }
+
+            if (progressText) {
+              progressText.textContent = `Epoch ${epoch}/100 - Loss: ${logs.loss.toFixed(4)} - Val Loss: ${logs.val_loss.toFixed(4)}`;
+            }
+
+            if (epoch % 10 === 0) {
+              log(`Epoch ${epoch}: loss=${logs.loss.toFixed(4)}, val_loss=${logs.val_loss.toFixed(4)}`);
+            }
+          }
+        });
+
+        log('✅ Training completed successfully!');
+        log(`📊 Final loss: ${result.metadata.finalLoss.toFixed(4)}`);
+        log(`📊 Final validation loss: ${result.metadata.finalValLoss.toFixed(4)}`);
+
+        progressBox.innerHTML = `
+          <div class="success-message">
+            ✅ Model trained successfully with ${trainingRecords.length} samples!
+            <div style="margin-top: 8px; font-size: 13px;">
+              Final loss: ${result.metadata.finalLoss.toFixed(4)} |
+              Validation loss: ${result.metadata.finalValLoss.toFixed(4)}
+            </div>
+          </div>
+        `;
+
+        // Evaluate model
+        log('📊 Evaluating model performance...');
+        evaluateModel();
+
+        // Update status
+        displayModelStatus();
+
+      } catch (e) {
+        log(`❌ Training failed: ${e.message}`, 'error');
+        progressBox.innerHTML = `
+          <div class="error-message">❌ Training failed: ${e.message}</div>
+        `;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = '🚀 Train New Model';
+        trainingInProgress = false;
+      }
+    });
+
+    // Evaluate model
+    async function evaluateModel() {
+      if (!window.outcomeTracker) {
+        alert('Data tracker not available. Please refresh the page.');
+        return;
+      }
+
+      const records = await window.outcomeTracker.getAllRecords();
+      const eligibleRecords = records.filter(r =>
+        r.userAccepted === true && r.outcome.monthsFollowed >= 3
+      );
+
+      // Get diverse sample: group by goal types and sample from each
+      const recordsByGoalType = {};
+      eligibleRecords.forEach(record => {
+        record.originalGoals.forEach((goal, idx) => {
+          const type = goal.type || 'other';
+          if (!recordsByGoalType[type]) {
+            recordsByGoalType[type] = [];
+          }
+          recordsByGoalType[type].push(record);
+        });
+      });
+
+      // Take ALL records to show complete picture (not just last 20)
+      const testRecords = eligibleRecords;
+
+      if (testRecords.length === 0) {
+        document.getElementById('modelMetrics').innerHTML = `
+          <div class="warning-message">Not enough data for evaluation. Need at least some accepted records with 3+ months follow-through.</div>
+        `;
+        return;
+      }
+
+      log(`📊 Evaluating on ${testRecords.length} test samples...`);
+
+      try {
+        const evaluation = await window.mlModel.evaluateModel(testRecords);
+
+        log(`✅ Evaluation complete. Average error: ${evaluation.averageError}`);
+
+        // Calculate per-goal-type statistics
+        const goalTypeStats = {};
+        evaluation.predictions.forEach(p => {
+          const type = p.goalType || 'other';
+          if (!goalTypeStats[type]) {
+            goalTypeStats[type] = { count: 0, totalError: 0, predictions: [] };
+          }
+          goalTypeStats[type].count++;
+          goalTypeStats[type].totalError += p.error;
+          goalTypeStats[type].predictions.push(p);
+        });
+
+        const goalTypeStatsHTML = Object.entries(goalTypeStats)
+          .sort((a, b) => b[1].count - a[1].count)
+          .map(([type, stats]) => {
+            const avgError = (stats.totalError / stats.count).toFixed(4);
+            const emoji = {
+              'retirement': '🏖️', 'emergency': '🚨', 'marriage': '💍',
+              'education': '🎓', 'house': '🏠', 'vehicle': '🚗',
+              'vacation': '✈️', 'business': '💼', 'other': '📌'
+            }[type] || '📌';
+            return `
+              <div class="stat-card">
+                <div style="font-size: 24px; margin-bottom: 8px;">${emoji}</div>
+                <div class="stat-label">${type.charAt(0).toUpperCase() + type.slice(1)}</div>
+                <div style="font-size: 18px; font-weight: bold; color: var(--primary-500); margin-top: 8px;">${stats.count}</div>
+                <div class="stat-label" style="margin-top: 4px;">predictions</div>
+                <div style="font-size: 14px; color: var(--text-secondary); margin-top: 8px;">Avg Error: ${avgError}</div>
+              </div>
+            `;
+          }).join('');
+
+        const metricsHTML = `
+          <div class="metric-card">
+            <div class="metric-value">${evaluation.averageError}</div>
+            <div class="metric-label">Overall Average Prediction Error</div>
+          </div>
+
+          <div style="margin-top: 24px;">
+            <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 12px; color: var(--text-primary);">📊 Predictions by Goal Type</h3>
+            <div class="stats-grid">
+              ${goalTypeStatsHTML}
+            </div>
+          </div>
+
+          <div class="predictions-table">
+            <h3>All Sample Predictions (${evaluation.predictions.length} total)</h3>
+            <table>
+              <thead>
+                <tr>
+                  <th>Goal</th>
+                  <th>Type</th>
+                  <th>Actual Reduction</th>
+                  <th>Predicted</th>
+                  <th>Actual Extension</th>
+                  <th>Predicted</th>
+                  <th>Error</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${evaluation.predictions.map(p => `
+                  <tr>
+                    <td>${p.goal}</td>
+                    <td>${p.goalType}</td>
+                    <td>${(p.actual_reduction * 100).toFixed(1)}%</td>
+                    <td>${(p.predicted_reduction * 100).toFixed(1)}%</td>
+                    <td>${p.actual_extension}y</td>
+                    <td>${p.predicted_extension.toFixed(1)}y</td>
+                    <td>${p.error.toFixed(3)}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        `;
+
+        document.getElementById('modelMetrics').innerHTML = metricsHTML;
+      } catch (e) {
+        log(`❌ Evaluation failed: ${e.message}`, 'error');
+        document.getElementById('modelMetrics').innerHTML = `
+          <div class="error-message">❌ Evaluation failed: ${e.message}</div>
+        `;
+      }
+    }
+
+    document.getElementById('evaluateModelBtn').addEventListener('click', evaluateModel);
+
+    // Export data
+    document.getElementById('exportDataBtn').addEventListener('click', async () => {
+      if (!window.outcomeTracker) {
+        alert('Data tracker not available. Please refresh the page.');
+        return;
+      }
+
+      const exportData = await window.outcomeTracker.exportForMLTraining();
+      const dataStr = JSON.stringify(exportData, null, 2);
+      const blob = new Blob([dataStr], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `ml-training-data-${Date.now()}.json`;
+      a.click();
+      log(`💾 Exported ${exportData.recordCount} training records`);
+    });
+
+    // Delete model
+    document.getElementById('deleteModelBtn').addEventListener('click', async () => {
+      if (!confirm('Delete the trained model? You will need to retrain it.')) {
+        return;
+      }
+
+      if (!window.mlModel) {
+        alert('ML Model not available. Please refresh the page.');
+        return;
+      }
+
+      const success = await window.mlModel.deleteModel();
+      if (success) {
+        log('🗑️ Model deleted');
+        alert('Model deleted successfully');
+        displayModelStatus();
+      } else {
+        alert('Failed to delete model');
+      }
+    });
+
+    // Clear all data
+    document.getElementById('clearDataBtn').addEventListener('click', async () => {
+      if (confirm('Are you sure you want to delete all optimization outcome data? This cannot be undone.')) {
+        if (!window.outcomeTracker) {
+          alert('Data tracker not available. Please refresh the page.');
+          return;
+        }
+
+        const success = await window.outcomeTracker.clearAllData();
+        if (success) {
+          log('⚠️ All training data cleared');
+          await displayDataStats();
+          document.getElementById('modelMetrics').innerHTML = '';
+        } else {
+          log('❌ Failed to clear data');
+        }
+      }
+    });
+
+    // Initialize display - wait for all dependencies
+    (async () => {
+      // Wait for outcomeTracker and mlModel to be available
+      let attempts = 0;
+      while ((!window.outcomeTracker || !window.mlModel) && attempts < 20) {
+        await new Promise(resolve => setTimeout(resolve, 100));
+        attempts++;
+      }
+
+      if (!window.outcomeTracker) {
+        console.error('❌ outcomeTracker not available after waiting');
+        document.getElementById('dataStats').innerHTML = '<div class="error-message">Failed to initialize data tracker. Please refresh the page.</div>';
+      }
+
+      if (!window.mlModel) {
+        console.error('❌ mlModel not available after waiting');
+      }
+
+      await displayModelStatus();
+      await displayDataStats();
+      log('✅ Dashboard initialized');
+    })();
+
+    // Auto-refresh stats every 10 seconds
+    setInterval(async () => {
+      if (!trainingInProgress) {
+        await displayDataStats();
+      }
+    }, 10000);
+  </script>
+</body>
+</html>

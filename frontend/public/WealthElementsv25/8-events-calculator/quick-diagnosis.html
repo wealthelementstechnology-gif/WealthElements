@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Quick Diagnosis</title>
+  <script src="outcome-tracker.js"></script>
+  <style>
+    body {
+      font-family: system-ui, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f3f4f6;
+    }
+    .diagnosis {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+    h1 { color: #111827; }
+    .issue { background: #fee2e2; border-left: 4px solid #dc2626; padding: 16px; margin: 20px 0; border-radius: 4px; color: #991b1b; }
+    .ok { background: #d1fae5; border-left: 4px solid #10b981; padding: 16px; margin: 20px 0; border-radius: 4px; color: #065f46; }
+    .warning { background: #fef3c7; border-left: 4px solid #f59e0b; padding: 16px; margin: 20px 0; border-radius: 4px; color: #92400e; }
+    .stat { font-size: 48px; font-weight: bold; text-align: center; color: #667eea; margin: 20px 0; }
+    table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #e5e7eb; }
+    th { background: #f9fafb; font-weight: 600; }
+    .fix-btn { background: #10b981; color: white; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 600; cursor: pointer; margin-top: 16px; }
+    .fix-btn:hover { background: #059669; }
+  </style>
+</head>
+<body>
+  <div class="diagnosis">
+    <h1>🔍 Quick Diagnosis</h1>
+    <div id="result"></div>
+  </div>
+
+  <script>
+    const records = window.outcomeTracker.getAllRecords();
+    const trainingReady = records.filter(r => r.userAccepted === true && r.outcome?.monthsFollowed >= 3);
+
+    let html = '';
+
+    if (trainingReady.length === 0) {
+      html = '<div class="warning"><strong>⚠️ No training-ready data found!</strong><br>Generate test data first using ml-data-manager.html</div>';
+    } else {
+      // Count goal types
+      const goalTypeCounts = {};
+      let totalGoals = 0;
+
+      trainingReady.forEach(record => {
+        record.originalGoals.forEach(goal => {
+          const type = goal.type || 'MISSING_TYPE';
+          goalTypeCounts[type] = (goalTypeCounts[type] || 0) + 1;
+          totalGoals++;
+        });
+      });
+
+      const uniqueTypes = Object.keys(goalTypeCounts).length;
+      const hasOnlyRetirement = uniqueTypes === 1 && goalTypeCounts['retirement'];
+
+      // Show diagnosis
+      if (hasOnlyRetirement) {
+        html += `<div class="issue">
+          <strong>🚨 ISSUE DETECTED: Only Retirement Goals!</strong><br><br>
+          Your training data contains ONLY retirement goals. The ML model cannot learn about other goal types.
+          <br><br>
+          <strong>Solution:</strong> Clear old data and regenerate using the FIXED ml-data-manager.html
+        </div>`;
+      } else if (uniqueTypes >= 4) {
+        html += `<div class="ok">
+          <strong>✅ LOOKS GOOD!</strong><br><br>
+          Your data has ${uniqueTypes} different goal types. The ML model can learn from diverse data.
+        </div>`;
+      } else {
+        html += `<div class="warning">
+          <strong>⚠️ LIMITED DIVERSITY</strong><br><br>
+          Only ${uniqueTypes} goal types found. Recommended: 6+ types for best ML performance.
+        </div>`;
+      }
+
+      html += `<div class="stat">${uniqueTypes}</div>`;
+      html += `<p style="text-align: center; color: #6b7280;">Unique Goal Types</p>`;
+
+      // Show breakdown
+      html += '<h2 style="margin-top: 30px;">Goal Type Breakdown</h2>';
+      html += '<table><thead><tr><th>Type</th><th>Count</th><th>% of Total</th></tr></thead><tbody>';
+
+      Object.entries(goalTypeCounts)
+        .sort((a, b) => b[1] - a[1])
+        .forEach(([type, count]) => {
+          const pct = ((count / totalGoals) * 100).toFixed(1);
+          const emoji = {
+            'retirement': '🏖️', 'education': '🎓', 'marriage': '💍',
+            'emergency': '🚨', 'house': '🏠', 'vehicle': '🚗',
+            'vacation': '✈️', 'business': '💼', 'other': '📌'
+          }[type] || '❓';
+
+          html += `<tr><td>${emoji} ${type}</td><td><strong>${count}</strong></td><td>${pct}%</td></tr>`;
+        });
+
+      html += '</tbody></table>';
+
+      // Recommendation
+      if (hasOnlyRetirement) {
+        html += `
+          <h2 style="margin-top: 30px; color: #dc2626;">⚠️ Action Required</h2>
+          <ol style="line-height: 1.8;">
+            <li>Open <strong>ml-data-manager.html</strong></li>
+            <li>Go to <strong>"Cleanup"</strong> tab → Click <strong>"Clear All"</strong></li>
+            <li>Go to <strong>"Generate Test Data"</strong> tab</li>
+            <li>Generate 100 samples with 75% acceptance</li>
+            <li>Come back here and refresh to verify</li>
+          </ol>
+          <button class="fix-btn" onclick="window.location.href='ml-data-manager.html'">→ Go to ML Data Manager</button>
+        `;
+      } else {
+        html += `
+          <h2 style="margin-top: 30px; color: #10b981;">✅ Next Steps</h2>
+          <ol style="line-height: 1.8;">
+            <li>Open <strong>admin-ml-training.html</strong></li>
+            <li>Check <strong>"Goal Type Distribution"</strong> section</li>
+            <li>Click <strong>"Train New Model"</strong></li>
+            <li>After training, click <strong>"Evaluate Model"</strong></li>
+            <li>Verify all goal types appear in predictions</li>
+          </ol>
+          <button class="fix-btn" onclick="window.location.href='admin-ml-training.html'">→ Go to ML Training Dashboard</button>
+        `;
+      }
+    }
+
+    document.getElementById('result').innerHTML = html;
+  </script>
+</body>
+</html>

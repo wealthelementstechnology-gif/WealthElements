@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 4: Plan Your Retirement & Other Goals</title>
+  <link rel="stylesheet" href="../design-system.css" />
+  <link rel="stylesheet" href="8-events.css" />
+  <link rel="stylesheet" href="step4.css" />
+  <script src="../theme.js" defer></script>
+  
+  <script src="step4.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <button class="btn back" id="back-step3">← Back</button>
+      <div>
+        <h1>Step 4: Plan Your Retirement & Other Goals</h1>
+        <p class="subtitle">Planning today for a worry-free tomorrow.</p>
+      </div>
+    </header>
+
+    <section class="summary">
+      <div class="two-inputs">
+        <label>Retirement Age (Years):
+          <input type="number" id="ageRet" />
+        </label>
+        <label>Life Expectancy (Years):
+          <input type="number" id="lifeExp" />
+        </label>
+      </div>
+
+      <div class="big-cards">
+        <div class="big-card">
+          <div class="big-title">Retirement Corpus Needed</div>
+          <div class="big-value" id="outCorpusBig">₹0</div>
+          <div class="big-note">The total amount you'll need when you retire.</div>
+        </div>
+        <div class="big-card">
+          <div class="big-title">Monthly SIP for Retirement</div>
+          <div class="big-value" id="outSIPBig">₹0</div>
+          <div class="big-note">The investment needed to build this corpus.</div>
+        </div>
+      </div>
+
+      <div class="error" id="outError"></div>
+    </section>
+
+    <section class="goals">
+      <h2 class="section-title">Other Goals &amp; Aspirations</h2>
+      <div class="table-wrapper">
+        <table class="goals-table">
+          <thead>
+            <tr>
+              <th>Target Name</th>
+              <th>Current Cost (₹)</th>
+              <th>Target Year</th>
+              <th>Priority</th>
+              <th>Years Left</th>
+              <th>Future Value (₹)</th>
+              <th>Monthly SIP (₹)</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="goals-tbody">
+            <tr>
+              <td><input type="text" placeholder="e.g., Home Purchase" /></td>
+              <td><input type="number" class="gc" placeholder="0" /></td>
+              <td><input type="number" class="gy" placeholder="2030" /></td>
+              <td>
+                <select class="priority">
+                  <option value="High">High</option>
+                  <option value="Medium" selected>Medium</option>
+                  <option value="Low">Low</option>
+                </select>
+              </td>
+              <td class="years">-</td>
+              <td class="fv">-</td>
+              <td class="sip">-</td>
+              <td class="row-actions"><button type="button" class="icon-btn" data-remove>×</button></td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="5">Totals</td>
+              <td id="goals-fv-total">₹0</td>
+              <td id="goals-sip-total">₹0</td>
+              <td></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+      <div class="actions"><button class="btn" id="add-goal">+ Add New Goal</button></div>
+    </section>
+    <div class="actions">
+      <button class="btn btn-lg" id="to-step5">Next →</button>
+    </div>
+  </main>
+</body>
+</html>
+
+

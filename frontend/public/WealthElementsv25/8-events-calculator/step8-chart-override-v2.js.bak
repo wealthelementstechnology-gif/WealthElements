@@ -1,0 +1,287 @@
+// Step 8 Chart Override V2 - Use Chart.js with proper styling
+// This keeps the original Chart.js implementation but fixes styling issues
+
+(function() {
+  console.log('Step 8 Chart Override V2 loaded');
+
+  // Store original createChart if it exists
+  let originalCreateChart = null;
+
+  // Wait for step8.js to load and define createChart
+  function initOverride() {
+    if (typeof window.createChart === 'function') {
+      originalCreateChart = window.createChart;
+
+      // Override with styled version
+      window.createChart = function(canvasId, allocation) {
+        console.log('Creating styled Chart.js chart for:', canvasId);
+
+        // Group by unique categories to avoid duplicates
+        const categoryMap = new Map();
+        allocation.forEach(item => {
+          const category = item.fundCategory;
+          if (categoryMap.has(category)) {
+            categoryMap.set(category, categoryMap.get(category) + item.percentage);
+          } else {
+            categoryMap.set(category, item.percentage);
+          }
+        });
+
+        // Convert back to array
+        const uniqueAllocation = Array.from(categoryMap.entries()).map(([category, percentage]) => ({
+          fundCategory: category,
+          percentage: Math.round(percentage)
+        }));
+
+        // Call original createChart with unique allocation
+        const chart = originalCreateChart(canvasId, uniqueAllocation);
+
+        // Update allocation details to show unique categories only
+        const allocationDetailsId = canvasId.replace('chart-', 'allocation-details-');
+        const allocationContainer = document.getElementById(allocationDetailsId);
+
+        if (allocationContainer) {
+          // Find existing allocation-item divs and update them
+          const allocationItems = allocationContainer.querySelectorAll('.allocation-item');
+
+          // Remove all existing items
+          allocationItems.forEach(item => item.remove());
+
+          // Get recommendations
+          const recommendations = window.fundRecommendationsCache || {};
+
+          // Create new allocation items for unique categories
+          const newItemsHTML = uniqueAllocation.map(item => {
+            const recommendation = recommendations[item.fundCategory];
+            let recommendationHTML = '';
+
+            if (recommendation) {
+              if (recommendation.type === 'fund' && recommendation.schemeName) {
+                recommendationHTML = `
+                  <div class="fund-recommendation">
+                    <span class="recommendation-label">✨ Recommended:</span>
+                    <span class="recommendation-fund">${recommendation.schemeName}</span>
+                  </div>`;
+              } else if (recommendation.type === 'etf') {
+                recommendationHTML = `
+                  <div class="fund-recommendation etf">
+                    <span class="recommendation-label">📊</span>
+                    <span class="recommendation-fund">${recommendation.message}</span>
+                  </div>`;
+              } else if (recommendation.type === 'manual') {
+                recommendationHTML = `
+                  <div class="fund-recommendation manual">
+                    <span class="recommendation-label">ℹ️</span>
+                    <span class="recommendation-fund">${recommendation.message}</span>
+                  </div>`;
+              }
+            }
+
+            return `
+              <div class="allocation-item">
+                <div>
+                  <span class="allocation-fund-name">${item.fundCategory}</span>
+                  <span class="allocation-percentage">${item.percentage}%</span>
+                </div>
+                ${recommendationHTML}
+              </div>`;
+          }).join('');
+
+          // Insert after risk selector
+          const riskSelector = allocationContainer.querySelector('.risk-selector');
+          if (riskSelector && riskSelector.nextSibling) {
+            riskSelector.insertAdjacentHTML('afterend', newItemsHTML);
+          } else {
+            allocationContainer.insertAdjacentHTML('beforeend', newItemsHTML);
+          }
+        }
+
+        return chart;
+      };
+
+      console.log('Chart.js override initialized with unique category grouping');
+    } else {
+      // Try again after a short delay
+      setTimeout(initOverride, 100);
+    }
+  }
+
+  // Start initialization
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(initOverride, 100));
+  } else {
+    setTimeout(initOverride, 100);
+  }
+
+  // Update portfolio summary when goals are loaded
+  function updatePortfolioSummary() {
+    setTimeout(() => {
+      if (!window.currentGroups || window.currentGroups.length === 0) return;
+
+      // Calculate totals from all groups
+      let totalSip = 0;
+      const categoryTotals = {};
+
+      window.currentGroups.forEach(group => {
+        // Sum SIPs
+        if (group.goals && Array.isArray(group.goals)) {
+          group.goals.forEach(goal => {
+            totalSip += goal.sip || 0;
+          });
+        }
+
+        // Sum allocations by category
+        if (group.allocation && Array.isArray(group.allocation)) {
+          group.allocation.forEach(item => {
+            const cat = item.fundCategory;
+            if (!categoryTotals[cat]) {
+              categoryTotals[cat] = 0;
+            }
+            categoryTotals[cat] += item.percentage;
+          });
+        }
+      });
+
+      // Calculate average allocation percentages
+      const numGroups = window.currentGroups.length;
+      const avgAllocations = {};
+      Object.keys(categoryTotals).forEach(cat => {
+        avgAllocations[cat] = Math.round(categoryTotals[cat] / numGroups);
+      });
+
+      // Categorize into Equity, Debt, Gold
+      let equityPercent = 0;
+      let debtPercent = 0;
+      let goldPercent = 0;
+
+      Object.keys(avgAllocations).forEach(cat => {
+        const lowerCat = cat.toLowerCase();
+        const percent = avgAllocations[cat];
+
+        if (lowerCat.includes('equity') || lowerCat.includes('flexi') || lowerCat.includes('mid') || lowerCat.includes('small') || lowerCat.includes('large')) {
+          equityPercent += percent;
+        } else if (lowerCat.includes('gold')) {
+          goldPercent += percent;
+        } else {
+          debtPercent += percent;
+        }
+      });
+
+      // Normalize to 100%
+      const total = equityPercent + debtPercent + goldPercent;
+      if (total > 0) {
+        equityPercent = Math.round((equityPercent / total) * 100);
+        debtPercent = Math.round((debtPercent / total) * 100);
+        goldPercent = 100 - equityPercent - debtPercent;
+      }
+
+      // Calculate weighted average return
+      const avgReturn = ((equityPercent * 12) + (debtPercent * 7) + (goldPercent * 8)) / 100;
+
+      // Update summary card
+      const totalSipElement = document.getElementById('total-sip');
+      const expectedReturnElement = document.getElementById('expected-return');
+      const allocationBar = document.getElementById('allocation-bar');
+
+      if (totalSipElement) {
+        totalSipElement.textContent = new Intl.NumberFormat('en-IN', {
+          style: 'currency',
+          currency: 'INR',
+          maximumFractionDigits: 0
+        }).format(totalSip);
+      }
+
+      if (expectedReturnElement) {
+        expectedReturnElement.textContent = `${avgReturn.toFixed(1)}%`;
+      }
+
+      if (allocationBar) {
+        allocationBar.innerHTML = `
+          <div class="bar-segment-equity" style="width: ${equityPercent}%"></div>
+          <div class="bar-segment-debt" style="width: ${debtPercent}%"></div>
+          <div class="bar-segment-gold" style="width: ${goldPercent}%"></div>
+        `;
+
+        // Update legend
+        const legend = allocationBar.nextElementSibling;
+        if (legend) {
+          legend.innerHTML = `
+            <div class="legend-item">
+              <span class="legend-dot bg-equity"></span> Equity ${equityPercent}%
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot bg-debt"></span> Debt ${debtPercent}%
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot bg-gold"></span> Gold ${goldPercent}%
+            </div>
+          `;
+        }
+      }
+
+      console.log('Portfolio summary updated:', { totalSip, equityPercent, debtPercent, goldPercent, avgReturn });
+    }, 500);
+  }
+
+  // Watch for goal additions
+  const observer = new MutationObserver((mutations) => {
+    let shouldUpdate = false;
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1 && node.classList) {
+          if (node.classList.contains('goal-group') || node.classList.contains('goal-card')) {
+            shouldUpdate = true;
+          }
+        }
+      });
+    });
+    if (shouldUpdate) {
+      updatePortfolioSummary();
+    }
+  });
+
+  const container = document.getElementById('allocation-container');
+  if (container) {
+    observer.observe(container, { childList: true, subtree: true });
+  }
+
+  // Update on load
+  window.addEventListener('load', () => {
+    updatePortfolioSummary();
+    setupGlobalRiskSlider();
+  });
+
+  // Setup global risk slider
+  function setupGlobalRiskSlider() {
+    const globalSlider = document.getElementById('global-risk-slider');
+    if (!globalSlider) {
+      setTimeout(setupGlobalRiskSlider, 100);
+      return;
+    }
+
+    console.log('Setting up global risk slider');
+
+    globalSlider.addEventListener('input', (e) => {
+      const riskLevel = parseInt(e.target.value);
+      console.log('Global risk changed to:', riskLevel);
+
+      if (window.currentGroups && typeof window.updateAllocation === 'function') {
+        window.currentGroups.forEach((group, groupIndex) => {
+          window.updateAllocation(groupIndex, 0, riskLevel);
+        });
+      }
+
+      setTimeout(() => {
+        updatePortfolioSummary();
+      }, 300);
+    });
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupGlobalRiskSlider);
+  } else {
+    setTimeout(setupGlobalRiskSlider, 100);
+  }
+
+  console.log('Chart override V2 and portfolio summary updater initialized');
+})();

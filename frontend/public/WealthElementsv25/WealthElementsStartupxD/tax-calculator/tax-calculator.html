@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Income Tax Calculator</title>
+    <link rel="stylesheet" href="../design-system.css">
+    <link rel="stylesheet" href="../8-events-calculator/8-events.css">
+    <script src="../theme.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="tax-calculator.css">
+</head>
+<body>
+
+<main class="container">
+    
+    <!-- Tax Calculator Section -->
+    <section class="card">
+        <header class="page-header">
+            <button class="btn back" onclick="window.location.href='../index.html'">← Back</button>
+            <div>
+                <h1>Income Tax Calculator</h1>
+                <p class="subtitle">Compare tax regimes with detailed breakdowns</p>
+            </div>
+        </header>
+
+        <!-- Presets / Actions -->
+        <div class="actions center">
+            <select id="tax-salaried-preset" class="form-input">
+                <option value="">Salaried Presets</option>
+                <option value="salaried_low">Low Income</option>
+                <option value="salaried_mid">Mid-Income, Some Investments</option>
+                <option value="salaried_high">High Income, Max Deductions</option>
+            </select>
+            <select id="tax-senior-preset" class="form-input">
+                <option value="">Senior Citizen Presets</option>
+                <option value="senior_low">Pension Only</option>
+                <option value="senior_mid">Pension + Interest</option>
+            </select>
+            <button id="tax-reset-btn" class="btn btn-secondary">Reset</button>
+        </div>
+
+        <div class="tax-sections">
+            <!-- Input Section -->
+            <section class="card tax-input-section" aria-label="Tax input form">
+                <h2>Enter Your Financial Details</h2>
+                <form id="tax-form" autocomplete="off" novalidate>
+                    <!-- Personal Information -->
+                    <fieldset>
+                        <legend>Personal Information</legend>
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label for="tax-age" class="form-label">Age Group</label>
+                                <select id="tax-age" class="form-input">
+                                    <option value="<60">Below 60 years</option>
+                                    <option value="60-80">60 to 80 years</option>
+                                    <option value=">80">Above 80 years</option>
+                                </select>
+                            </div>
+                            <div class="form-field">
+                                <label for="tax-assessment-year" class="form-label">Assessment Year</label>
+                                <select id="tax-assessment-year" class="form-input">
+                                    <option value="2024-25">FY 2024-25</option>
+                                    <option value="2025-26">FY 2025-26</option>
+                                    <option value="2026-27">FY 2026-27</option>
+                                </select>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Income Inputs -->
+                    <fieldset>
+                        <legend>Income Details</legend>
+                        <div class="form-grid">
+                            <div class="form-field">
+                                <label for="tax-salary-income" class="form-label">Salary Income</label>
+                                <input type="number" id="tax-salary-income" min="0" class="form-input" placeholder="e.g., 1000000" />
+                            </div>
+                            <div class="form-field">
+                                <label for="tax-rental-income" class="form-label">Rental Income</label>
+                                <input type="number" id="tax-rental-income" min="0" class="form-input" placeholder="e.g., 200000" />
+                            </div>
+                            <div class="form-field">
+                                <label for="tax-short-term-cg" class="form-label">Short-Term Capital Gains</label>
+                                <input type="number" id="tax-short-term-cg" min="0" class="form-input" placeholder="e.g., 50000" />
+                            </div>
+                            <div class="form-field">
+                                <label for="tax-long-term-cg" class="form-label">Long-Term Capital Gains</label>
+                                <input type="number" id="tax-long-term-cg" min="0" class="form-input" placeholder="e.g., 100000" />
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    <!-- Deductions -->
+                    <fieldset>
+                        <legend>Deductions (Old Regime)</legend>
+                        <div id="tax-basic-deductions" class="form-field">
+                            <label for="tax-sec80c" class="form-label">Investments (PPF, ELSS, etc.)</label>
+                            <input type="number" id="tax-sec80c" min="0" max="150000" class="form-input" placeholder="e.g., 150000" />
+                        </div>
+                        <div class="actions center">
+                            <button type="button" id="tax-toggle-advanced-btn" class="btn btn-secondary">Show Advanced Deductions</button>
+                        </div>
+                        <div id="tax-advanced-deductions" class="hidden">
+                            <div class="form-grid">
+                                <div class="form-field">
+                                    <label for="tax-sec80d" class="form-label">Health Insurance Premium (80D)</label>
+                                    <input type="number" id="tax-sec80d" min="0" max="100000" class="form-input" placeholder="e.g., 25000" />
+                                </div>
+                                <div class="form-field">
+                                    <label for="tax-home-loan-interest" class="form-label">Home Loan Interest</label>
+                                    <input type="number" id="tax-home-loan-interest" min="0" max="200000" class="form-input" placeholder="e.g., 200000" />
+                                </div>
+                                <div class="form-field">
+                                    <label for="tax-nps" class="form-label">NPS Contribution (80CCD-1B)</label>
+                                    <input type="number" id="tax-nps" min="0" max="50000" class="form-input" placeholder="e.g., 50000" />
+                                </div>
+                                <div class="form-field">
+                                    <label for="tax-sec80e" class="form-label">Education Loan Interest (80E)</label>
+                                    <input type="number" id="tax-sec80e" min="0" class="form-input" placeholder="e.g., 30000" />
+                                </div>
+                                <div class="form-field">
+                                    <label for="tax-sec80g" class="form-label">Donations (80G)</label>
+                                    <input type="number" id="tax-sec80g" min="0" class="form-input" placeholder="e.g., 10000" />
+                                </div>
+                                <div class="form-field">
+                                    <label for="tax-professional-tax" class="form-label">Professional Tax</label>
+                                    <input type="number" id="tax-professional-tax" min="0" max="2500" class="form-input" placeholder="e.g., 2500" />
+                                </div>
+                                <div class="form-field">
+                                    <label for="tax-rent-paid" class="form-label">Rent Paid (for HRA)</label>
+                                    <input type="number" id="tax-rent-paid" min="0" class="form-input" placeholder="e.g., 300000" />
+                                </div>
+                                <div class="form-field">
+                                    <label for="tax-city-type" class="form-label">City Type (for HRA)</label>
+                                    <select id="tax-city-type" class="form-input">
+                                        <option value="non-metro">Non-Metro</option>
+                                        <option value="metro">Metro</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="actions center">
+                            <button type="button" id="tax-calc-btn" class="btn btn-lg">Calculate Tax</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </section>
+
+            <!-- Results Section -->
+            <section id="tax-results-section" class="card tax-results-section hidden" aria-label="Tax calculation results">
+                <h2>Results</h2>
+                <div id="tax-recommendation" class="text-center"></div>
+                <div class="chart-container">
+                    <canvas id="tax-chart" height="150" aria-label="Bar chart comparing total tax between old and new regimes" role="img"></canvas>
+                </div>
+                <div id="tax-breakdown" class="form-grid"></div>
+                <div id="tax-tips" class="card"></div>
+            </section>
+        </div>
+    </section>
+
+</main>
+
+<script src="tax-calculator.js"></script>
+</body>
+</html>

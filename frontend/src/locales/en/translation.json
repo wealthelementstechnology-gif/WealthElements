@@ -1,0 +1,393 @@
+{
+  "app": {
+    "name": "WealthElements",
+    "version": "WealthElements v1.0.0"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "home": "Home",
+    "mutualFunds": "Mutual Funds",
+    "settings": "Settings",
+    "back": "Back",
+    "backToWellness": "Back to Wellness"
+  },
+  "auth": {
+    "welcome": "Welcome",
+    "enterMobile": "Enter your mobile number to continue",
+    "countryCode": "+91",
+    "mobilePlaceholder": "10-digit mobile number",
+    "continue": "Continue",
+    "pleaseWait": "Please wait...",
+    "invalidMobile": "Enter a valid 10-digit mobile number",
+    "somethingWrong": "Something went wrong. Try again.",
+    "enterOtp": "Enter OTP",
+    "sentTo": "Sent to +91",
+    "otpHint": "Check the backend server console for OTP",
+    "resendIn": "Resend in {{n}}s",
+    "resendOtp": "Resend OTP",
+    "incorrectOtp": "Incorrect OTP. Try again.",
+    "createPin": "Create PIN",
+    "setPinDesc": "Set a 4-digit PIN to secure your account",
+    "confirmPin": "Confirm PIN",
+    "reEnterPin": "Re-enter your PIN to confirm",
+    "pinMismatch": "PINs do not match. Try again.",
+    "pinFailed": "Failed to set PIN. Try again.",
+    "welcomeBack": "Welcome Back",
+    "enterPinToContinue": "Enter your PIN to continue",
+    "incorrectPin": "Incorrect PIN",
+    "forgotPin": "Forgot PIN? Verify with OTP",
+    "resendFailed": "Failed to resend OTP"
+  },
+  "onboarding": {
+    "steps": {
+      "aboutYou": "About You",
+      "income": "Income",
+      "accounts": "Accounts",
+      "goals": "Goals"
+    },
+    "about": {
+      "title": "Tell us about yourself",
+      "subtitle": "This helps us personalise your financial plan.",
+      "namePlaceholder": "Your name",
+      "nameExample": "e.g. Rohan Sharma",
+      "dob": "Date of birth",
+      "city": "City",
+      "cityExample": "e.g. Mumbai",
+      "employmentType": "Employment type",
+      "salaried": "Salaried",
+      "selfEmployed": "Self-employed",
+      "business": "Business"
+    },
+    "income": {
+      "title": "Your income & expenses",
+      "subtitle": "Approximate monthly figures are fine.",
+      "monthlyIncome": "Monthly income (take-home)",
+      "monthlyExpenses": "Monthly expenses (rent, food, EMIs, etc.)",
+      "monthlySurplus": "Monthly surplus",
+      "surplusDesc": "Available to save & invest each month",
+      "overspending": "You are spending more than you earn",
+      "riskAppetite": "Risk appetite",
+      "conservative": "Conservative",
+      "conservativeDesc": "FD, debt funds",
+      "moderate": "Moderate",
+      "moderateDesc": "Mix of equity & debt",
+      "aggressive": "Aggressive",
+      "aggressiveDesc": "Equity, stocks"
+    },
+    "accounts": {
+      "title": "Your accounts & assets",
+      "subtitle": "Add what you have. You can always add more later.",
+      "asset": "Asset",
+      "liability": "Liability",
+      "namePlaceholder": "Account / Asset name",
+      "nameExample": "e.g. HDFC Savings, Zerodha Portfolio",
+      "type": "Type",
+      "outstandingBalance": "Outstanding balance",
+      "currentValue": "Current value",
+      "bank": "Bank / Institution (optional)",
+      "bankExample": "e.g. HDFC, SBI, Zerodha",
+      "addAccount": "Add account",
+      "cancel": "Cancel",
+      "noAccounts": "No accounts added yet. You can skip this step.",
+      "addAccountCta": "+ Add account or asset"
+    },
+    "goals": {
+      "title": "What are you saving for?",
+      "subtitle": "Add one or more financial goals. You can edit them anytime.",
+      "quickAdd": "Quick add",
+      "emergencyFund": "Emergency Fund",
+      "buyHome": "Buy a Home",
+      "retirement": "Retirement",
+      "education": "Education",
+      "travel": "Travel",
+      "buyVehicle": "Buy a Vehicle",
+      "wedding": "Wedding",
+      "investments": "Investments",
+      "goalName": "Goal name",
+      "goalExample": "e.g. Buy a flat in Mumbai",
+      "targetAmount": "Target amount",
+      "alreadySaved": "Already saved",
+      "targetDate": "Target date",
+      "priority": "Priority",
+      "high": "High",
+      "medium": "Medium",
+      "low": "Low",
+      "addGoal": "Add goal"
+    },
+    "nav": {
+      "step": "Step {{n}} of {{total}}",
+      "back": "← Back",
+      "saving": "Saving...",
+      "finish": "Finish & Go to Dashboard",
+      "continue": "Continue →",
+      "skip": "Skip for now →",
+      "skipStep": "Skip this step"
+    }
+  },
+  "dashboard": {
+    "empty": "Your dashboard is empty",
+    "loadSample": "Load sample data to see how WealthElements looks with real financial data.",
+    "loadSampleBtn": "Load sample data",
+    "tabs": {
+      "overview": "Overview",
+      "assets": "Assets",
+      "spending": "Spending",
+      "subscriptions": "Subscriptions",
+      "wellness": "Wellness",
+      "report": "Report"
+    }
+  },
+  "overview": {
+    "netWorth": "Net Worth",
+    "totalAssets": "Total Assets",
+    "thisMonth": "This Month",
+    "activeSubscriptions": "Active Subscriptions",
+    "bankBalance": "Bank Balance",
+    "spendingDown": "Spending down {{n}}% in last {{days}} days",
+    "recurringPayments": "Recurring Payments",
+    "seeAll": "See all"
+  },
+  "assets": {
+    "assets": "Assets",
+    "liabilities": "Liabilities",
+    "totalAssets": "Total Assets",
+    "totalLiabilities": "Total Liabilities"
+  },
+  "spending": {
+    "summary": "Spending Summary",
+    "upcomingPayments": "Upcoming Payments"
+  },
+  "subscriptions": {
+    "active": "Active",
+    "monthly": "Monthly",
+    "yearly": "Yearly",
+    "noActive": "No active subscriptions",
+    "recurringPayments": "Recurring Payments",
+    "perYear": "/year",
+    "perMonth": "/month",
+    "manage": "Manage subscriptions",
+    "nActive": "{{n}} active",
+    "totalPerMonth": "Total / Month",
+    "yearlyProjection": "Yearly Projection"
+  },
+  "wellness": {
+    "title": "Financial Wellness",
+    "subtitle": "Comprehensive tools to understand and improve your financial health",
+    "healthScore": "Health Score",
+    "excellent": "Excellent",
+    "good": "Good",
+    "fair": "Fair",
+    "poor": "Poor",
+    "survivalMonths": "Survival Months",
+    "targetMet": "Target met!",
+    "buildTo6": "Build to 6",
+    "savingsRate": "Savings Rate",
+    "above20": "Above 20% ✓",
+    "target20": "Target: 20%",
+    "riskAlerts": "Risk Alerts",
+    "allClear": "All clear",
+    "needAttention": "Need attention",
+    "cashFlow": "Cash Flow",
+    "cashFlowDesc": "Income vs expenses clarity",
+    "emergencyFund": "Emergency Fund",
+    "emergencyFundDesc": "Survival months calculator",
+    "goalDiscipline": "Goal Discipline",
+    "goalDisciplineDesc": "Track progress & leakages",
+    "lifestyleInflation": "Lifestyle Inflation",
+    "lifestyleInflationDesc": "Detect spending creep",
+    "riskGuardrails": "Risk Guardrails",
+    "riskGuardrailsDesc": "Monitor financial exposure",
+    "lifeEvents": "Life Events",
+    "lifeEventsDesc": "Plan for major milestones",
+    "trustHygiene": "Trust & Hygiene",
+    "trustHygieneDesc": "Nominees, coverage, structure",
+    "overallWellness": "Your overall financial wellness",
+    "tips": {
+      "title": "Financial Wellness Tips",
+      "trackDaily": "Track Daily",
+      "trackDailyDesc": "5 minutes of daily tracking prevents month-end surprises",
+      "automateSavings": "Automate Savings",
+      "automateSavingsDesc": "Set up SIPs and auto-transfers on salary day",
+      "reviewMonthly": "Review Monthly",
+      "reviewMonthlyDesc": "Schedule 30 minutes each month to review your finances"
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "account": "Account",
+    "profile": "Profile",
+    "profileDesc": "Manage your profile information",
+    "changePin": "Change PIN",
+    "changePinDesc": "Update your security PIN",
+    "privacy": "Privacy & Security",
+    "privacyDesc": "Manage your data and security settings",
+    "preferences": "Preferences",
+    "notifications": "Notifications",
+    "notificationsDesc": "Configure alerts and reminders",
+    "support": "Support",
+    "helpFaq": "Help & FAQ",
+    "helpFaqDesc": "Get help with using the app",
+    "dangerZone": "Danger Zone",
+    "logout": "Log Out",
+    "resetData": "Reset All Data",
+    "resetDataDesc": "Delete all your data permanently",
+    "logoutConfirm": "Are you sure you want to log out? You'll need to enter your PIN to access your data again.",
+    "resetConfirm": "This will permanently delete all your data including accounts, transactions, and settings. This action cannot be undone.",
+    "deleteEverything": "Delete Everything"
+  },
+  "common": {
+    "continue": "Continue",
+    "cancel": "Cancel",
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "add": "Add",
+    "remove": "Remove",
+    "next": "Next",
+    "back": "Back",
+    "done": "Done",
+    "skip": "Skip",
+    "finish": "Finish",
+    "seeAll": "See all",
+    "loading": "Loading...",
+    "somethingWrong": "Something went wrong. Please try again."
+  },
+  "mutualFunds": {
+    "tabs": {
+      "dashboard": "Dashboard",
+      "explore": "Explore",
+      "sips": "SIPs"
+    },
+    "dashboard": {
+      "greeting": "Good Morning, {{name}}",
+      "portfolioValue": "Total Portfolio Value",
+      "invested": "Invested",
+      "investmentAccounts": "{{n}} investment account",
+      "investmentAccounts_plural": "{{n}} investment accounts",
+      "totalAssets": "Total Assets",
+      "viewAnalysis": "View Analysis",
+      "investmentOverview": "Investment Overview",
+      "viewAll": "View All",
+      "currentValue": "Current Value",
+      "noInvestmentAccounts": "No investment accounts added yet.",
+      "recentTransactions": "Recent Transactions",
+      "noTransactions": "No investment transactions found.",
+      "accountTypes": {
+        "MUTUAL_FUND": "Mutual Funds",
+        "STOCKS": "Stocks",
+        "EPF": "EPF / NPS",
+        "FD": "Fixed Deposits",
+        "REAL_ESTATE": "Real Estate"
+      }
+    },
+    "explore": {
+      "title": "Explore Funds",
+      "subtitle": "Discover mutual funds by type or goal",
+      "featured": "Featured",
+      "lifeEventsTitle": "8 Life Events",
+      "lifeEventsDesc": "Plan the 8 biggest financial milestones — marriage, home, kids, retirement and more — with your own budget and timeline.",
+      "startPlanning": "Start planning",
+      "quickTools": "Quick Tools",
+      "tools": {
+        "events": { "title": "8 Events", "subtitle": "Plan life milestones" },
+        "calculators": { "title": "Calculators", "subtitle": "Tax, SIP & more" },
+        "snapshot": { "title": "Financial Snapshot", "subtitle": "Check your health score" }
+      },
+      "popularCollections": "Popular Collections",
+      "collections": {
+        "highReturn": { "label": "High Returns", "desc": "Funds with strong 3Y+ performance" },
+        "taxSaving": { "label": "Tax Saving (ELSS)", "desc": "Save up to ₹1.5L under Section 80C" },
+        "sip500": { "label": "SIP with ₹500", "desc": "Start small, build big over time" },
+        "lowRisk": { "label": "Low Risk", "desc": "Capital protection focused funds" },
+        "index": { "label": "Index Funds", "desc": "Track Nifty 50 or Sensex passively" },
+        "shortTerm": { "label": "Short Term", "desc": "Park money for 3–12 months" }
+      },
+      "fundTypes": "Fund Types",
+      "recommendedHorizon": "Recommended horizon:",
+      "risk": "{{level}} risk",
+      "funds": {
+        "equity": {
+          "name": "Equity",
+          "desc": "Invest in company stocks. High risk, high return potential over long horizon.",
+          "risk": "High",
+          "horizon": "5+ years"
+        },
+        "debt": {
+          "name": "Debt",
+          "desc": "Bonds and fixed income instruments. Stable returns with lower risk.",
+          "risk": "Low",
+          "horizon": "1–3 years"
+        },
+        "hybrid": {
+          "name": "Hybrid",
+          "desc": "Mix of equity and debt for a balanced risk-return profile.",
+          "risk": "Moderate",
+          "horizon": "3–5 years"
+        },
+        "elss": {
+          "name": "ELSS (Tax Saving)",
+          "desc": "Equity linked savings scheme. Offers 80C tax benefits with 3-yr lock-in.",
+          "risk": "High",
+          "horizon": "3+ years (locked)"
+        },
+        "index": {
+          "name": "Index",
+          "desc": "Passively track market indices like Nifty 50. Low cost, market returns.",
+          "risk": "Moderate",
+          "horizon": "5+ years"
+        },
+        "liquid": {
+          "name": "Liquid",
+          "desc": "Park surplus cash for very short durations. Better than savings accounts.",
+          "risk": "Very Low",
+          "horizon": "1 day – 3 months"
+        }
+      },
+      "connectTitle": "Connect your accounts",
+      "connectDesc": "Link your Groww, Zerodha, or bank account via Finvu to see personalised fund recommendations based on your actual portfolio."
+    },
+    "sips": {
+      "title": "SIPs",
+      "subtitle": "Your Systematic Investment Plans",
+      "activeSips": "Active SIPs",
+      "planActive": "plan active",
+      "plansActive": "plans active",
+      "monthlyInvestment": "Monthly Investment",
+      "yourSips": "Your SIPs",
+      "last": "Last:",
+      "next": "Next ~",
+      "perMonth": "per month",
+      "noSipsTitle": "No SIPs detected",
+      "noSipsDesc": "Link your bank account to auto-detect recurring SIP transactions from Groww, Zerodha, or any AMC.",
+      "sipHistory": "SIP History"
+    }
+  },
+  "expenseCategories": {
+    "grocery": "Grocery & Toiletries",
+    "rent": "House Rent, Maintenance",
+    "vehicle": "Vehicle - Fuel, Servicing",
+    "health": "Doctor Visits, Medicines",
+    "utilities": "Utilities",
+    "internet": "Internet & Mobile Plans",
+    "shopping": "Shopping, Gifts",
+    "dining": "Dining, Movies, Sports",
+    "travel": "Travel, Annual holidays",
+    "insurance": "Insurance",
+    "emi": "EMI & Loan Payments",
+    "personal": "Personal Expenses",
+    "untagged": "Untagged"
+  },
+  "accountTypes": {
+    "savings": "Savings",
+    "current": "Current",
+    "creditCard": "Credit Card",
+    "loan": "Loan",
+    "fixedDeposit": "Fixed Deposit",
+    "recurringDeposit": "Recurring Deposit",
+    "mutualFund": "Mutual Fund",
+    "stocks": "Stocks",
+    "realEstate": "Real Estate",
+    "gold": "Gold",
+    "epf": "EPF / PF"
+  }
+}

@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>8 Events Calculator - Step 1</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#10b981",
+            "primary-dark": "#059669",
+            "primary-light": "#ecfdf5",
+            "text-primary": "#111827",
+            "text-secondary": "#4b5563",
+            "text-tertiary": "#9ca3af",
+            "background-main": "#ffffff",
+            "background-subtle": "#f9fafb",
+            "surface-card": "#ffffff",
+            "surface-highlight": "#f3f4f6",
+            "border-light": "#e5e7eb",
+            "input-bg": "#ffffff",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "2xl": "1.5rem",
+            "full": "9999px"
+          },
+          boxShadow: {
+            'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+            'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #f3f4f6;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 2px;
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+
+    /* Hide couple fields by default */
+    .couple-fields {
+      display: none;
+    }
+
+    /* Income source other input animation */
+    .income-source-other,
+    .income-source-other-ui {
+      max-height: 0;
+      overflow: hidden;
+      opacity: 0;
+      transition: all 0.3s ease;
+      margin-top: 0;
+      display: none;
+    }
+
+    .income-source-other.show,
+    .income-source-other-ui.show {
+      max-height: 100px;
+      opacity: 1;
+      margin-top: 0.5rem;
+      display: block;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-text-primary font-display antialiased selection:bg-primary selection:text-white">
+  <div class="mx-auto max-w-md min-h-screen relative pb-28 shadow-2xl overflow-hidden bg-background-main">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-border-light px-4 py-3 shadow-sm">
+      <div class="flex items-center gap-3 mb-1">
+        <button class="p-2 -ml-2 rounded-full hover:bg-gray-100 text-text-primary transition-colors" onclick="window.location.href='../index.html'">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-lg font-bold leading-tight text-text-primary">Step 1: Your Details</h1>
+        </div>
+        <div class="text-xs font-semibold text-primary bg-primary-light px-2 py-1 rounded-full border border-primary/20">1 of 8</div>
+      </div>
+      <p class="text-sm text-text-secondary pl-10 leading-snug">Provide your basic details and income sources</p>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="px-6 py-4 flex justify-between gap-1.5 bg-background-main">
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex flex-col gap-6 px-4 bg-background-subtle pt-2 pb-6">
+      <!-- Your Basic Details -->
+      <section class="bg-surface-card rounded-2xl p-5 border border-border-light shadow-card">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-lg font-bold text-text-primary">Your Basic Details</h2>
+        </div>
+        <div class="flex bg-gray-100 p-1 rounded-xl mb-6 border border-gray-200">
+          <label class="flex-1 text-center cursor-pointer">
+            <input checked class="peer sr-only" name="familyMode" type="radio" value="individual" id="individual"/>
+            <span class="block py-2 px-4 rounded-lg text-sm font-medium text-gray-500 transition-all peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm peer-checked:font-semibold">Individual</span>
+          </label>
+          <label class="flex-1 text-center cursor-pointer">
+            <input class="peer sr-only" name="familyMode" type="radio" value="couple" id="couple"/>
+            <span class="block py-2 px-4 rounded-lg text-sm font-medium text-gray-500 transition-all peer-checked:bg-white peer-checked:text-primary peer-checked:shadow-sm peer-checked:font-semibold">Couple</span>
+          </label>
+        </div>
+
+        <!-- Individual Fields -->
+        <div class="individual-fields space-y-4">
+          <div class="grid grid-cols-1 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-text-secondary ml-1">Name</label>
+              <input id="fullName" class="w-full bg-input-bg border border-gray-300 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="Enter full name" type="text"/>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-text-secondary ml-1">Age</label>
+              <input id="age" class="w-full bg-input-bg border border-gray-300 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="Years" type="number"/>
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-text-secondary ml-1">Retirement Age</label>
+              <input id="retirementAge" class="w-full bg-input-bg border border-gray-300 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="60" type="number"/>
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-text-secondary ml-1">City</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-[20px]">location_on</span>
+              <input id="city" class="w-full bg-input-bg border border-gray-300 rounded-xl pl-11 pr-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="Enter city" type="text"/>
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-text-secondary ml-1">Marital Status</label>
+            <div class="relative">
+              <select id="maritalStatus" class="w-full bg-input-bg border border-gray-300 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors appearance-none shadow-sm bg-white">
+                <option value="">Select status</option>
+                <option value="Unmarried">Unmarried</option>
+                <option value="Married">Married</option>
+              </select>
+              <span class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined pointer-events-none">expand_more</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Couple Fields -->
+        <div class="couple-fields space-y-4">
+          <div class="grid grid-cols-1 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-text-secondary ml-1">Husband's Name</label>
+              <input id="husbandName" class="w-full bg-input-bg border border-gray-300 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="Enter husband's name" type="text"/>
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-text-secondary ml-1">Wife's Name</label>
+              <input id="wifeName" class="w-full bg-input-bg border border-gray-300 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="Enter wife's name" type="text"/>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-text-secondary ml-1">Husband's Age</label>
+              <input id="husbandAge" class="w-full bg-input-bg border border-gray-300 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="Years" type="number"/>
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-text-secondary ml-1">Wife's Age</label>
+              <input id="wifeAge" class="w-full bg-input-bg border border-gray-300 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="Years" type="number"/>
+            </div>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-text-secondary ml-1">Husband's Retirement Age</label>
+              <input id="husbandRetirementAge" class="w-full bg-input-bg border border-gray-300 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="60" type="number"/>
+            </div>
+            <div class="space-y-1.5">
+              <label class="text-xs font-semibold text-text-secondary ml-1">Wife's Retirement Age</label>
+              <input id="wifeRetirementAge" class="w-full bg-input-bg border border-gray-300 rounded-xl px-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="58" type="number"/>
+            </div>
+          </div>
+          <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-text-secondary ml-1">City</label>
+            <div class="relative">
+              <span class="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 material-symbols-outlined text-[20px]">location_on</span>
+              <input id="cityCouple" class="w-full bg-input-bg border border-gray-300 rounded-xl pl-11 pr-4 py-3 text-sm text-text-primary placeholder-text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors shadow-sm" placeholder="Enter city" type="text"/>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Sources of Income - Hidden table for data storage -->
+      <table style="display: none;">
+        <thead>
+          <tr id="income-header-individual">
+            <th>Source of Income</th>
+            <th>Amount (Per Month)</th>
+            <th></th>
+          </tr>
+          <tr id="income-header-couple" style="display: none;">
+            <th>Source of Income</th>
+            <th>Whose Income</th>
+            <th>Amount (Per Month)</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="income-tbody">
+          <!-- Income rows will be dynamically generated by JavaScript -->
+        </tbody>
+      </table>
+
+      <!-- Sources of Income - Visual Display -->
+      <section class="bg-surface-card rounded-2xl p-5 border border-border-light shadow-card">
+        <h2 class="text-lg font-bold text-text-primary mb-4">Sources of Income</h2>
+        <div class="flex flex-col gap-3">
+          <div id="income-list" class="flex flex-col gap-3">
+            <!-- Income cards will be rendered here by UI script -->
+          </div>
+          <button class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dashed border-primary/40 text-primary hover:bg-primary-light transition-colors font-semibold text-sm bg-white" id="add-income">
+            <span class="material-symbols-outlined text-[20px]">add</span>
+            Add Source of Income
+          </button>
+          <div class="mt-2 bg-gradient-to-r from-primary-light to-transparent p-4 rounded-xl border border-primary/20 flex justify-between items-center shadow-sm">
+            <span class="text-sm text-text-secondary font-medium">Total Monthly Income</span>
+            <span class="text-lg font-bold text-primary-dark" id="total-income-amount">₹0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Detailed Monthly Expenses - Hidden table for data storage -->
+      <table style="display: none;">
+        <tbody id="expenses-tbody">
+          <!-- Household Expenses -->
+          <tr>
+            <td data-subsection="household"><span>Grocery & Toiletries</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="household"><span>House Rent, Maintenance, Repair</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="household"><span>Vehicle - Fuel, Servicing</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="household"><span>Doctor Visits, Medicines</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="household"><span>Utilities (Electricity, Property tax)</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="household"><span>Maid, Laundry, Newspaper</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="household"><span>Gadgets - Mobile/TV devices</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="household"><span>Gadgets - Internet/Mobile plans</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <!-- Lifestyle Expenses -->
+          <tr>
+            <td data-subsection="lifestyle"><span>Clothes & Accessories</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="lifestyle"><span>Shopping, Gifts</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="lifestyle"><span>Dining, Movies, Sports</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="lifestyle"><span>Coach - Financial, Fitness</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="lifestyle"><span>Travel, Annual holidays</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="lifestyle"><span>Charity, Donations</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <tr>
+            <td data-subsection="lifestyle"><span>House renovations, Celebrations</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+          <!-- Dependent Expenses -->
+          <tr>
+            <td data-subsection="dependent"><span>Children school / college fees</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" /></td>
+          </tr>
+          <tr>
+            <td data-subsection="dependent"><span>Children pocket money</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" /></td>
+          </tr>
+          <tr>
+            <td data-subsection="dependent"><span>Contribution to parents, siblings</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" /></td>
+          </tr>
+          <!-- Misc -->
+          <tr>
+            <td data-subsection="misc"><span>Personal Expenses</span></td>
+            <td><input type="number" data-monthly /></td>
+            <td><input type="number" data-annual /></td>
+            <td><input type="checkbox" name="expenseRetirement[]" checked /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Detailed Monthly Expenses - Visual Card Display -->
+      <section class="bg-surface-card rounded-2xl border border-border-light overflow-hidden shadow-card" id="expenses-display">
+        <div class="p-5 pb-2">
+          <h2 class="text-lg font-bold text-text-primary">Detailed Monthly Expenses</h2>
+        </div>
+        <div class="divide-y divide-gray-100">
+          <!-- Household Expenses -->
+          <div class="bg-white">
+            <button class="w-full flex items-center justify-between p-5 text-left text-primary-dark font-semibold hover:bg-gray-50 transition-colors" onclick="toggleExpenseSection('household')">
+              <div class="flex items-center gap-3">
+                <span class="bg-primary-light border border-primary/10 p-2 rounded-lg text-primary material-symbols-outlined text-[20px]">home</span>
+                Household Expenses
+              </div>
+              <span class="material-symbols-outlined transition-transform rotate-180" id="household-icon">expand_more</span>
+            </button>
+            <div class="px-5 pb-5 space-y-3 bg-gray-50/50" id="household-expenses">
+              <!-- Items will be generated from hidden table -->
+            </div>
+          </div>
+
+          <!-- Lifestyle Expenses -->
+          <div>
+            <button class="w-full flex items-center justify-between p-5 text-left text-text-secondary hover:bg-gray-50 transition-colors" onclick="toggleExpenseSection('lifestyle')">
+              <div class="flex items-center gap-3">
+                <span class="bg-gray-100 p-2 rounded-lg text-gray-500 material-symbols-outlined text-[20px]">local_cafe</span>
+                Lifestyle Expenses
+              </div>
+              <span class="material-symbols-outlined text-gray-400" id="lifestyle-icon">expand_more</span>
+            </button>
+            <div class="px-5 pb-5 space-y-3 bg-gray-50/50 hidden" id="lifestyle-expenses">
+              <!-- Items will be generated from hidden table -->
+            </div>
+          </div>
+
+          <!-- Dependent Expenses -->
+          <div>
+            <button class="w-full flex items-center justify-between p-5 text-left text-text-secondary hover:bg-gray-50 transition-colors" onclick="toggleExpenseSection('dependent')">
+              <div class="flex items-center gap-3">
+                <span class="bg-gray-100 p-2 rounded-lg text-gray-500 material-symbols-outlined text-[20px]">family_restroom</span>
+                Dependent Expenses
+              </div>
+              <span class="material-symbols-outlined text-gray-400" id="dependent-icon">expand_more</span>
+            </button>
+            <div class="px-5 pb-5 space-y-3 bg-gray-50/50 hidden" id="dependent-expenses">
+              <!-- Items will be generated from hidden table -->
+            </div>
+          </div>
+
+          <!-- Misc Expenses -->
+          <div>
+            <button class="w-full flex items-center justify-between p-5 text-left text-text-secondary hover:bg-gray-50 transition-colors" onclick="toggleExpenseSection('misc')">
+              <div class="flex items-center gap-3">
+                <span class="bg-gray-100 p-2 rounded-lg text-gray-500 material-symbols-outlined text-[20px]">more_horiz</span>
+                Misc Expenses
+              </div>
+              <span class="material-symbols-outlined text-gray-400" id="misc-icon">expand_more</span>
+            </button>
+            <div class="px-5 pb-5 space-y-3 bg-gray-50/50 hidden" id="misc-expenses">
+              <!-- Items will be generated from hidden table -->
+            </div>
+          </div>
+        </div>
+        <div class="bg-gray-50 border-t border-gray-200 p-4 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-medium text-text-secondary">Total Current Monthly Expenses</span>
+            <span class="text-sm font-bold text-text-primary" id="total-current-monthly-text">₹0</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-xs font-medium text-text-secondary">Post-Retirement Monthly Expenses</span>
+            <span class="text-sm font-bold text-primary-dark" id="total-postret-monthly-text">₹0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Insurances - Hidden table -->
+      <table style="display: none;">
+        <tbody id="insurance-tbody">
+          <tr>
+            <td><input type="text" name="insPolicy[]" placeholder="e.g., Life Cover" /></td>
+            <td>
+              <select name="insType[]">
+                <option value="Term">Term</option>
+                <option value="Health">Health</option>
+                <option value="ULIP">ULIP</option>
+                <option value="Endowment">Endowment</option>
+              </select>
+            </td>
+            <td><input type="number" name="insSum[]" min="0" step="1" placeholder="1000000" /></td>
+            <td><input type="number" name="insPremium[]" min="0" step="1" placeholder="5000" /></td>
+            <td><input type="number" name="insTerm[]" min="0" step="1" placeholder="20" /></td>
+            <td>
+              <select name="insMode[]">
+                <option value="Monthly">Month</option>
+                <option value="Quarterly">Quarter</option>
+                <option value="Yearly">Year</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Insurances - Visual Display -->
+      <section class="bg-surface-card rounded-2xl p-5 border border-border-light shadow-card">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-text-primary">Insurances</h2>
+        </div>
+        <div id="insurance-list" class="flex flex-col gap-3">
+          <!-- Insurance items will be displayed here -->
+        </div>
+        <button class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dashed border-primary/40 text-primary hover:bg-primary-light transition-colors font-semibold text-sm bg-white mt-3" id="add-insurance">
+          <span class="material-symbols-outlined text-[20px]">add</span>
+          Add Insurance
+        </button>
+      </section>
+
+      <!-- Investments - Hidden table -->
+      <table style="display: none;">
+        <tbody id="investments-tbody">
+          <tr>
+            <td><input type="text" name="invName[]" placeholder="e.g., EPF" /></td>
+            <td><input type="number" name="invCurrent[]" min="0" step="1" placeholder="100000" /></td>
+            <td><input type="number" name="invReturn[]" min="0" step="0.1" placeholder="8" /></td>
+            <td><input type="number" name="invAmount[]" min="0" step="1" placeholder="1500" /></td>
+            <td>
+              <select name="invType[]">
+                <option value="Select">Select Type</option>
+                <option value="Equity MF">Equity MF</option>
+                <option value="Debt MF">Debt MF</option>
+                <option value="FD">FD</option>
+                <option value="PPF">PPF</option>
+                <option value="EPF">EPF</option>
+                <option value="Stocks">Stocks</option>
+              </select>
+            </td>
+            <td>
+              <select name="invMode[]">
+                <option value="Monthly">Monthly</option>
+                <option value="Quarterly">Quarterly</option>
+                <option value="Yearly">Yearly</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Existing Investments - Visual Display -->
+      <section class="bg-surface-card rounded-2xl p-5 border border-border-light shadow-card">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-text-primary">Existing Investments</h2>
+        </div>
+        <div class="flex flex-col gap-3" id="investment-list">
+          <!-- Investment items will be displayed here -->
+        </div>
+        <button class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dashed border-primary/40 text-primary hover:bg-primary-light transition-colors font-semibold text-sm bg-white mt-3" id="add-investment">
+          <span class="material-symbols-outlined text-[20px]">add</span>
+          Add Investment
+        </button>
+      </section>
+
+      <!-- Assets & Liabilities - Hidden table -->
+      <table style="display: none;">
+        <tbody id="assets-tbody">
+          <tr>
+            <td><input type="text" name="assetName[]" placeholder="e.g., Home Loan" /></td>
+            <td>
+              <select name="assetType[]">
+                <option value="Asset">Asset</option>
+                <option value="Liability">Liability</option>
+              </select>
+            </td>
+            <td><input type="number" name="assetValue[]" min="0" step="1" placeholder="Value" /></td>
+            <td><input type="number" name="assetEmi[]" min="0" step="1" placeholder="EMI" /></td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Assets & Liabilities - Visual Display -->
+      <section class="bg-surface-card rounded-2xl p-5 border border-border-light shadow-card">
+        <div class="flex items-center justify-between mb-4">
+          <h2 class="text-lg font-bold text-text-primary">Assets &amp; Liabilities</h2>
+        </div>
+        <div id="assets-list" class="flex flex-col gap-3">
+          <!-- Asset items will be displayed here -->
+        </div>
+        <button class="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-dashed border-primary/40 text-primary hover:bg-primary-light transition-colors font-semibold text-sm bg-white mt-3" id="add-asset">
+          <span class="material-symbols-outlined text-[20px]">add</span>
+          Add Item
+        </button>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40">
+      <div class="absolute inset-0 bg-white/80 backdrop-blur-lg border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"></div>
+      <div class="relative mx-auto max-w-md px-4 py-4 flex items-center gap-4">
+        <button class="flex-1 py-3.5 px-6 rounded-xl text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-gray-100 transition-colors" id="reset-form">
+          Reset
+        </button>
+        <button class="flex-[2] py-3.5 px-6 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-lg shadow-primary/30 transition-all active:scale-[0.98] flex items-center justify-center gap-2" id="go-next">
+          Next
+          <span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <script src="8-events.js"></script>
+  <script src="8-events-modals.js"></script>
+  <script src="8-events-ui.js"></script>
+</body>
+</html>

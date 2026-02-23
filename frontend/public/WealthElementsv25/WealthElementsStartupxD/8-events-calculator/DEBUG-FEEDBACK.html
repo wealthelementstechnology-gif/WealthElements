@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Debug Feedback Dialog</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 40px 20px;
+      max-width: 900px;
+      margin: 0 auto;
+      background: #f8f9fa;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    h1 { color: #2c3e50; margin-bottom: 10px; }
+    .subtitle { color: #7f8c8d; margin-bottom: 30px; }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover { background: #2980b9; }
+    .log {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+    .log-line { margin: 3px 0; }
+    .success { color: #2ecc71; }
+    .error { color: #e74c3c; }
+    .warning { color: #f39c12; }
+    .info { color: #3498db; }
+  </style>
+
+  <!-- Load ML scripts -->
+  <script src="outcome-tracker.js" defer></script>
+  <script src="ml-features.js" defer></script>
+  <script src="ml-model.js" defer></script>
+  <script src="step6-ml-integration.js" defer></script>
+</head>
+<body>
+  <div class="card">
+    <h1>🐛 Debug Feedback Dialog</h1>
+    <p class="subtitle">Testing if the feedback dialog can appear</p>
+
+    <button onclick="testFeedbackDialog()">🧪 Test Feedback Dialog</button>
+    <button onclick="checkConsoleLog()">📋 Check Console Logs</button>
+    <button onclick="simulateOptimization()">⚡ Simulate Full Optimization</button>
+
+    <div id="log" class="log"></div>
+  </div>
+
+  <script>
+    const logs = [];
+
+    function log(message, type = 'info') {
+      const time = new Date().toLocaleTimeString();
+      const color = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'info';
+      logs.push({ message: `[${time}] ${message}`, color });
+      updateLog();
+      console.log(message);
+    }
+
+    function updateLog() {
+      const logDiv = document.getElementById('log');
+      logDiv.innerHTML = logs.map(l =>
+        `<div class="log-line ${l.color}">${l.message}</div>`
+      ).join('');
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    // Intercept console.log to capture messages
+    const originalConsoleLog = console.log;
+    const originalConsoleWarn = console.warn;
+    const originalConsoleError = console.error;
+
+    console.log = function(...args) {
+      originalConsoleLog.apply(console, args);
+      log(args.join(' '), 'info');
+    };
+
+    console.warn = function(...args) {
+      originalConsoleWarn.apply(console, args);
+      log(args.join(' '), 'warning');
+    };
+
+    console.error = function(...args) {
+      originalConsoleError.apply(console, args);
+      log(args.join(' '), 'error');
+    };
+
+    function testFeedbackDialog() {
+      log('🧪 Testing feedback dialog directly...', 'info');
+
+      // Check if the function exists
+      if (typeof window.showOptimizationFeedbackDialog === 'undefined') {
+        log('❌ showOptimizationFeedbackDialog function not found on window', 'error');
+        log('   This function is inside step6-ml-integration.js IIFE, not exposed to window', 'warning');
+        log('   We need to test it differently...', 'info');
+
+        // Try to access internal functions (won't work, but let's check)
+        log('   Checking what IS available:', 'info');
+        log(`   - window.outcomeTracker: ${typeof window.outcomeTracker}`, 'info');
+        log(`   - window.mlModel: ${typeof window.mlModel}`, 'info');
+        log(`   - window.featureExtractor: ${typeof window.featureExtractor}`, 'info');
+        log(`   - window.optimizePlan: ${typeof window.optimizePlan}`, 'info');
+
+        return;
+      }
+
+      // If it somehow is exposed, call it
+      const testId = 'test_' + Date.now();
+      window.showOptimizationFeedbackDialog(testId);
+      log('✅ Dialog function called with test ID: ' + testId, 'success');
+    }
+
+    function checkConsoleLog() {
+      log('📋 Checking console for clues...', 'info');
+      log('   Open browser DevTools (F12) and check the "Console" tab', 'info');
+      log('   Look for messages like:', 'info');
+      log('   - "🤖 ML-Enhanced Optimization Starting..."', 'info');
+      log('   - "📊 Tracking optimization start..."', 'info');
+      log('   - "✅ Optimization tracked: opt_..."', 'info');
+      log('   If you DON\'T see these messages when clicking OPTIMIZE, the wrapper isn\'t working', 'warning');
+    }
+
+    function simulateOptimization() {
+      log('⚡ Simulating optimization flow...', 'info');
+
+      // Step 1: Check if optimizePlan exists
+      if (typeof window.optimizePlan !== 'function') {
+        log('❌ window.optimizePlan not found', 'error');
+        log('   This test needs step6.js to be loaded', 'warning');
+        return;
+      }
+
+      log('✅ window.optimizePlan found', 'success');
+
+      // Step 2: Create fake localStorage data
+      log('📝 Setting up fake user data...', 'info');
+
+      localStorage.setItem('we_step1', JSON.stringify({
+        age: 35,
+        monthlyIncome: 100000,
+        monthlyExpenses: 60000,
+        city: 'test',
+        familyStatus: 'married'
+      }));
+
+      localStorage.setItem('we_invest_rule', JSON.stringify({
+        riskProfile: 'moderate',
+        investmentBudget: 30000,
+        autoStepUp: 8
+      }));
+
+      localStorage.setItem('we_goals', JSON.stringify({
+        'Test Goal 1': {
+          name: 'Test Goal 1',
+          type: 'retirement',
+          priority: 'High',
+          fv: 5000000,
+          targetYear: 2050,
+          lump: 0,
+          sip: 15000,
+          yearsLeft: 25
+        }
+      }));
+
+      log('✅ Fake data created', 'success');
+
+      // Step 3: Try to call optimizePlan
+      log('🔄 Attempting to call window.optimizePlan()...', 'info');
+      log('   (This might fail if we don\'t have the full step6.html environment)', 'warning');
+
+      try {
+        // Check if function is wrapped
+        const fnString = window.optimizePlan.toString();
+        if (fnString.includes('ML-Enhanced')) {
+          log('✅ Function IS wrapped by ML integration', 'success');
+          log('   When you click OPTIMIZE in step6.html, you SHOULD see console messages', 'info');
+          log('   Expected messages:', 'info');
+          log('   1. "🤖 ML-Enhanced Optimization Starting..."', 'info');
+          log('   2. "📊 Tracking optimization start: {...}"', 'info');
+          log('   3. "✅ Optimization tracked: opt_..."', 'info');
+          log('   4. Feedback dialog should appear after 3 seconds total', 'info');
+        } else {
+          log('❌ Function is NOT wrapped', 'error');
+          log('   This means step6-ml-integration.js didn\'t successfully wrap it', 'error');
+        }
+      } catch (e) {
+        log(`❌ Error checking function: ${e.message}`, 'error');
+      }
+    }
+
+    // Auto-run checks on load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        log('🚀 Page loaded, running automatic checks...', 'info');
+        log('', 'info');
+
+        // Check 1: ML Integration
+        if (typeof window.optimizePlan === 'function') {
+          const fnString = window.optimizePlan.toString();
+          if (fnString.includes('ML-Enhanced')) {
+            log('✅ CHECK 1: optimizePlan is wrapped with ML tracking', 'success');
+          } else {
+            log('❌ CHECK 1: optimizePlan exists but NOT wrapped', 'error');
+          }
+        } else {
+          log('⚠️ CHECK 1: optimizePlan not found (need step6.js loaded)', 'warning');
+        }
+
+        // Check 2: Outcome Tracker
+        if (typeof window.outcomeTracker !== 'undefined') {
+          log('✅ CHECK 2: Outcome Tracker loaded', 'success');
+        } else {
+          log('❌ CHECK 2: Outcome Tracker not loaded', 'error');
+        }
+
+        // Check 3: ML Model
+        if (typeof window.mlModel !== 'undefined') {
+          log('✅ CHECK 3: ML Model loaded', 'success');
+        } else {
+          log('❌ CHECK 3: ML Model not loaded', 'error');
+        }
+
+        log('', 'info');
+        log('💡 INSTRUCTIONS:', 'info');
+        log('', 'info');
+        log('If all checks pass here but dialog still doesn\'t appear in step6.html:', 'info');
+        log('1. Open step6.html', 'info');
+        log('2. Press F12 (open console)', 'info');
+        log('3. Click OPTIMIZE button', 'info');
+        log('4. Watch console for these messages:', 'info');
+        log('   - "🤖 ML-Enhanced Optimization Starting..."', 'info');
+        log('   - "📊 Tracking optimization start: {...}"', 'info');
+        log('   - "✅ Optimization tracked: opt_..."', 'info');
+        log('', 'info');
+        log('If you DON\'T see those messages, the problem is the wrapper isn\'t being called.', 'warning');
+        log('If you DO see those messages but NO dialog, there\'s a JavaScript error preventing dialog creation.', 'warning');
+
+      }, 2000);
+    });
+  </script>
+</body>
+</html>

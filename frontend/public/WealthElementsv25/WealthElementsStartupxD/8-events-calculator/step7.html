@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 7: Growth Journey & Summary</title>
+  <link rel="stylesheet" href="../design-system.css" />
+  <link rel="stylesheet" href="8-events.css" />
+  <link rel="stylesheet" href="step7.css" />
+  <script src="../theme.js" defer></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="step7.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <button class="btn" id="back-step6">← Back</button>
+      <div>
+        <h1>Your Growth Journey &amp; Summary</h1>
+        <p class="subtitle">Complete recap, stacked SIP growth graph, and yearly projection.</p>
+      </div>
+    </header>
+
+    <section class="ins-cards">
+      <div class="card">
+        <div class="title">Life Insurance (Need)</div>
+        <div class="value" id="lifeNeed">₹0</div>
+      </div>
+      <div class="card">
+        <div class="title">Health Insurance (Need)</div>
+        <div class="value" id="healthNeed">₹0</div>
+      </div>
+    </section>
+
+    <section class="table-wrap">
+      <h2>Goal Investments (editable)</h2>
+      <table class="sip-table">
+        <thead>
+          <tr>
+            <th>Goal</th>
+            <th>Target Value (Future)</th>
+            <th>Lumpsum</th>
+            <th>Target Year</th>
+            <th>Tenure</th>
+            <th>Expected Return</th>
+            <th>Step-up</th>
+            <th>Monthly SIP</th>
+          </tr>
+        </thead>
+        <tbody id="goalsBody"></tbody>
+      </table>
+    </section>
+
+
+    <section class="projection">
+      <h2>Year-by-Year Projection</h2>
+      <div class="proj-scroll">
+        <table class="proj-table">
+          <thead id="projHead"></thead>
+          <tbody id="projBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="chart-wrap">
+      <div class="chart-header">
+        <h2>SIP Growth Journey</h2>
+        <button class="btn reset" id="resetChart">Reset Chart</button>
+      </div>
+      <canvas id="growthChart"></canvas>
+      <div id="legend" class="legend"></div>
+    </section>
+
+    <section class="whatif">
+      <h2>What‑If Analysis</h2>
+
+      <!-- Tab Navigation -->
+      <div class="whatif-tabs">
+        <button class="tab-btn active" data-tab="investment-cap">Investment Cap</button>
+        <button class="tab-btn" data-tab="job-loss">Job Loss</button>
+        <button class="tab-btn" data-tab="raise">Salary Raise</button>
+      </div>
+
+      <!-- Tab 1: Investment Cap (existing) -->
+      <div class="tab-content active" id="investment-cap">
+        <p class="muted">What if you can only invest a specific amount monthly? Enter it below to see the impact on your goals.</p>
+        <div class="controls">
+          <input type="number" id="whatIfCap" placeholder="e.g., 30000" />
+          <button class="btn" id="applyWhatIf">Apply</button>
+          <button class="btn" id="resetWhatIf">Reset</button>
+        </div>
+      </div>
+
+      <!-- Tab 2: Job Loss (new) -->
+      <div class="tab-content" id="job-loss">
+        <p class="muted">See the impact of temporary job loss on your goals and emergency fund.</p>
+        <div class="controls">
+          <div class="input-group">
+            <label for="jobLossMonths">Months without job:</label>
+            <input type="number" id="jobLossMonths" placeholder="e.g., 6" min="1" max="24" />
+          </div>
+          <div class="input-group">
+            <label for="jobLossAge">At what age:</label>
+            <input type="number" id="jobLossAge" placeholder="e.g., 30" min="18" max="100" />
+          </div>
+          <div class="button-group">
+            <button class="btn" id="applyJobLoss">Apply</button>
+            <button class="btn" id="resetJobLoss">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Salary Raise (new) -->
+      <div class="tab-content" id="raise">
+        <p class="muted">See how a salary raise accelerates your financial goals.</p>
+        <div class="controls">
+          <div class="input-group">
+            <label for="raisePercent">Raise %:</label>
+            <input type="number" id="raisePercent" placeholder="e.g., 20" min="1" max="200" />
+          </div>
+          <div class="input-group">
+            <label for="raiseAge">At what age:</label>
+            <input type="number" id="raiseAge" placeholder="e.g., 28" min="18" max="100" />
+          </div>
+          <div class="input-group">
+            <label for="raiseAllocation">Allocation:</label>
+            <select id="raiseAllocation">
+              <option value="proportional">Proportional to all SIPs</option>
+              <option value="wealth">100% to Wealth Creation</option>
+            </select>
+          </div>
+          <div class="button-group">
+            <button class="btn" id="applyRaise">Apply</button>
+            <button class="btn" id="resetRaise">Reset</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Summary (appears after Apply) -->
+      <div class="whatif-results" id="whatifResults" style="display: none;">
+        <h3>Impact Summary</h3>
+        <div id="resultsSummary"></div>
+      </div>
+    </section>
+  </main>
+  <div class="actions">
+    <button class="btn btn-lg" id="to-step8">Next →</button>
+  </div>
+</body>
+</html>
+
+

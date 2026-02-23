@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(mkdir:*)",
+      "Bash(start WealthElements-Complete-Documentation.html)",
+      "Bash(node -e:*)",
+      "Bash(start http://localhost:8080/snapshot.html)",
+      "Bash(ls:*)",
+      "Bash(node:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

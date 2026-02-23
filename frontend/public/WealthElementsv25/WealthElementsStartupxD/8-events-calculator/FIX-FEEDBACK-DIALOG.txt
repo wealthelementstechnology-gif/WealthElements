@@ -1,0 +1,290 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                                                                   ║
+║            ✅ FEEDBACK DIALOG FIX APPLIED                         ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+PROBLEM IDENTIFIED:
+══════════════════════════════════════════════════════════════════════
+
+The feedback dialog was not appearing after clicking OPTIMIZE.
+
+ROOT CAUSE:
+──────────────────────────────────────────────────────────────────────
+
+In step6.js line 1517, the OPTIMIZE button was set up like this:
+
+  optimizeBtn.addEventListener('click', optimizePlan);
+                                        ^^^^^^^^^^^
+                                        Direct reference!
+
+This created a DIRECT reference to the original optimizePlan function.
+
+When step6-ml-integration.js tried to wrap the function:
+
+  window.optimizePlan = function() {
+    // ML tracking wrapper
+    originalOptimizePlanFunction.call(this);
+  };
+
+The button STILL had the direct reference to the OLD function, so it
+was bypassing the wrapper entirely!
+
+Think of it like this:
+
+  OLD CODE:
+  ─────────
+  1. optimizePlan function created
+  2. Button points directly to optimizePlan ←─┐
+  3. window.optimizePlan = optimizePlan       │ Direct reference
+  4. ML wrapper replaces window.optimizePlan  │ stored here!
+  5. Button STILL points to original ─────────┘ (bypasses wrapper!)
+
+
+  NEW CODE:
+  ─────────
+  1. optimizePlan function created
+  2. window.optimizePlan = optimizePlan
+  3. ML wrapper replaces window.optimizePlan
+  4. Button calls window.optimizePlan() ←──────┐
+  5. Goes through wrapper! ────────────────────┘ (ML tracking works!)
+
+
+══════════════════════════════════════════════════════════════════════
+
+FIX APPLIED:
+══════════════════════════════════════════════════════════════════════
+
+Modified: step6.js (lines 1514-1527)
+
+BEFORE:
+───────
+  // Add event listener for optimize button
+  const optimizeBtn = document.getElementById('optimizeBtn');
+  if (optimizeBtn) {
+    optimizeBtn.addEventListener('click', optimizePlan);  // ❌ Direct reference
+  }
+
+  // Expose optimizePlan to window for ML integration
+  window.optimizePlan = optimizePlan;
+
+
+AFTER:
+──────
+  // Expose optimizePlan to window for ML integration (MUST be before addEventListener!)
+  window.optimizePlan = optimizePlan;
+
+  // Add event listener for optimize button
+  // Use arrow function to call window.optimizePlan (allows ML wrapper to intercept)
+  const optimizeBtn = document.getElementById('optimizeBtn');
+  if (optimizeBtn) {
+    optimizeBtn.addEventListener('click', function() {
+      // Call through window.optimizePlan so ML integration can wrap it
+      if (typeof window.optimizePlan === 'function') {
+        window.optimizePlan();  // ✅ Calls through window (ML wrapper intercepts!)
+      }
+    });
+  }
+
+
+KEY CHANGES:
+────────────
+
+1. Moved window.optimizePlan = optimizePlan BEFORE the button setup
+2. Changed addEventListener to call window.optimizePlan() instead of direct reference
+3. Added safety check: if (typeof window.optimizePlan === 'function')
+
+
+══════════════════════════════════════════════════════════════════════
+
+HOW TO TEST THE FIX:
+══════════════════════════════════════════════════════════════════════
+
+STEP 1: Open step6.html in browser
+──────────────────────────────────────────────────────────────────────
+
+1. Open step6.html in your browser (or refresh if already open)
+2. Press F12 to open console
+3. You should see within 1-2 seconds:
+   ✅ Step 6 ML Integration Active
+
+
+STEP 2: Click OPTIMIZE button
+──────────────────────────────────────────────────────────────────────
+
+1. Make sure you have goals set up in your plan
+2. Click the OPTIMIZE button
+3. Watch the console for these messages:
+
+   [Time] 🤖 ML-Enhanced Optimization Starting...
+   [Time] 📊 Tracking optimization start: {userProfile: {...}, ...}
+   [Time] Starting PRIORITY-BASED optimization attempt 1/3
+   [Time] ...optimization logic runs...
+   [Time] ✅ Optimization tracked: opt_1731260000000_xyz...
+
+
+STEP 3: Wait for feedback dialog (appears after ~3 seconds)
+──────────────────────────────────────────────────────────────────────
+
+After optimization completes, a dialog should pop up asking:
+
+  ┌─────────────────────────────────────────────────┐
+  │  📊 Help Us Improve                             │
+  │                                                 │
+  │  How do you feel about this optimization?      │
+  │                                                 │
+  │  ┌──────┐  ┌──────┐  ┌──────┐                 │
+  │  │  😊  │  │  🤔  │  │  😟  │                 │
+  │  │Looks │  │Accept│  │ Not  │                 │
+  │  │good! │  │able  │  │satis │                 │
+  │  └──────┘  └──────┘  └──────┘                 │
+  │                                                 │
+  │  [Text area for comments]                      │
+  │                                                 │
+  │  [Skip]              [Submit]                  │
+  └─────────────────────────────────────────────────┘
+
+
+STEP 4: Submit feedback
+──────────────────────────────────────────────────────────────────────
+
+1. Click one of the emoji options (😊/🤔/😟)
+2. Optionally add comments
+3. Click "Submit" button
+4. You should see: "✅ Thank you for your feedback!"
+5. Dialog closes automatically
+
+
+STEP 5: Verify data was saved
+──────────────────────────────────────────────────────────────────────
+
+In console, type:
+
+  window.outcomeTracker.getStatistics()
+
+Should show:
+
+  {
+    totalOptimizations: 1,
+    acceptedOptimizations: 1,  // (or 0 if you clicked 😟)
+    rejectedOptimizations: 0,  // (or 1 if you clicked 😟)
+    ...
+  }
+
+
+══════════════════════════════════════════════════════════════════════
+
+EXPECTED CONSOLE OUTPUT:
+══════════════════════════════════════════════════════════════════════
+
+When you click OPTIMIZE, you should see these messages in order:
+
+[12:34:56] 🤖 ML-Enhanced Optimization Starting...
+[12:34:56] 📊 Tracking optimization start: {userProfile: {…}, originalGoals: Array(3), ...}
+[12:34:56] Starting PRIORITY-BASED optimization attempt 1/3
+[12:34:56] 📏 Rule Constraints for Retirement: {type: 'retirement', maxTenureExtension: 1, ...}
+[12:34:56] 📏 Rule Constraints for Emergency Fund: {type: 'emergency', maxTenureExtension: 1, ...}
+[12:34:56] ... (optimization logic runs)
+[12:34:58] ✅ Optimization tracked: opt_1731260123456_abc123def456
+[12:34:59] (Feedback dialog appears on screen)
+
+
+══════════════════════════════════════════════════════════════════════
+
+IF IT STILL DOESN'T WORK:
+══════════════════════════════════════════════════════════════════════
+
+Problem: No console messages at all
+Fix: Hard refresh browser (Ctrl+Shift+R) to clear cached JavaScript
+
+Problem: See "🤖 ML-Enhanced..." but no feedback dialog
+Fix: Check for red error messages in console, copy exact error
+
+Problem: Dialog appears but looks broken
+Fix: Check if step6.css is interfering with dialog styles
+
+Problem: Dialog appears behind other elements
+Fix: Check z-index conflicts (dialog should have z-index: 9999)
+
+
+══════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING COMMANDS:
+══════════════════════════════════════════════════════════════════════
+
+Paste these into console to debug:
+
+// Check if button is calling the right function
+document.getElementById('optimizeBtn').onclick
+// Should show: null (we use addEventListener, not onclick)
+
+// Check if wrapper is active
+window.optimizePlan.toString().includes('ML-Enhanced')
+// Should return: true
+
+// Check tracking data after clicking OPTIMIZE
+window._mlTrackingData
+// Should show: {userProfile: {...}, originalGoals: [...], ...}
+
+// Check if dialog exists in DOM (after optimization completes)
+document.querySelector('.ml-feedback-dialog')
+// Should show: <div class="ml-feedback-dialog">...</div> or null
+
+// Get last optimization record
+window.outcomeTracker.getAllRecords().pop()
+// Should show the most recent optimization
+
+
+══════════════════════════════════════════════════════════════════════
+
+SUMMARY:
+══════════════════════════════════════════════════════════════════════
+
+The issue was a classic JavaScript closure problem:
+
+❌ PROBLEM: Button had direct reference to original function
+✅ SOLUTION: Button now calls through window.optimizePlan
+
+This allows the ML wrapper to intercept the call and add tracking.
+
+The fix is in step6.js lines 1514-1527.
+
+
+══════════════════════════════════════════════════════════════════════
+
+FILES MODIFIED:
+══════════════════════════════════════════════════════════════════════
+
+1. step6.js (lines 1514-1527)
+   - Moved window.optimizePlan assignment before addEventListener
+   - Changed button to call window.optimizePlan() instead of direct reference
+
+
+FILES CREATED FOR DEBUGGING:
+══════════════════════════════════════════════════════════════════════
+
+1. DEBUG-FEEDBACK.html
+   - Diagnostic tool to check ML integration status
+
+2. WHAT-TO-CHECK.txt
+   - Step-by-step debugging guide
+
+
+══════════════════════════════════════════════════════════════════════
+
+🎉 NOW TRY IT!
+══════════════════════════════════════════════════════════════════════
+
+1. Refresh step6.html (or do hard refresh: Ctrl+Shift+R)
+2. Press F12 (open console)
+3. Click OPTIMIZE
+4. Watch console for "🤖 ML-Enhanced Optimization Starting..."
+5. Wait for feedback dialog to appear (~3 seconds)
+6. Select emoji and submit feedback
+7. Verify data saved: window.outcomeTracker.getStatistics()
+
+
+The feedback dialog SHOULD appear now!
+
+
+══════════════════════════════════════════════════════════════════════

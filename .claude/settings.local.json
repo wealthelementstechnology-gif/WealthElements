@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm init:*)",
+      "Bash(npm install:*)",
+      "Bash(npm create:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npm run build:*)",
+      "Bash(node -c:*)",
+      "Bash(find:*)",
+      "WebFetch(domain:docs.finvu.in)",
+      "WebFetch(domain:finvu.github.io)",
+      "Bash(dir:*)",
+      "Bash(node -e:*)",
+      "Bash(grep:*)",
+      "Bash(python3:*)",
+      "Bash(ipconfig:*)",
+      "Bash(wc -l \"c:/Users/sumit/Downloads/MERN WEALTHELEMENTS/frontend/src/pages\"/**/*.jsx)",
+      "Bash(wc -l:*)"
+    ]
+  }
+}

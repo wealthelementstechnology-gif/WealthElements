@@ -1,0 +1,649 @@
+COMPLETE BUDGET OPTIMIZATION SYSTEM - LINE BY LINE EXPLANATION
+OVERVIEW
+The optimization system fits user's financial goals within their investment budget by:
+
+Increasing annual step-up rate (reduces SIP requirements)
+Reducing goal amounts (Future Value) based on priority
+Extending goal tenure (defer goals to reduce monthly SIP)
+Maximum Optimization Attempts: 3
+
+GLOBAL STATE VARIABLES (Lines 455-460)
+
+window.optimizationInProgress = false;  // Prevents concurrent optimization
+window.optimizationCompleted = false;   // Tracks if any optimization done
+window.optimizationCount = 0;           // Number of attempts (max 3)
+window.maxOptimizations = 3;            // Maximum allowed attempts
+window.stepUpOptimizationDone = false;  // Tracks if step-up already increased
+window.originalValues = {};             // Stores original values for reset
+KEY FUNCTIONS
+1. getInvestmentBudget() - Lines 18-69
+Purpose: Calculate how much user can invest monthly
+
+
+function getInvestmentBudget() {
+  // Load Step 1 data and investment rule
+  const data = JSON.parse(localStorage.getItem('we_step1') || '{}');
+  const investRule = getInvestRule();
+  
+  // Calculate monthly income
+  const monthlyIncome = (data.income || []).reduce((sum, item) => sum + (item.value || 0), 0);
+  
+  // Calculate monthly expenses
+  const monthlyExpenses = (data.expenses || []).reduce((sum, item) => {
+    return sum + (item.monthly || 0) + ((item.annual || 0) / 12);
+  }, 0);
+  
+  // Calculate existing EMIs from liabilities
+  const existingEMIs = (data.assets || []).reduce((sum, item) => {
+    return sum + ((item.type && item.type.toLowerCase() === 'liability') ? (item.emi || 0) : 0);
+  }, 0);
+  
+  // Budget = Income × Investment Percentage (default 30%)
+  const pct = investRule.pct || 30;
+  return (monthlyIncome * pct) / 100;
+}
+Formula:
+
+
+Investment Budget = Monthly Income × (Investment % / 100)
+2. getGoalConstraints() - Lines 199-220
+Purpose: Get optimization limits for each goal type
+
+
+function getGoalConstraints(goalName) {
+  // Try ML-based constraints first (if loaded)
+  if (typeof window.getGoalConstraintsML === 'function') {
+    return window.getGoalConstraintsML(goalName);
+  }
+
+  // Fallback to rule-based constraints
+  const name = goalName.toLowerCase();
+  
+  if (name.includes('emergency')) {
+    return { 
+      type: 'emergency', 
+      maxTenureExtension: 1,      // Max 1 year extension
+      maxAmountReduction: 0.3,    // Max 30% reduction
+      source: 'rule_based' 
+    };
+  } 
+  else if (name.includes('retire')) {
+    return { 
+      type: 'retirement', 
+      maxTenureExtension: 1,      // Max 1 year extension
+      maxAmountReduction: 0.2,    // Max 20% reduction
+      source: 'rule_based' 
+    };
+  } 
+  else if (name.includes('marriage') || name.includes('wedding')) {
+    return { 
+      type: 'marriage', 
+      maxTenureExtension: 1,      // Max 1 year extension
+      maxAmountReduction: 0.25,   // Max 25% reduction
+      source: 'rule_based' 
+    };
+  } 
+  else if (name.includes('education') || name.includes('child') || name.includes('children')) {
+    return { 
+      type: 'education', 
+      maxTenureExtension: 1,      // Max 1 year extension
+      maxAmountReduction: 0.25,   // Max 25% reduction
+      source: 'rule_based' 
+    };
+  } 
+  else {
+    return { 
+      type: 'other', 
+      maxTenureExtension: 5,      // Max 5 year extension
+      maxAmountReduction: 0.5,    // Max 50% reduction
+      source: 'rule_based' 
+    };
+  }
+}
+Constraints Summary Table:
+
+Goal Type	Max Amount Reduction	Max Tenure Extension
+Emergency	30%	1 year
+Retirement	20%	1 year
+Marriage/Wedding	25%	1 year
+Education/Child	25%	1 year
+Other (House, Car, Vacation, etc.)	50%	5 years
+3. rowSipFor() - Lines 238-274
+Purpose: Calculate SIP needed for a goal using binary search
+
+
+function rowSipFor(futureValue, yearsLeft, lumpsum, customStepUp = null, isEmergencyFund = false) {
+  // Get expected annual return based on horizon
+  const annR = preRetAnnualReturn(yearsLeft, isEmergencyFund);
+  const i = annR / 12;                    // Monthly rate
+  const n = Math.max(1, yearsLeft * 12);  // Total months
+  
+  // Get step-up rate (default from investRule, or custom)
+  const stepUp = customStepUp !== null 
+    ? customStepUp 
+    : Math.min(0.10, Math.max(0, parseFloat(investRule.autoStepUp || '0') / 100));
+  
+  // Calculate Future Value of lumpsum investment
+  const fvLump = Math.max(0, (lumpsum || 0)) * Math.pow(1 + i, n);
+  
+  // Amount needed from SIP (after lumpsum contribution)
+  const need = Math.max(0, futureValue - fvLump);
+  
+  // If lumpsum is sufficient, no SIP needed
+  if (need <= 0) return 0;
+  
+  // Inner function: Calculate FV from a given initial SIP
+  function fvFromSip(initialSip) {
+    if (n <= 0) return 0;
+    
+    let totalFV = 0;
+    const totalYears = Math.ceil(n / 12);
+    
+    for (let year = 0; year < totalYears; year++) {
+      const monthsInYear = Math.min(12, n - year * 12);
+      // SIP increases by step-up % each year
+      const sipForThisYear = initialSip * Math.pow(1 + stepUp, year);
+      
+      // Compound each month's contribution
+      for (let month = 0; month < monthsInYear; month++) {
+        const monthsRemaining = n - (year * 12 + month);
+        const futureValue = sipForThisYear * Math.pow(1 + i, monthsRemaining);
+        totalFV += futureValue;
+      }
+    }
+    return totalFV;
+  }
+  
+  // BINARY SEARCH to find initial SIP
+  let lo = 0;
+  let hi = (need > 0 ? need / n * 20 + 10000 : 0);
+  
+  for (let k = 0; k < 100; k++) {
+    const mid = (lo + hi) / 2;
+    const got = fvFromSip(mid);
+    
+    // If within ₹1000 tolerance, return this SIP
+    if (Math.abs(got - need) < 1000) return mid;
+    
+    if (got >= need) hi = mid;
+    else lo = mid;
+  }
+  
+  return hi;
+}
+Algorithm Explanation:
+
+Calculate monthly return rate from annual return
+Calculate how much lumpsum will grow to
+Calculate remaining amount needed from SIP
+Use binary search (100 iterations max) to find initial SIP
+Each iteration calculates FV with step-up applied annually
+Stop when within ₹1000 of target
+MAIN OPTIMIZATION FUNCTION: optimizePlan() - Lines 473-1519
+Phase 0: Pre-checks (Lines 473-551)
+
+function optimizePlan() {
+  // Prevent concurrent optimization
+  if (window.optimizationInProgress) {
+    console.log('Optimization already in progress, skipping...');
+    return;
+  }
+
+  // Check if max attempts reached
+  if (window.optimizationCount >= window.maxOptimizations) {
+    alert('Maximum optimization attempts reached (3). Please use the RESET button to start over.');
+    return;
+  }
+
+  // Mark as in progress and increment counter
+  window.optimizationInProgress = true;
+  window.optimizationCount++;
+
+  // Get budget
+  const budget = getInvestmentBudget();
+  if (budget <= 0) {
+    alert('No investment budget found. Please complete the previous steps first.');
+    window.optimizationInProgress = false;
+    return;
+  }
+
+  // Collect all goals with their data
+  const goalsData = [];
+  Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
+    const name = tr.querySelector('td').textContent;
+    const fv = parseFloat(tr.querySelector('input[data-fv]').value) || 0;
+    const lump = parseFloat(tr.querySelector('input[data-lump]').value) || 0;
+    const targetYear = parseInt(tr.querySelector('input[data-year]').value) || nowYear;
+    const yLeft = Math.max(0, targetYear - nowYear);
+    const isEmergencyFund = name.toLowerCase().includes('emergency');
+    const sip = rowSipFor(fv, yLeft, lump, null, isEmergencyFund);
+    
+    // Get priority (High for retirement/emergency, else from stored goals)
+    let priority = 'Medium';
+    if (name.toLowerCase().includes('retire') || name.toLowerCase().includes('emergency')) {
+      priority = 'High';
+    } else {
+      const storedGoal = goals.find(g => g.name === name);
+      if (storedGoal) priority = storedGoal.priority;
+    }
+    
+    goalsData.push({ tr, name, fv, lump, yLeft, targetYear, sip, priority, fvInput, yearInput, isEmergencyFund });
+  });
+
+  // Calculate current total SIP
+  let currentTotal = goalsData.reduce((sum, g) => sum + g.sip, 0);
+
+  // If already within budget, no optimization needed
+  if (currentTotal <= budget) {
+    alert('Your current plan already fits within your budget!');
+    window.optimizationInProgress = false;
+    return;
+  }
+
+  // Calculate shortfall
+  const shortfall = currentTotal - budget;
+
+  // Separate goals by priority
+  const highPriorityGoals = goalsData.filter(g => g.priority === 'High');
+  const mediumPriorityGoals = goalsData.filter(g => g.priority === 'Medium');
+  const lowPriorityGoals = goalsData.filter(g => g.priority === 'Low');
+}
+Phase 1: Step-Up Increase (Lines 567-649) - FIRST ATTEMPT ONLY
+Triggered: Only on first optimization attempt (window.optimizationCount === 1)
+
+
+// STEP 0: Increase step-up rate from 8% to 10%
+const currentStepUp = parseFloat(investRule.autoStepUp || 8);
+const maxStepUp = 10;
+
+// Only if not already at 10%
+if (window.optimizationCount === 1 && !stepUpAlreadyApplied) {
+  const newStepUp = maxStepUp;  // Jump directly to 10%
+  investRule.autoStepUp = newStepUp;
+  
+  // Save to localStorage
+  localStorage.setItem('we_invest_rule', JSON.stringify(investRule));
+  window.stepUpOptimizationDone = true;
+  
+  // Re-render and recalculate all SIPs with new step-up
+  setTimeout(() => {
+    render();
+    Array.from(tbody.querySelectorAll('tr')).forEach(tr => recalcSipForRow(tr));
+    recalc();
+    
+    // Check if step-up increase was enough
+    let newTotal = /* calculate total SIP */;
+    
+    if (newTotal <= budget) {
+      // SUCCESS - optimization complete
+      optExplain.innerHTML = '✅ Optimized Successfully!';
+    } else {
+      // Still over budget - need more optimization
+      optExplain.innerHTML = '⚠️ Partially Optimized - click Optimize again';
+    }
+  }, 100);
+  
+  return;  // Exit - step-up optimization complete
+}
+Why Step-Up Helps:
+
+Higher annual step-up = lower initial SIP needed
+If you increase SIP by 10% every year (vs 8%), you need less starting SIP to reach same goal
+Example: ₹10L goal in 10 years
+8% step-up: ₹4,500/month initial SIP
+10% step-up: ₹4,200/month initial SIP (saves ₹300/month)
+Phase 2: Priority-Based Amount Reduction (Lines 651-863) - ITERATIVE
+Logic: Reduce goal amounts iteratively until within budget
+
+
+// Define critical vs aspirational goals
+const isCriticalGoal = (goalName) => {
+  const name = goalName.toLowerCase();
+  return name.includes('retire') || 
+         name.includes('emergency') ||
+         name.includes('marriage') || 
+         name.includes('wedding') ||
+         name.includes('education') || 
+         name.includes('school') || 
+         name.includes('college') ||
+         name.includes('child');
+};
+
+// Store original FV values to track cumulative reductions
+const originalFVs = {};
+allGoals.forEach(g => {
+  originalFVs[g.name] = parseFloat(g.fvInput.value) || 0;
+});
+
+// Target: 550rs below budget (to maximize utilization)
+const targetTotal = budget - 550;
+
+// ITERATIVE REDUCTION LOOP
+let iterations = 0;
+const maxIterations = 30;
+
+while ((currentTotal > budget || (budget - currentTotal) > 600) && iterations < maxIterations) {
+  iterations++;
+  
+  // Recalculate current total
+  currentTotal = /* sum of all SIPs */;
+  
+  // Success condition: within budget and within 500-600rs buffer
+  if (currentTotal <= budget && (budget - currentTotal) <= 600) {
+    break;
+  }
+  
+  // Calculate how much to reduce
+  const stillNeedToReduce = currentTotal - targetTotal;
+  
+  // DISTRIBUTION: 60% Low, 30% Medium, 10% High
+  const lowPriorityReduction = stillNeedToReduce * 0.60;
+  const mediumPriorityReduction = stillNeedToReduce * 0.30;
+  const highPriorityReduction = stillNeedToReduce * 0.10;
+Reduction Logic for Each Priority:
+LOW PRIORITY Goals (Lines 745-777):
+
+
+lowPriorityGoalsList.forEach(goal => {
+  if (goal.sip <= 0) return;
+  
+  const currentFV = parseFloat(goal.fvInput.value) || 0;
+  const originalFV = originalFVs[goal.name] || currentFV;
+  const cumulativeReductionPercent = (originalFV - currentFV) / originalFV;
+  
+  // Critical goals have lower limits
+  const isCritical = isCriticalGoal(goal.name);
+  const maxTotalReductionPercent = isCritical ? 0.30 : 0.70;  // 30% vs 70%
+  const maxReductionPercentThisIteration = isCritical ? 0.05 : 0.15;  // 5% vs 15%
+  
+  // Skip if already at max reduction
+  if (cumulativeReductionPercent >= maxTotalReductionPercent) return;
+  
+  // Calculate proportional reduction from Low priority pool
+  const goalProportion = totalLowSip > 0 ? goal.sip / totalLowSip : 0;
+  const proportionalReduction = lowPriorityReduction * goalProportion;
+  const targetReduction = Math.min(proportionalReduction, goal.sip * maxReductionPercentThisIteration);
+  
+  // Apply reduction
+  const remainingAllowedReduction = maxTotalReductionPercent - cumulativeReductionPercent;
+  const finalReductionPercentage = Math.min(targetReduction / goal.sip, remainingAllowedReduction);
+  
+  if (finalReductionPercentage > 0.001) {
+    const newFV = Math.max(0, currentFV * (1 - finalReductionPercentage));
+    goal.fvInput.value = Math.round(newFV);
+    recalcSipForRow(goal.tr);  // Recalculate SIP for this row
+  }
+});
+MEDIUM PRIORITY Goals (Lines 779-812):
+
+Same logic as Low Priority
+Max Total Reduction: 15% (critical) or 45% (aspirational)
+Max Per Iteration: 3% (critical) or 8% (aspirational)
+HIGH PRIORITY Goals (Lines 814-847):
+
+Same logic as Low/Medium Priority
+Max Total Reduction: 5% (critical) or 20% (aspirational)
+Max Per Iteration: 1% (critical) or 3% (aspirational)
+Reduction Limits Summary Table
+Priority	Goal Type	Max Total Reduction	Max Per Iteration
+Low	Critical (Retirement, Emergency, Marriage, Education)	30%	5%
+Low	Aspirational (House, Car, Vacation, etc.)	70%	15%
+Medium	Critical	15%	3%
+Medium	Aspirational	45%	8%
+High	Critical	5%	1%
+High	Aspirational	20%	3%
+Phase 3: Additional Aggressive Reduction (Lines 865-935)
+Triggered: If still over budget after iterative reduction
+
+
+// Step 2: Reduce Low Priority ASPIRATIONAL goals more (up to 50% more)
+if (remainingShortfall > 0 && lowPriorityGoals.length > 0) {
+  const aspirationalLowGoals = lowPriorityGoals.filter(g => !isCriticalGoal(g.name));
+  
+  aspirationalLowGoals.forEach(goal => {
+    if (remainingShortfall <= 0) return;
+    
+    const targetReduction = Math.min(proportionalReduction, goal.sip * 0.50);  // Up to 50% more
+    const newFV = goal.fv * (1 - reductionPercentage);
+    goal.fvInput.value = Math.round(newFV);
+    recalcSipForRow(goal.tr);
+    
+    remainingShortfall -= actualReduction;
+  });
+}
+
+// Step 3: Reduce Medium Priority ASPIRATIONAL goals more (up to 35% more)
+if (remainingShortfall > 0 && mediumPriorityGoals.length > 0) {
+  const aspirationalMediumGoals = mediumPriorityGoals.filter(g => !isCriticalGoal(g.name));
+  
+  aspirationalMediumGoals.forEach(goal => {
+    // ... same logic with 35% max reduction
+  });
+}
+Phase 4: Tenure Extension (Lines 937-1068)
+Triggered: If still over budget after amount reduction
+
+PROTECTED GOALS (Never Extended):
+
+Retirement
+Emergency
+Marriage/Wedding
+Education/School/College
+
+// Step 4: Defer High Priority goals (max 1 year)
+if (remainingShortfall > 0 && highPriorityGoals.length > 0) {
+  highPriorityGoals.forEach(goal => {
+    if (remainingShortfall <= 0) return;
+    
+    // STRICT: Never extend protected goals
+    const goalNameLower = goal.name.toLowerCase();
+    if (goalNameLower.includes('retire') ||
+        goalNameLower.includes('emergency') ||
+        goalNameLower.includes('marriage') ||
+        goalNameLower.includes('wedding') ||
+        goalNameLower.includes('education') ||
+        goalNameLower.includes('school') ||
+        goalNameLower.includes('college')) {
+      return;  // Skip this goal
+    }
+    
+    const maxExtension = 1;  // High priority: max 1 year
+    for (let ext = 1; ext <= maxExtension && remainingShortfall > 0; ext++) {
+      const newTargetYear = goal.targetYear + ext;
+      goal.yearInput.value = newTargetYear;
+      recalcSipForRow(goal.tr);
+      
+      // Calculate reduction achieved
+      const newSip = /* get new SIP */;
+      const reduction = goal.sip - newSip;
+      
+      if (reduction > 0) {
+        remainingShortfall -= reduction;
+        goal.sip = newSip;
+        break;
+      }
+    }
+  });
+}
+
+// Step 5: Defer Medium Priority goals (max 2 years)
+// Same logic with maxExtension = 2
+
+// Step 6: Defer Low Priority goals (max 4 years)
+// Same logic with maxExtension = 4
+Tenure Extension Limits:
+
+Priority	Max Extension
+High	1 year
+Medium	2 years
+Low	4 years
+Phase 5: Save Results (Lines 1148-1169)
+
+// Save optimized plan to localStorage
+const save = [];
+Array.from(tbody.querySelectorAll('tr')).forEach(tr => {
+  const name = tr.querySelector('td').textContent;
+  const fv = parseFloat(tr.querySelector('input[data-fv]').value) || 0;
+  const lump = parseFloat(tr.querySelector('input[data-lump]').value) || 0;
+  const targetYear = parseInt(tr.querySelector('input[data-year]').value);
+  const yLeft = Math.max(0, targetYear - nowYear);
+  const sip = parseFloat(tr.querySelector('[data-sip]').textContent.replace(/[^0-9.]/g,'')) || 0;
+  
+  if (!/retire/i.test(name)) {
+    // Regular goals → we_plan_goals
+    save.push({ name, fv, lumpsum: lump, targetYear, yearsLeft: yLeft, sip });
+  } else {
+    // Retirement → we_step4_retirement
+    const updatedRetirement = { ...retirement, sip, corpus: fv, nToRet: yLeft };
+    localStorage.setItem('we_step4_retirement', JSON.stringify(updatedRetirement));
+  }
+});
+localStorage.setItem('we_plan_goals', JSON.stringify(save));
+COMPLETE OPTIMIZATION FLOW DIAGRAM
+
+┌─────────────────────────────────────────────────────────────────────────┐
+│                      USER CLICKS "OPTIMIZE"                             │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PRE-CHECKS                                                             │
+│  • Is optimization already running? → Exit                              │
+│  • Is optimizationCount >= 3? → Alert "Max reached" → Exit              │
+│  • Is currentTotal <= budget? → Alert "Already fits" → Exit             │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                                    ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  COLLECT GOAL DATA                                                      │
+│  • For each goal: name, fv, lump, yearsLeft, targetYear, sip, priority  │
+│  • Separate into: highPriorityGoals, mediumPriorityGoals, lowPriority   │
+│  • Calculate shortfall = currentTotal - budget                          │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                    ┌───────────────┴───────────────┐
+                    │    Is this FIRST attempt?     │
+                    └───────────────────────────────┘
+                         │ YES              │ NO
+                         ▼                  ▼
+┌────────────────────────────────┐  ┌──────────────────────────────────────┐
+│  PHASE 1: STEP-UP INCREASE     │  │  SKIP STEP-UP (already done)         │
+│  • Increase from 8% to 10%     │  │                                      │
+│  • Save to localStorage        │  │                                      │
+│  • Re-render all goals         │  │                                      │
+│  • Recalculate all SIPs        │  │                                      │
+│  • Check if within budget      │  │                                      │
+│    → YES: DONE                 │  │                                      │
+│    → NO: Show "Optimize again" │  │                                      │
+│  • EXIT (return)               │  │                                      │
+└────────────────────────────────┘  └──────────────────────────────────────┘
+                                                     │
+                                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 2: ITERATIVE PRIORITY-BASED REDUCTION                            │
+│  Target: budget - 550 (maximize utilization)                            │
+│  Max iterations: 30                                                     │
+│                                                                         │
+│  LOOP while (overBudget OR bufferTooLarge):                             │
+│    • Distribution: 60% Low, 30% Medium, 10% High                        │
+│                                                                         │
+│    LOW PRIORITY:                                                        │
+│    ├── Critical goals: max 30% total, 5% per iteration                  │
+│    └── Aspirational: max 70% total, 15% per iteration                   │
+│                                                                         │
+│    MEDIUM PRIORITY:                                                     │
+│    ├── Critical goals: max 15% total, 3% per iteration                  │
+│    └── Aspirational: max 45% total, 8% per iteration                    │
+│                                                                         │
+│    HIGH PRIORITY:                                                       │
+│    ├── Critical goals: max 5% total, 1% per iteration                   │
+│    └── Aspirational: max 20% total, 3% per iteration                    │
+│                                                                         │
+│  END LOOP when within 500-600rs of budget                               │
+└─────────────────────────────────────────────────────────────────────────┘
+                                    │
+                         Still over budget?
+                         │ YES              │ NO
+                         ▼                  ▼
+┌────────────────────────────────┐  ┌──────────────────────────────────────┐
+│  PHASE 3: AGGRESSIVE REDUCTION │  │  SKIP PHASE 3                        │
+│  • Low Priority Aspirational:  │  │                                      │
+│    additional 50% reduction    │  │                                      │
+│  • Medium Priority Aspirational│  │                                      │
+│    additional 35% reduction    │  │                                      │
+└────────────────────────────────┘  └──────────────────────────────────────┘
+                    │                                │
+                    ▼                                │
+         Still over budget?                          │
+                    │ YES                            │
+                    ▼                                │
+┌────────────────────────────────┐                   │
+│  PHASE 4: TENURE EXTENSION     │                   │
+│  PROTECTED (never extended):   │                   │
+│  • Retirement                  │                   │
+│  • Emergency                   │                   │
+│  • Marriage/Wedding            │                   │
+│  • Education/School/College    │                   │
+│                                │                   │
+│  High Priority: max 1 year     │                   │
+│  Medium Priority: max 2 years  │                   │
+│  Low Priority: max 4 years     │                   │
+└────────────────────────────────┘                   │
+                    │                                │
+                    └────────────────┬───────────────┘
+                                     ▼
+┌─────────────────────────────────────────────────────────────────────────┐
+│  PHASE 5: FINALIZE & SAVE                                               │
+│  • Recalculate total SIP                                                │
+│  • Update UI with results                                               │
+│  • Save to localStorage:                                                │
+│    - we_plan_goals (regular goals)                                      │
+│    - we_step4_retirement (retirement goal)                              │
+│  • Update optimize button:                                              │
+│    - If within budget: "✅ OPTIMIZED"                                   │
+│    - If still over & attempts left: "🎯 OPTIMIZE AGAIN (X left)"       │
+│    - If max attempts: "⛔ MAX ATTEMPTS REACHED"                         │
+│  • Show reset button                                                    │
+└─────────────────────────────────────────────────────────────────────────┘
+RESET FUNCTIONALITY (Lines 1537-1564)
+
+function resetOptimization() {
+  // Reset all state variables
+  window.optimizationInProgress = false;
+  window.optimizationCompleted = false;
+  window.optimizationCount = 0;
+  window.stepUpOptimizationDone = false;
+  
+  // Hide reset button
+  resetBtn.style.display = 'none';
+  
+  // Clear explanation text
+  optExplain.innerHTML = 'Your plan is optimized to fit your budget. Details will appear here.';
+  
+  // Restore original values (from window.originalValues)
+  restoreOriginalValues();
+}
+ML INTEGRATION (step6-ml-integration.js)
+When ML is loaded, window.optimizePlan is wrapped:
+
+
+window.optimizePlan = async function() {
+  // 1. Preload ML constraints for all goals
+  await preloadMLConstraints();
+  
+  // 2. Track state BEFORE optimization
+  trackOptimizationStart();
+  
+  // 3. Call original optimization
+  originalOptimizePlanFunction();
+  
+  // 4. Track state AFTER optimization
+  setTimeout(trackOptimizationComplete, 2000);
+};
+ML provides personalized maxAmountReduction and maxTenureExtension based on:
+
+User demographics (age, income, family status)
+Goal type and priority
+Historical data from similar users
+Budget stress indicators
+This complete documentation should allow your AI to clone the budget optimization system exactly.

@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 8: Investment Allocation</title>
+  <link rel="stylesheet" href="../design-system.css" />
+  <link rel="stylesheet" href="8-events.css" />
+  <link rel="stylesheet" href="step8.css" />
+  <script src="../theme.js" defer></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="step8.js" defer></script>
+</head>
+<body>
+  <!-- Fullscreen Loading Animation -->
+  <div class="fullscreen-loader" id="fullscreen-loader">
+    <div class="loader-content">
+      <div class="loader-spinner"></div>
+      <h2 class="loader-title">Generating Your Investment Plan</h2>
+      <p class="loader-subtitle">Analyzing your goals and calculating optimal allocations...</p>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <main class="container">
+    <header class="page-header">
+      <button class="btn" id="back-step7">← Back</button>
+      <div>
+        <h1>Step 8: Investment Allocation</h1>
+        <p class="subtitle">Personalized portfolio recommendations tailored for each of your goals.</p>
+      </div>
+    </header>
+
+    <section class="allocation-summary">
+      <div class="summary-card">
+        <h2>Allocation Strategy</h2>
+        <p>Goals with similar tenure are grouped together to optimize allocation. Each group gets 2-3 funds maximum, keeping your plan simple and aligned with expected returns.</p>
+        <p><strong>Note:</strong> Even if you have lumpsum investments for certain goals, you still need to allocate that money into appropriate funds. The allocation shows you where to invest your lumpsum amount.</p>
+      </div>
+    </section>
+
+    <!-- Risk Profile Helper Message -->
+    <div class="risk-helper-message">
+      <p>Don't know your risk appetite? <a href="#" id="open-risk-quiz" class="risk-quiz-link">Click here to find out!</a></p>
+    </div>
+
+    <section class="allocation-container" id="allocation-container">
+      <div class="loader" id="allocation-loader">
+        <div class="spinner"></div>
+        <p>Generating your personalized portfolio...</p>
+      </div>
+    </section>
+
+    <div class="actions center">
+      <button class="btn btn-lg" id="back-to-dashboard">Back to Dashboard</button>
+    </div>
+
+  </main>
+
+  <!-- Risk Profiling Questionnaire Modal -->
+  <div id="risk-quiz-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content modal-content-large risk-quiz-modal">
+      <div class="modal-header">
+        <h3>Risk Profile Questionnaire</h3>
+        <button class="modal-close" id="close-risk-quiz">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="risk-quiz-form">
+          <!-- Section 1: Investment Objectives -->
+          <div class="quiz-section">
+            <h4>1. Investment Objectives</h4>
+
+            <div class="quiz-question">
+              <label>Primary investment goal?</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q1" value="1" required> Capital protection</label>
+                <label><input type="radio" name="q1" value="2"> Income generation</label>
+                <label><input type="radio" name="q1" value="4"> Wealth creation</label>
+                <label><input type="radio" name="q1" value="5"> Aggressive growth</label>
+              </div>
+            </div>
+
+            <div class="quiz-question">
+              <label>Main investment priority?</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q2" value="1" required> Safety</label>
+                <label><input type="radio" name="q2" value="2"> Stable income</label>
+                <label><input type="radio" name="q2" value="3"> Balanced growth</label>
+                <label><input type="radio" name="q2" value="5"> High growth</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 2: Risk Behaviour -->
+          <div class="quiz-section">
+            <h4>2. Risk Behaviour</h4>
+
+            <div class="quiz-question">
+              <label>If your portfolio drops 20% in 6 months, you will:</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q3" value="1" required> Sell immediately</label>
+                <label><input type="radio" name="q3" value="2"> Switch to safer options</label>
+                <label><input type="radio" name="q3" value="3"> Hold and wait</label>
+                <label><input type="radio" name="q3" value="5"> Invest more</label>
+              </div>
+            </div>
+
+            <div class="quiz-question">
+              <label>Volatility makes me:</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q4" value="1" required> Very nervous</label>
+                <label><input type="radio" name="q4" value="2"> Slightly uncomfortable</label>
+                <label><input type="radio" name="q4" value="3"> Neutral</label>
+                <label><input type="radio" name="q4" value="5"> Excited for opportunity</label>
+              </div>
+            </div>
+
+            <div class="quiz-question">
+              <label>I invest based on:</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q5" value="1" required> Guaranteed returns</label>
+                <label><input type="radio" name="q5" value="2"> Past performance</label>
+                <label><input type="radio" name="q5" value="4"> Research and strategy</label>
+                <label><input type="radio" name="q5" value="5"> Aggressive trends</label>
+              </div>
+            </div>
+
+            <div class="quiz-question">
+              <label>How often do you track investments?</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q6" value="5" required> Daily</label>
+                <label><input type="radio" name="q6" value="4"> Weekly</label>
+                <label><input type="radio" name="q6" value="3"> Monthly</label>
+                <label><input type="radio" name="q6" value="2"> Quarterly</label>
+                <label><input type="radio" name="q6" value="1"> Rarely</label>
+              </div>
+            </div>
+
+            <div class="quiz-question">
+              <label>Best describes you:</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q7" value="1" required> Avoid risk at all cost</label>
+                <label><input type="radio" name="q7" value="3"> Take calculated risk</label>
+                <label><input type="radio" name="q7" value="5"> High risk taker</label>
+              </div>
+            </div>
+
+            <div class="quiz-question">
+              <label>Market crashes are a time to:</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q8" value="1" required> Exit</label>
+                <label><input type="radio" name="q8" value="2"> Pause</label>
+                <label><input type="radio" name="q8" value="3"> Stay invested</label>
+                <label><input type="radio" name="q8" value="5"> Buy more</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 3: Investment Knowledge -->
+          <div class="quiz-section">
+            <h4>3. Investment Knowledge</h4>
+
+            <div class="quiz-question">
+              <label>Knowledge of mutual funds?</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q9" value="1" required> None</label>
+                <label><input type="radio" name="q9" value="2"> Basic</label>
+                <label><input type="radio" name="q9" value="3"> Intermediate</label>
+                <label><input type="radio" name="q9" value="5"> Advanced</label>
+              </div>
+            </div>
+
+            <div class="quiz-question">
+              <label>Understand equity vs debt difference?</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q10" value="1" required> No</label>
+                <label><input type="radio" name="q10" value="3"> Somewhat</label>
+                <label><input type="radio" name="q10" value="5"> Yes</label>
+              </div>
+            </div>
+
+            <div class="quiz-question">
+              <label>Understand SIP & market cycles?</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q11" value="1" required> No</label>
+                <label><input type="radio" name="q11" value="3"> Somewhat</label>
+                <label><input type="radio" name="q11" value="5"> Yes</label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Section 4: Decision Psychology -->
+          <div class="quiz-section">
+            <h4>4. Decision Psychology</h4>
+
+            <div class="quiz-question">
+              <label>If friends make 30% return, you:</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q12" value="1" required> Feel stressed</label>
+                <label><input type="radio" name="q12" value="2"> Curious</label>
+                <label><input type="radio" name="q12" value="4"> Inspired to invest wisely</label>
+                <label><input type="radio" name="q12" value="5"> Jump in aggressively</label>
+              </div>
+            </div>
+
+            <div class="quiz-question">
+              <label>Investment decisions are mostly:</label>
+              <div class="quiz-options">
+                <label><input type="radio" name="q13" value="1" required> Emotional</label>
+                <label><input type="radio" name="q13" value="3"> Mixed</label>
+                <label><input type="radio" name="q13" value="5"> Logical</label>
+              </div>
+            </div>
+          </div>
+        </form>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="cancel-risk-quiz">Cancel</button>
+        <button type="button" class="btn btn-primary" id="submit-risk-quiz">Get My Risk Profile</button>
+      </div>
+
+      <!-- Results Section (Hidden Initially) -->
+      <div class="quiz-results" id="quiz-results" style="display: none;">
+        <div class="results-content">
+          <h3>Your Risk Profile Result</h3>
+          <div class="result-score">
+            <div class="score-circle" id="score-circle">
+              <span id="score-value">0</span>
+              <span class="score-label">/ 65</span>
+            </div>
+          </div>
+          <div class="result-profile" id="result-profile">
+            <h4 id="profile-type"></h4>
+            <p id="profile-description"></p>
+          </div>
+          <button class="btn btn-primary" id="apply-risk-profile">Apply to All Goals</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

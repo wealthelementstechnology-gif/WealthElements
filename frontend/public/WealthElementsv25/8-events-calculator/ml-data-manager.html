@@ -1,0 +1,887 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Data Manager - All-in-One Tool</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            color: #667eea;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #6b7280;
+            margin-bottom: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e5e7eb;
+        }
+
+        .tab {
+            padding: 15px 30px;
+            background: none;
+            border: none;
+            border-bottom: 3px solid transparent;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            color: #6b7280;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f9fafb 0%, #f3f4f6 100%);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 2px solid #e5e7eb;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-info { background: #dbeafe; color: #1e40af; border-left: 4px solid #3b82f6; }
+        .alert-warning { background: #fef3c7; color: #92400e; border-left: 4px solid #f59e0b; }
+        .alert-success { background: #d1fae5; color: #065f46; border-left: 4px solid #10b981; }
+        .alert-danger { background: #fee2e2; color: #991b1b; border-left: 4px solid #ef4444; }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin: 5px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #374151;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .button-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin: 20px 0;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        pre {
+            background: #1e1e1e;
+            color: #00ff00;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 13px;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 30px;
+            background: #e5e7eb;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 20px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            transition: width 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🤖 ML Data Manager</h1>
+        <p class="subtitle">All-in-One Tool for ML Training Data</p>
+
+        <div class="tabs">
+            <button class="tab active" onclick="switchTab('check')">📊 Check Data</button>
+            <button class="tab" onclick="switchTab('generate')">🚀 Generate Test Data</button>
+            <button class="tab" onclick="switchTab('cleanup')">🧹 Cleanup</button>
+        </div>
+
+        <!-- TAB 1: CHECK DATA -->
+        <div id="check" class="tab-content active">
+            <h2 style="margin-bottom: 20px; color: #374151;">📊 Current Data Status</h2>
+
+            <div id="statusAlert"></div>
+
+            <div class="stats-grid" id="statsGrid">
+                <div class="stat-card">
+                    <div class="stat-number" id="statTotal">-</div>
+                    <div class="stat-label">Total Records</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statAccepted">-</div>
+                    <div class="stat-label">Accepted</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statReady">-</div>
+                    <div class="stat-label">Training Ready</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number" id="statSize">-</div>
+                    <div class="stat-label">Storage (MB)</div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="checkData()">🔄 Refresh</button>
+                <button class="btn-success" onclick="exportData()">💾 Export Backup</button>
+                <button class="btn-danger" onclick="clearAllData()">🗑️ Clear All</button>
+                <button class="btn-secondary" onclick="fixData()" id="fixBtn" style="display: none;">🔧 Fix Data</button>
+            </div>
+
+            <pre id="checkLog" style="display: none;"></pre>
+        </div>
+
+        <!-- TAB 2: GENERATE TEST DATA -->
+        <div id="generate" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #374151;">🚀 Generate Test Data</h2>
+
+            <div class="alert alert-info">
+                <strong>ℹ️</strong> Generate realistic test data for ML training. Recommended: 100 samples with 75% acceptance rate. All data is stored locally in your browser.
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <div class="form-group">
+                    <label>Number of Samples</label>
+                    <input type="number" id="genSamples" value="100" min="10" max="200">
+                </div>
+
+                <div class="form-group">
+                    <label>Acceptance Rate (%)</label>
+                    <input type="number" id="genAcceptance" value="75" min="50" max="95">
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-primary" onclick="generateTestData()">🚀 Generate Data</button>
+            </div>
+
+            <div id="genProgress" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="genProgressFill" style="width: 0%">0%</div>
+                </div>
+                <p id="genProgressText" style="text-align: center; color: #6b7280;"></p>
+            </div>
+
+            <pre id="genLog" style="display: none;"></pre>
+        </div>
+
+        <!-- TAB 3: CLEANUP -->
+        <div id="cleanup" class="tab-content">
+            <h2 style="margin-bottom: 20px; color: #374151;">🧹 Storage Cleanup</h2>
+
+            <div class="alert alert-warning">
+                <strong>⚠️</strong> Use this if you get "QuotaExceededError". Keep only the samples you need for training.
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 20px 0;">
+                <div class="form-group">
+                    <label>Keep How Many Samples?</label>
+                    <select id="cleanupCount">
+                        <option value="100">100 Samples (Recommended)</option>
+                        <option value="200">200 Samples</option>
+                        <option value="300">300 Samples</option>
+                        <option value="500">500 Samples</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Priority</label>
+                    <select id="cleanupPriority">
+                        <option value="quality">High Quality Only</option>
+                        <option value="diverse">Diverse Mix</option>
+                        <option value="recent">Most Recent</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button class="btn-success" onclick="exportData()">💾 Export Backup First</button>
+                <button class="btn-danger" onclick="executeCleanup()">🧹 Execute Cleanup</button>
+            </div>
+
+            <pre id="cleanupLog" style="display: none;"></pre>
+        </div>
+    </div>
+
+
+    <script src="outcome-tracker.js"></script>
+    <script>
+        // Wait for outcomeTracker to be initialized
+        let outcomeTrackerReady = false;
+        
+        function waitForOutcomeTracker(callback, maxAttempts = 50) {
+            if (window.outcomeTracker) {
+                outcomeTrackerReady = true;
+                callback();
+            } else if (maxAttempts > 0) {
+                setTimeout(() => waitForOutcomeTracker(callback, maxAttempts - 1), 100);
+            } else {
+                console.error('❌ outcomeTracker not available after waiting');
+                alert('Failed to initialize data tracker. Please refresh the page.');
+            }
+        }
+
+        let checkLogLines = [];
+        let genLogLines = [];
+        let cleanupLogLines = [];
+
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+
+            // Refresh data when switching to check tab
+            if (tabName === 'check') {
+                waitForOutcomeTracker(() => {
+                    checkData();
+                });
+            }
+        }
+
+        function log(message, logType = 'check') {
+            const timestamp = new Date().toLocaleTimeString();
+            const entry = `[${timestamp}] ${message}`;
+
+            if (logType === 'check') {
+                checkLogLines.push(entry);
+                const logDiv = document.getElementById('checkLog');
+                logDiv.style.display = 'block';
+                logDiv.textContent = checkLogLines.join('\n');
+            } else if (logType === 'gen') {
+                genLogLines.push(entry);
+                const logDiv = document.getElementById('genLog');
+                logDiv.style.display = 'block';
+                logDiv.textContent = genLogLines.join('\n');
+                logDiv.scrollTop = logDiv.scrollHeight;
+            } else if (logType === 'cleanup') {
+                cleanupLogLines.push(entry);
+                const logDiv = document.getElementById('cleanupLog');
+                logDiv.style.display = 'block';
+                logDiv.textContent = cleanupLogLines.join('\n');
+            }
+        }
+
+        async function checkData() {
+            try {
+                if (!window.outcomeTracker) {
+                    await new Promise(resolve => setTimeout(resolve, 500));
+                    if (!window.outcomeTracker) {
+                        document.getElementById('statusAlert').innerHTML = '<div class="alert alert-danger"><strong>❌</strong> Data tracker not available. Please refresh the page.</div>';
+                        return;
+                    }
+                }
+
+                const statusAlert = document.getElementById('statusAlert');
+                const fixBtn = document.getElementById('fixBtn');
+
+                const records = await window.outcomeTracker.getAllRecords();
+
+                if (!records || records.length === 0) {
+                    document.getElementById('statTotal').textContent = '0';
+                    document.getElementById('statAccepted').textContent = '0';
+                    document.getElementById('statReady').textContent = '0';
+                    document.getElementById('statSize').textContent = '0';
+                    statusAlert.innerHTML = '<div class="alert alert-info"><strong>ℹ️</strong> No data found. Generate test data to get started.</div>';
+                    return;
+                }
+
+                const sizeInBytes = new Blob([JSON.stringify(records)]).size;
+                const sizeInMB = (sizeInBytes / (1024 * 1024)).toFixed(2);
+
+                const total = records.length;
+                const accepted = records.filter(r => r.userAccepted === true).length;
+                const trainingReady = records.filter(r =>
+                    r.userAccepted === true &&
+                    r.outcome &&
+                    r.outcome.monthsFollowed >= 3
+                ).length;
+
+                document.getElementById('statTotal').textContent = total;
+                document.getElementById('statAccepted').textContent = accepted;
+                document.getElementById('statReady').textContent = trainingReady;
+                document.getElementById('statSize').textContent = sizeInMB;
+
+                // Status alerts
+                if (parseFloat(sizeInMB) > 4) {
+                    statusAlert.innerHTML = '<div class="alert alert-danger"><strong>🚨</strong> Storage critical! Use Cleanup tab to reduce data size.</div>';
+                } else if (trainingReady < 50) {
+                    const needMore = 50 - trainingReady;
+                    statusAlert.innerHTML = `<div class="alert alert-warning"><strong>⚠️</strong> Need ${needMore} more training-ready samples. Fix data or generate more.</div>`;
+
+                    // Check if we need to fix follow-through data
+                    const needsFollowThrough = records.filter(r =>
+                        r.userAccepted === true &&
+                        (!r.outcome || r.outcome.monthsFollowed === 0 || r.outcome.monthsFollowed === undefined)
+                    ).length;
+
+                    if (needsFollowThrough > 0) {
+                        fixBtn.style.display = 'inline-block';
+                    }
+                } else {
+                    statusAlert.innerHTML = '<div class="alert alert-success"><strong>✅</strong> Ready to train! Open admin-ml-training.html and click "Train New Model".</div>';
+                    fixBtn.style.display = 'none';
+                }
+
+                log(`Data checked: ${total} total, ${trainingReady} ready, ${sizeInMB} MB`);
+
+            } catch (e) {
+                document.getElementById('statusAlert').innerHTML = `<div class="alert alert-danger"><strong>❌</strong> Error: ${e.message}</div>`;
+                log(`Error: ${e.message}`);
+            }
+        }
+
+        async function fixData() {
+            if (!confirm('Add follow-through data to accepted records?\n\nThis will make 80% of them training-ready.')) {
+                return;
+            }
+
+            try {
+                if (!window.outcomeTracker) {
+                    alert('Data tracker not available. Please refresh the page.');
+                    return;
+                }
+
+                const records = await window.outcomeTracker.getAllRecords();
+                let fixed = 0;
+
+                for (const record of records) {
+                    if (record.userAccepted === true) {
+                        if (!record.outcome) {
+                            record.outcome = {
+                                planStarted: false,
+                                monthsFollowed: 0,
+                                actualSIPsPaid: [],
+                                goalsAchieved: [],
+                                planAbandoned: false,
+                                abandonmentReason: null
+                            };
+                        }
+
+                        if (!record.outcome.monthsFollowed || record.outcome.monthsFollowed === 0) {
+                            if (Math.random() < 0.8) {
+                                record.outcome.planStarted = true;
+                                record.outcome.monthsFollowed = Math.floor(Math.random() * 10) + 3;
+                                
+                                // Update record in localStorage
+                                await window.outcomeTracker.recordOutcomeUpdate(record.optimizationId, {
+                                    planStarted: record.outcome.planStarted,
+                                    monthsFollowed: record.outcome.monthsFollowed
+                                });
+                                
+                                fixed++;
+                            }
+                        }
+                    }
+                }
+
+                alert(`✅ Fixed ${fixed} records!\n\nRefresh to see updated counts.`);
+                log(`Fixed ${fixed} records with follow-through data`);
+                await checkData();
+
+            } catch (e) {
+                alert('Error: ' + e.message);
+                log(`Fix error: ${e.message}`);
+            }
+        }
+
+        async function exportData() {
+            try {
+                if (!window.outcomeTracker) {
+                    alert('Data tracker not available. Please refresh the page.');
+                    return;
+                }
+
+                const records = await window.outcomeTracker.getAllRecords();
+                if (!records || records.length === 0) {
+                    alert('No data to export');
+                    return;
+                }
+
+                const blob = new Blob([JSON.stringify(records, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `ml-data-backup-${Date.now()}.json`;
+                a.click();
+                URL.revokeObjectURL(url);
+
+                alert(`✅ Exported ${records.length} records to file!`);
+                log(`Exported ${records.length} records`);
+
+            } catch (e) {
+                alert('Export failed: ' + e.message);
+            }
+        }
+
+        async function clearAllData() {
+            if (!confirm('⚠️ Delete ALL optimization data?\n\nThis cannot be undone!\n\nExport a backup first if needed.')) {
+                return;
+            }
+
+            if (!confirm('Are you ABSOLUTELY sure?\n\nAll ML training data will be deleted!')) {
+                return;
+            }
+
+            try {
+                if (!window.outcomeTracker) {
+                    alert('Data tracker not available. Please refresh the page.');
+                    return;
+                }
+
+                const success = await window.outcomeTracker.clearAllData();
+                if (success) {
+                    alert('✅ All data cleared from localStorage!');
+                    log('All data cleared');
+                    await checkData();
+                } else {
+                    alert('❌ Failed to clear data. Please try again.');
+                }
+            } catch (e) {
+                alert('Error clearing data: ' + e.message);
+                log('Clear error: ' + e.message);
+            }
+        }
+
+        async function generateTestData() {
+            if (!window.outcomeTracker) {
+                alert('Data tracker not available. Please refresh the page.');
+                return;
+            }
+
+            const sampleCount = parseInt(document.getElementById('genSamples').value);
+            const acceptanceRate = parseInt(document.getElementById('genAcceptance').value);
+
+            if (sampleCount < 1 || sampleCount > 1000) {
+                alert('Please enter a number between 1 and 1000.');
+                return;
+            }
+
+            // Confirm generation
+            if (sampleCount > 500) {
+                const confirmLarge = confirm(
+                    `⚠️ Warning: Generating ${sampleCount} samples.\n\n` +
+                    `This will be stored in your browser's localStorage.\n\n` +
+                    `Continue?`
+                );
+                if (!confirmLarge) {
+                    return;
+                }
+            }
+
+            // Check if there's existing data
+            const existingRecords = await window.outcomeTracker.getAllRecords();
+            if (existingRecords.length > 0) {
+                const confirmClear = confirm(
+                    `⚠️ You have ${existingRecords.length} existing records.\n\n` +
+                    `This will DELETE all existing data and generate exactly ${sampleCount} new samples.\n\n` +
+                    `Do you want to continue?`
+                );
+                if (!confirmClear) {
+                    return;
+                }
+
+                // Clear all existing data
+                log('🗑️ Clearing existing data...', 'gen');
+                await window.outcomeTracker.clearAllData();
+                log(`✅ Cleared ${existingRecords.length} existing records`, 'gen');
+            }
+
+            const progressDiv = document.getElementById('genProgress');
+            const progressFill = document.getElementById('genProgressFill');
+            const progressText = document.getElementById('genProgressText');
+
+            progressDiv.style.display = 'block';
+            genLogLines = [];
+
+            log('🚀 Starting test data generation...', 'gen');
+            log(`Target: ${sampleCount} samples, Acceptance: ${acceptanceRate}%`, 'gen');
+
+            let generated = 0;
+            let errors = 0;
+
+            // Small delay between samples to avoid overwhelming localStorage
+            const delayBetweenSamples = 50; // milliseconds
+
+            const interval = setInterval(async () => {
+                // Generate sample with diverse goal types
+                const age = [25, 30, 35, 40, 45, 50][Math.floor(Math.random() * 6)];
+                const income = [50000, 75000, 100000, 150000][Math.floor(Math.random() * 4)];
+
+                // Goal templates with diverse types
+                const goalTemplates = [
+                    { name: 'Retirement', type: 'retirement', fv: 5000000, years: 20, priority: 'High' },
+                    { name: 'Child Education', type: 'education', fv: 2000000, years: 10, priority: 'High' },
+                    { name: 'Marriage Fund', type: 'marriage', fv: 1500000, years: 8, priority: 'High' },
+                    { name: 'Emergency Fund', type: 'emergency', fv: 500000, years: 2, priority: 'High' },
+                    { name: 'Dream Home', type: 'house', fv: 3000000, years: 12, priority: 'Medium' },
+                    { name: 'New Car', type: 'vehicle', fv: 800000, years: 5, priority: 'Low' },
+                    { name: 'Vacation Fund', type: 'vacation', fv: 300000, years: 3, priority: 'Low' },
+                    { name: 'Business Startup', type: 'business', fv: 2500000, years: 7, priority: 'Medium' }
+                ];
+
+                // Select 2-4 random goals for this sample
+                const numGoals = Math.floor(Math.random() * 3) + 2; // 2-4 goals
+                const selectedGoals = [];
+                const availableTemplates = [...goalTemplates];
+
+                for (let i = 0; i < numGoals && availableTemplates.length > 0; i++) {
+                    const idx = Math.floor(Math.random() * availableTemplates.length);
+                    selectedGoals.push(availableTemplates.splice(idx, 1)[0]);
+                }
+
+                // Create original goals
+                const nowYear = new Date().getFullYear();
+                const originalGoals = selectedGoals.map(template => ({
+                    name: template.name,
+                    type: template.type,
+                    fv: template.fv,
+                    yearsLeft: template.years,
+                    targetYear: nowYear + template.years, // Add targetYear
+                    targetAmount: template.fv,
+                    priority: template.priority,
+                    sip: Math.round(template.fv / (template.years * 12 * 1.1)) // Rough SIP calculation
+                }));
+
+                // Create optimized goals (reduced by 5-20%)
+                const goals = originalGoals.map(goal => ({
+                    name: goal.name,
+                    type: goal.type,
+                    fv: Math.round(goal.fv * (0.8 + Math.random() * 0.15)), // 80-95% of original
+                    yearsLeft: goal.yearsLeft, // Keep same yearsLeft
+                    targetYear: goal.targetYear, // Keep same targetYear
+                    priority: goal.priority,
+                    sip: Math.round(goal.sip * (0.8 + Math.random() * 0.15))
+                }));
+
+                const originalTotalSIP = originalGoals.reduce((sum, g) => sum + g.sip, 0);
+                const optimizedTotalSIP = goals.reduce((sum, g) => sum + g.sip, 0);
+
+                const trackingData = {
+                    userAge: age,
+                    monthlyIncome: income,
+                    monthlyExpenses: income * 0.6,
+                    city: ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Pune'][Math.floor(Math.random() * 5)],
+                    familyStatus: ['single', 'married', 'married_with_kids'][Math.floor(Math.random() * 3)],
+                    riskProfile: ['conservative', 'moderate', 'aggressive'][Math.floor(Math.random() * 3)],
+                    investmentBudget: income * 0.25,
+                    stepUpBefore: [5, 8, 10][Math.floor(Math.random() * 3)],
+                    stepUpAfter: [8, 10, 12][Math.floor(Math.random() * 3)],
+                    originalGoals: originalGoals,
+                    goals: goals,
+                    originalTotalSIP: originalTotalSIP,
+                    optimizedTotalSIP: optimizedTotalSIP
+                };
+
+                try {
+                    // Add delay to avoid hitting rate limits
+                    if (generated > 0) {
+                        await new Promise(resolve => setTimeout(resolve, delayBetweenSamples));
+                    }
+
+                    const optimizationId = await window.outcomeTracker.recordOptimizationAttempt(trackingData);
+                    const willAccept = Math.random() * 100 < acceptanceRate;
+                    const sentiment = willAccept ? (Math.random() < 0.7 ? 'positive' : 'neutral') : 'negative';
+
+                    // Small delay between operations
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                    await window.outcomeTracker.recordUserDecision(optimizationId, willAccept, { sentiment, comments: '' });
+
+                    if (willAccept && Math.random() < 0.8) {
+                        await new Promise(resolve => setTimeout(resolve, 50));
+                        await window.outcomeTracker.recordOutcomeUpdate(optimizationId, {
+                            planStarted: true,
+                            monthsFollowed: Math.floor(Math.random() * 10) + 3,
+                            goalsAchieved: []
+                        });
+                    }
+
+                    generated++;
+                } catch (error) {
+                    errors++;
+                    const errorMsg = error.message || error.toString();
+                    log(`❌ Error generating sample ${generated + 1}: ${errorMsg}`, 'gen');
+                    // Continue generating despite errors
+                }
+
+                const progress = Math.round((generated / sampleCount) * 100);
+                progressFill.style.width = progress + '%';
+                progressFill.textContent = progress + '%';
+
+                const goalTypesList = selectedGoals.map(g => g.type).join(', ');
+                progressText.textContent = `Generating sample ${generated} of ${sampleCount}... (${goalTypesList})${errors > 0 ? ` [${errors} errors]` : ''}`;
+
+                if (generated % 20 === 0 || generated === sampleCount) {
+                    log(`Generated ${generated}/${sampleCount} samples${errors > 0 ? ` (${errors} errors)` : ''}...`, 'gen');
+                }
+
+                if (generated >= sampleCount) {
+                    clearInterval(interval);
+                    
+                    // Verify final count
+                    const finalRecords = await window.outcomeTracker.getAllRecords();
+                    const actualCount = finalRecords.length;
+                    
+                    log(`✅ Generation complete!`, 'gen');
+                    log(`📊 Target: ${sampleCount} samples`, 'gen');
+                    log(`📊 Actual: ${actualCount} samples stored in localStorage`, 'gen');
+                    if (errors > 0) {
+                        log(`⚠️ Errors: ${errors}`, 'gen');
+                    }
+                    
+                    // Log goal type distribution
+                    const goalTypeCounts = {};
+                    finalRecords.forEach(r => {
+                        r.originalGoals.forEach(g => {
+                            goalTypeCounts[g.type] = (goalTypeCounts[g.type] || 0) + 1;
+                        });
+                    });
+                    log(`📊 Goal types: ${JSON.stringify(goalTypeCounts)}`, 'gen');
+                    
+                    progressText.textContent = `✅ Complete! Generated ${actualCount} samples${errors > 0 ? ` (${errors} errors)` : ''}. Switch to "Check Data" tab to verify.`;
+                    
+                    if (actualCount === sampleCount) {
+                        alert(
+                            `✅ Successfully generated exactly ${sampleCount} test samples!\n\n` +
+                            `All data is stored locally in your browser.\n\n` +
+                            `Switch to "Check Data" tab to see results.`
+                        );
+                    } else {
+                        alert(
+                            `⚠️ Generated ${actualCount} samples (target was ${sampleCount}).\n\n` +
+                            `${errors > 0 ? `${errors} errors occurred during generation.\n\n` : ''}` +
+                            `All data is stored locally in your browser.\n\n` +
+                            `Switch to "Check Data" tab to see results.`
+                        );
+                    }
+                    return;
+                }
+
+            }, 20);
+        }
+
+        async function executeCleanup() {
+            const keepCount = parseInt(document.getElementById('cleanupCount').value);
+            const priority = document.getElementById('cleanupPriority').value;
+
+            if (!confirm(`Keep only ${keepCount} samples?\n\nExport backup first if needed!`)) {
+                return;
+            }
+
+            try {
+                if (!window.outcomeTracker) {
+                    alert('Data tracker not available. Please refresh the page.');
+                    return;
+                }
+
+                const records = await window.outcomeTracker.getAllRecords();
+                if (!records || records.length === 0) {
+                    alert('No data to clean');
+                    return;
+                }
+
+                log(`Original: ${records.length} records`, 'cleanup');
+
+                let newRecords = [];
+
+                if (priority === 'quality') {
+                    // Keep highest quality
+                    const sorted = records.filter(r => r.userAccepted === true).sort((a, b) => {
+                        const aMonths = a.outcome?.monthsFollowed || 0;
+                        const bMonths = b.outcome?.monthsFollowed || 0;
+                        return bMonths - aMonths;
+                    });
+                    newRecords = sorted.slice(0, keepCount);
+                    log(`Kept ${newRecords.length} highest quality samples`, 'cleanup');
+                } else if (priority === 'diverse') {
+                    // Keep diverse mix
+                    const acceptedCount = Math.round(keepCount * 0.8);
+                    const rejectedCount = keepCount - acceptedCount;
+                    newRecords = [
+                        ...records.filter(r => r.userAccepted === true).slice(0, acceptedCount),
+                        ...records.filter(r => r.userAccepted === false).slice(0, rejectedCount)
+                    ];
+                    log(`Kept ${acceptedCount} accepted + ${rejectedCount} rejected`, 'cleanup');
+                } else {
+                    // Most recent
+                    newRecords = records.sort((a, b) => b.timestamp - a.timestamp).slice(0, keepCount);
+                    log(`Kept ${newRecords.length} most recent samples`, 'cleanup');
+                }
+
+                // localStorage: Replace entire array
+                localStorage.setItem('we_optimization_outcomes', JSON.stringify(newRecords));
+                log(`Kept ${newRecords.length} records in localStorage`, 'cleanup');
+
+                const newSize = (new Blob([JSON.stringify(newRecords)]).size / (1024 * 1024)).toFixed(2);
+                log(`✅ Cleanup complete! Now: ${newRecords.length} records, ${newSize} MB`, 'cleanup');
+
+                alert(`✅ Cleanup Complete!\n\nBefore: ${records.length}\nAfter: ${newRecords.length}\nStorage: ${newSize} MB\n\nSwitch to "Check Data" tab to verify.`);
+
+            } catch (e) {
+                alert('Cleanup failed: ' + e.message);
+                log(`Error: ${e.message}`, 'cleanup');
+            }
+        }
+
+        // Auto-check on load - wait for outcomeTracker
+        window.addEventListener('load', () => {
+            waitForOutcomeTracker(() => {
+                checkData();
+            });
+        });
+    </script>
+</body>
+</html>

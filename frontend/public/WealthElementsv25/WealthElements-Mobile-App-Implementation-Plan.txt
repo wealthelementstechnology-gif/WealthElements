@@ -1,0 +1,1965 @@
+# WealthElements Mobile App - Implementation Plan
+
+## Overview
+
+Building a React Native mobile application for comprehensive financial planning that provides:
+
+- 8 Life Events Goal Planner (Education, Marriage, Home, Vehicle, Vacation, Retirement, Emergency, Other)
+- Financial Snapshot (Net Worth & Cash Flow Analysis)
+- 11 Financial Calculators
+- Mutual Fund Analyzer with real-time data from mfapi.in
+- Income Tax Calculator (Old vs New Regime)
+- ML-based Budget Optimization
+- Goal tracking and progress visualization
+
+**Repositories:**
+
+- **wealthelements-app** - React Native mobile app (new, to be created)
+- **wealthelements-backend** - Node.js backend API (new, to be created)
+
+**Design Style:** Minimal Clean aesthetic (matching current web design system)
+
+- Light background (#F0F3FA light mode, dark mode support)
+- Clean typography with clear hierarchy (Inter font family)
+- Generous spacing and padding
+- Simple icons and minimal borders
+- Green primary accent (#2E7D32 for positive/growth)
+- Focus on content over decoration
+
+## Current State
+
+Vanilla JavaScript web application with:
+
+- HTML5, CSS3, Vanilla JavaScript
+- Chart.js for visualizations
+- React (limited use - only in Mutual Fund Analyzer module)
+- TensorFlow.js for ML optimization (experimental)
+- localStorage for data persistence
+- mfapi.in API integration for mutual fund data
+- No backend server (fully client-side)
+- No authentication system
+
+## Technology Decisions
+
+### Core Framework
+
+- React Native (CLI, not Expo) with TypeScript
+- Navigation: React Navigation 6.x
+- State Management: Redux Toolkit with RTK Query
+- API Client: Axios for HTTP requests
+- Authentication: Biometric (Touch ID/Face ID) + 6-digit PIN + optional phone OTP
+
+### Visualization Libraries
+
+- **victory-native** - Primary charting library (powerful, customizable)
+- react-native-svg - SVG support (required for victory-native)
+- react-native-chart-kit - Secondary option for simple charts
+
+### Required Libraries
+
+- @react-navigation/native - Navigation
+- @react-navigation/bottom-tabs - Bottom tab navigation
+- @react-navigation/stack - Stack navigation for modals
+- @reduxjs/toolkit - State management
+- react-redux - Redux bindings
+- axios - API client for backend communication
+- date-fns - Date manipulation and formatting
+- react-native-svg - SVG support (required for victory-native)
+- victory-native - Chart visualizations
+- react-native-encrypted-storage - Secure local storage for financial data
+- react-native-biometrics - Biometric authentication
+- react-native-keychain - Secure credential storage
+- @tensorflow/tfjs-react-native - ML model integration
+- react-native-linear-gradient - UI gradients
+- react-native-reanimated - Smooth animations
+- Additional libraries TBD
+
+### Data Storage Strategy
+
+- **Local Storage:** react-native-encrypted-storage for sensitive financial data
+- **Offline-First:** SQLite database for offline functionality
+- **Security:** All financial data, goal details, and calculations encrypted at rest
+- **Sync Strategy:** Local-first with cloud backup when online
+
+### Expense Categories (From Current Web App)
+
+**1. Household Expenses**
+
+- 1.1 Grocery & Toiletries (4.5% inflation)
+- 1.2 House Rent, Maintenance, Repair (5.5% inflation)
+- 1.3 Vehicle - Fuel, Servicing (6.0% inflation)
+- 1.4 Doctor Visits, Medicines (9.0% inflation)
+- 1.5 Utilities (Electricity, Water, Gas) (5.5% inflation)
+- 1.6 Maid, Laundry, Newspaper (6.0% inflation)
+- 1.7 Gadgets - Mobile/TV devices (3.0% inflation)
+- 1.8 Internet/Mobile plans (2.0% inflation)
+
+**2. Lifestyle Expenses**
+
+- 2.1 Clothes & Accessories (5.0% inflation)
+- 2.2 Shopping, Gifts (5.0% inflation)
+- 2.3 Dining, Movies, Sports (5.5% inflation)
+- 2.4 Coach - Financial, Fitness (6.0% inflation)
+- 2.5 Travel, Annual holidays (7.0% inflation)
+- 2.6 Charity, Donations (5.0% inflation)
+- 2.7 House renovations, Celebrations (6.5% inflation)
+
+**3. Dependent Expenses**
+
+- 3.1 Children school / college fees (12.0% inflation)
+- 3.2 Children pocket money (6.0% inflation)
+- 3.3 Contribution to parents, siblings (5.0% inflation)
+
+**4. Misc**
+
+- 4.1 Personal Expenses (5.0% inflation)
+
+### 8 Life Events Goal Types
+
+1. **Child Education** - School/College fees planning
+2. **Child Marriage** - Wedding expenses planning
+3. **Home Purchase** - Property down payment/purchase
+4. **Vehicle Purchase** - Car/Bike purchase
+5. **Dream Vacation** - Travel fund planning
+6. **Retirement** - Retirement corpus building
+7. **Emergency Fund** - 6-12 months expenses buffer
+8. **Other Goals** - Custom user-defined goals
+
+### App Navigation Structure
+
+- **Authentication Flow:** Splash → Biometric/PIN → Onboarding (first time) → Home
+- **Bottom Navigation:**
+  - Home (Dashboard)
+  - 8 Events (Goal Planner)
+  - Calculators
+  - Mutual Funds
+  - Profile/Settings
+- **Floating Action Button:** Quick access to add new goal
+- **Modal/Detail Screens:** Open when user taps on specific cards
+
+---
+
+## Implementation Plan
+
+### Phase 1: Project Setup
+
+#### Repo: wealthelements-backend (NEW)
+
+**Purpose:** Node.js backend API for user authentication, data storage, mutual fund API proxy, and ML processing
+
+**Tech Stack:**
+
+- Node.js 20+ with TypeScript
+- Express.js framework
+- MongoDB (for user data, goals, financial snapshots)
+- Redis for session management and caching
+- JWT for authentication tokens
+- TensorFlow.js for ML model serving
+
+**Project Structure:**
+
+```
+wealthelements-backend/
+├── src/
+│   ├── config/
+│   │   ├── database.ts
+│   │   ├── redis.ts
+│   │   └── mfapi.ts (mutual fund API config)
+│   ├── controllers/
+│   │   ├── auth.controller.ts
+│   │   ├── user.controller.ts
+│   │   ├── goals.controller.ts
+│   │   ├── snapshot.controller.ts
+│   │   ├── calculator.controller.ts
+│   │   ├── mutualfund.controller.ts
+│   │   └── tax.controller.ts
+│   ├── services/
+│   │   ├── auth.service.ts
+│   │   ├── goals.service.ts
+│   │   ├── snapshot.service.ts
+│   │   ├── calculator.service.ts
+│   │   ├── mutualfund.service.ts (mfapi.in proxy)
+│   │   ├── tax.service.ts
+│   │   ├── ml-optimization.service.ts
+│   │   └── encryption.service.ts
+│   ├── models/
+│   │   ├── User.model.ts
+│   │   ├── Goal.model.ts
+│   │   ├── FinancialSnapshot.model.ts
+│   │   ├── Income.model.ts
+│   │   ├── Expense.model.ts
+│   │   ├── Asset.model.ts
+│   │   ├── Liability.model.ts
+│   │   └── Investment.model.ts
+│   ├── middleware/
+│   │   ├── auth.middleware.ts
+│   │   ├── rateLimit.middleware.ts
+│   │   └── error.middleware.ts
+│   ├── routes/
+│   │   ├── auth.routes.ts
+│   │   ├── user.routes.ts
+│   │   ├── goals.routes.ts
+│   │   ├── snapshot.routes.ts
+│   │   ├── calculator.routes.ts
+│   │   ├── mutualfund.routes.ts
+│   │   └── tax.routes.ts
+│   ├── utils/
+│   │   ├── inflation.ts (inflation rate constants)
+│   │   ├── calculations.ts (financial formulas)
+│   │   └── validators.ts
+│   ├── ml/
+│   │   ├── model-loader.ts
+│   │   ├── feature-extractor.ts
+│   │   └── optimizer.ts
+│   └── app.ts
+├── ml-models/
+│   └── optimization-model.json (TensorFlow.js model)
+├── package.json
+└── tsconfig.json
+```
+
+**Environment Variables (.env):**
+
+```
+NODE_ENV=development
+PORT=3000
+DATABASE_URL=mongodb://localhost:27017/wealthelements
+REDIS_URL=redis://localhost:6379
+JWT_SECRET=<secure-random-secret>
+JWT_EXPIRY=30d
+
+# Mutual Fund API (mfapi.in)
+MFAPI_BASE_URL=https://api.mfapi.in/mf
+
+# OTP Service (optional)
+SMS_API_KEY=<if-using-phone-auth>
+SMS_PROVIDER_URL=<provider-url>
+
+# Encryption
+DATA_ENCRYPTION_KEY=<secure-random-key>
+```
+
+**Installation Steps:**
+
+1. Initialize new Node.js project with TypeScript
+2. Install dependencies:
+
+```bash
+npm install express mongoose redis axios jsonwebtoken bcrypt cors dotenv helmet
+npm install @tensorflow/tfjs-node
+npm install -D typescript @types/node @types/express ts-node nodemon
+```
+
+3. Setup TypeScript configuration
+4. Create folder structure as above
+5. Setup MongoDB connection
+6. Setup Redis connection for caching mutual fund data
+
+#### Repo: wealthelements-app (NEW)
+
+**Purpose:** React Native mobile application
+
+**Initialization Command:**
+
+```bash
+npx react-native init wealthelements --template react-native-template-typescript
+```
+
+**Project Structure:**
+
+```
+wealthelements-app/
+├── src/
+│   ├── components/
+│   │   ├── charts/
+│   │   │   ├── NetWorthChart.tsx
+│   │   │   ├── GoalProgressChart.tsx
+│   │   │   ├── ExpenseBreakdownChart.tsx
+│   │   │   ├── CashFlowChart.tsx
+│   │   │   └── MutualFundPerformanceChart.tsx
+│   │   ├── cards/
+│   │   │   ├── NetWorthBanner.tsx
+│   │   │   ├── GoalCard.tsx
+│   │   │   ├── IncomeCard.tsx
+│   │   │   ├── ExpenseCard.tsx
+│   │   │   ├── AssetCard.tsx
+│   │   │   ├── LiabilityCard.tsx
+│   │   │   ├── InvestmentCard.tsx
+│   │   │   ├── CalculatorCard.tsx
+│   │   │   └── MutualFundCard.tsx
+│   │   ├── forms/
+│   │   │   ├── IncomeForm.tsx
+│   │   │   ├── ExpenseForm.tsx
+│   │   │   ├── AssetForm.tsx
+│   │   │   ├── LiabilityForm.tsx
+│   │   │   ├── GoalForm.tsx
+│   │   │   └── InsuranceForm.tsx
+│   │   ├── common/
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── Dropdown.tsx
+│   │   │   ├── LoadingSpinner.tsx
+│   │   │   ├── ErrorMessage.tsx
+│   │   │   └── ProgressBar.tsx
+│   │   └── FloatingActionButton.tsx
+│   ├── screens/
+│   │   ├── auth/
+│   │   │   ├── SplashScreen.tsx
+│   │   │   ├── BiometricScreen.tsx
+│   │   │   ├── PinSetupScreen.tsx
+│   │   │   ├── PhoneAuthScreen.tsx
+│   │   │   └── OnboardingScreen.tsx
+│   │   ├── home/
+│   │   │   └── HomeScreen.tsx (Dashboard)
+│   │   ├── eight-events/
+│   │   │   ├── EightEventsHomeScreen.tsx
+│   │   │   ├── Step1BasicInfoScreen.tsx
+│   │   │   ├── Step2IncomeExpenseScreen.tsx
+│   │   │   ├── Step3FoundationScreen.tsx (Emergency, Insurance)
+│   │   │   ├── Step4RetirementScreen.tsx
+│   │   │   ├── Step5GoalsScreen.tsx
+│   │   │   ├── Step6OptimizationScreen.tsx
+│   │   │   ├── Step7SIPCalculationScreen.tsx
+│   │   │   ├── Step8RecommendationsScreen.tsx
+│   │   │   └── GoalDetailScreen.tsx
+│   │   ├── snapshot/
+│   │   │   ├── SnapshotHomeScreen.tsx
+│   │   │   ├── NetWorthDetailScreen.tsx
+│   │   │   ├── CashFlowDetailScreen.tsx
+│   │   │   └── InvestmentRuleScreen.tsx
+│   │   ├── calculators/
+│   │   │   ├── CalculatorsHomeScreen.tsx
+│   │   │   ├── FutureValueScreen.tsx
+│   │   │   ├── SIPCalculatorScreen.tsx
+│   │   │   ├── SWPCalculatorScreen.tsx
+│   │   │   ├── LumpsumCalculatorScreen.tsx
+│   │   │   ├── ComboCalculatorScreen.tsx
+│   │   │   └── GoalSIPScreen.tsx
+│   │   ├── mutualfunds/
+│   │   │   ├── MutualFundsHomeScreen.tsx
+│   │   │   ├── FundSearchScreen.tsx
+│   │   │   ├── FundDetailScreen.tsx
+│   │   │   ├── FundCompareScreen.tsx
+│   │   │   └── AMCFilterScreen.tsx
+│   │   ├── tax/
+│   │   │   └── TaxCalculatorScreen.tsx
+│   │   └── settings/
+│   │       ├── SettingsScreen.tsx
+│   │       ├── ProfileScreen.tsx
+│   │       └── ExportDataScreen.tsx
+│   ├── navigation/
+│   │   ├── RootNavigator.tsx
+│   │   ├── AuthNavigator.tsx
+│   │   ├── MainTabNavigator.tsx
+│   │   ├── EightEventsNavigator.tsx
+│   │   └── types.ts
+│   ├── store/
+│   │   ├── slices/
+│   │   │   ├── authSlice.ts
+│   │   │   ├── userSlice.ts
+│   │   │   ├── goalsSlice.ts
+│   │   │   ├── snapshotSlice.ts
+│   │   │   ├── calculatorSlice.ts
+│   │   │   ├── mutualfundSlice.ts
+│   │   │   └── taxSlice.ts
+│   │   ├── api/
+│   │   │   └── apiSlice.ts (RTK Query)
+│   │   └── store.ts
+│   ├── services/
+│   │   ├── api.service.ts
+│   │   ├── storage.service.ts (encrypted storage)
+│   │   ├── biometric.service.ts
+│   │   ├── calculation.service.ts (financial formulas)
+│   │   ├── inflation.service.ts
+│   │   └── sync.service.ts (offline sync)
+│   ├── utils/
+│   │   ├── formatters.ts (currency, date formatting)
+│   │   ├── constants.ts (expense categories, inflation rates)
+│   │   ├── validators.ts
+│   │   └── helpers.ts
+│   ├── types/
+│   │   ├── user.types.ts
+│   │   ├── goal.types.ts
+│   │   ├── snapshot.types.ts
+│   │   ├── calculator.types.ts
+│   │   └── mutualfund.types.ts
+│   ├── theme/
+│   │   ├── colors.ts
+│   │   ├── typography.ts
+│   │   ├── spacing.ts
+│   │   └── index.ts
+│   └── App.tsx
+├── android/
+├── ios/
+├── package.json
+└── tsconfig.json
+```
+
+**Installation Steps:**
+
+1. Initialize React Native CLI project with TypeScript template
+2. Install dependencies:
+
+```bash
+npm install @react-navigation/native @react-navigation/stack @react-navigation/bottom-tabs
+npm install react-native-screens react-native-safe-area-context react-native-gesture-handler
+npm install @reduxjs/toolkit react-redux
+npm install axios
+npm install react-native-encrypted-storage
+npm install react-native-biometrics react-native-keychain
+npm install react-native-svg victory-native
+npm install react-native-linear-gradient
+npm install react-native-reanimated
+npm install date-fns
+npm install react-native-sqlite-storage
+```
+
+3. Setup iOS pods: `cd ios && pod install`
+4. Create folder structure as above
+
+---
+
+### Phase 2: Backend Implementation
+
+#### Repo: wealthelements-backend
+
+**Section 1: Authentication System**
+
+**File: src/models/User.model.ts**
+**Purpose:** User data model
+**Fields:**
+
+- userId (UUID, primary key)
+- phoneNumber (string, optional, for OTP auth)
+- pinHash (string, bcrypt hashed 6-digit PIN)
+- biometricEnabled (boolean, default false)
+- biometricPublicKey (string, optional)
+- fullName (string)
+- age (number)
+- city (string, optional)
+- maritalStatus (enum: SINGLE, MARRIED, COUPLE_MODE)
+- partnerName (string, optional, for couple mode)
+- partnerAge (number, optional)
+- createdAt (timestamp)
+- updatedAt (timestamp)
+- lastLoginAt (timestamp)
+- onboardingCompleted (boolean, default false)
+
+**File: src/controllers/auth.controller.ts**
+**Purpose:** Handle authentication requests
+**Endpoints:**
+
+**POST /api/auth/register**
+
+- Request body: { pin: string (6 digits), fullName: string, phoneNumber?: string }
+- Validation: PIN must be exactly 6 numeric digits
+- Process: Hash PIN with bcrypt (10 rounds), create user record, generate JWT token
+- Response: { userId, token, expiresIn }
+- Error handling:
+  - 400 if PIN format invalid
+  - 500 for database errors
+
+**POST /api/auth/login**
+
+- Request body: { userId: string, pin: string }
+- Process: Verify PIN hash, update lastLoginAt, generate new JWT token
+- Response: { token, expiresIn, user: { userId, fullName, biometricEnabled } }
+- Error handling:
+  - 401 if user not found or PIN incorrect
+  - 500 for database errors
+
+**POST /api/auth/enable-biometric**
+
+- Request headers: Authorization: Bearer <token>
+- Request body: { biometricPublicKey: string }
+- Process: Store biometric public key, set biometricEnabled = true
+- Response: { success: true }
+
+**POST /api/auth/verify-biometric**
+
+- Request body: { userId: string, biometricSignature: string }
+- Process: Verify biometric signature against stored public key, generate JWT token
+- Response: { token, expiresIn }
+
+---
+
+**Section 2: Financial Snapshot API**
+
+**File: src/models/Income.model.ts**
+**Purpose:** Store income sources
+**Fields:**
+
+- incomeId (UUID, primary key)
+- userId (UUID, foreign key)
+- source (string: Salary, Rental, Freelance, Interest, Dividends, Other)
+- amount (decimal)
+- frequency (enum: MONTHLY, QUARTERLY, ANNUAL)
+- owner (string, optional, for couple mode: SELF, PARTNER)
+- isActive (boolean)
+- createdAt (timestamp)
+
+**File: src/models/Expense.model.ts**
+**Purpose:** Store expense categories
+**Fields:**
+
+- expenseId (UUID, primary key)
+- userId (UUID, foreign key)
+- category (string, from predefined categories 1.1-4.1)
+- monthlyAmount (decimal)
+- annualAmount (decimal, auto-calculated)
+- inflationRate (decimal, from category defaults)
+- isActive (boolean)
+- createdAt (timestamp)
+
+**File: src/models/Asset.model.ts**
+**Purpose:** Store user assets
+**Fields:**
+
+- assetId (UUID, primary key)
+- userId (UUID, foreign key)
+- name (string)
+- type (enum: SAVINGS, FD, RD, PPF, EPF, STOCKS, MUTUAL_FUNDS, GOLD, REAL_ESTATE, OTHER)
+- currentValue (decimal)
+- owner (string, optional, for couple mode)
+- notes (string, optional)
+- createdAt (timestamp)
+- updatedAt (timestamp)
+
+**File: src/models/Liability.model.ts**
+**Purpose:** Store user liabilities
+**Fields:**
+
+- liabilityId (UUID, primary key)
+- userId (UUID, foreign key)
+- name (string)
+- type (enum: HOME_LOAN, CAR_LOAN, PERSONAL_LOAN, EDUCATION_LOAN, CREDIT_CARD, OTHER)
+- principalAmount (decimal)
+- currentOutstanding (decimal)
+- emiAmount (decimal)
+- interestRate (decimal)
+- remainingMonths (number)
+- owner (string, optional)
+- createdAt (timestamp)
+
+**File: src/models/Investment.model.ts**
+**Purpose:** Store current investments (SIP/Lumpsum)
+**Fields:**
+
+- investmentId (UUID, primary key)
+- userId (UUID, foreign key)
+- name (string)
+- type (enum: SIP, LUMPSUM, PPF, EPF, NPS, OTHER)
+- amount (decimal)
+- frequency (enum: MONTHLY, QUARTERLY, ANNUAL)
+- startDate (timestamp)
+- fundName (string, optional)
+- schemeCode (number, optional, mfapi reference)
+- owner (string, optional)
+- isActive (boolean)
+- createdAt (timestamp)
+
+**File: src/controllers/snapshot.controller.ts**
+**Purpose:** Financial snapshot endpoints
+
+**GET /api/snapshot**
+
+- Auth: Required (JWT)
+- Returns complete financial snapshot for user
+- Response:
+
+```
+{
+  "netWorth": 2450000,
+  "totalAssets": 3200000,
+  "totalLiabilities": 750000,
+  "monthlyIncome": 150000,
+  "monthlyExpenses": 65000,
+  "monthlyEMI": 35000,
+  "monthlySurplus": 50000,
+  "investmentBudget": 50000,
+  "assets": [...],
+  "liabilities": [...],
+  "incomes": [...],
+  "expenses": [...],
+  "investments": [...],
+  "lastUpdated": "2026-01-15T10:30:00Z"
+}
+```
+
+**POST /api/snapshot/income**
+
+- Auth: Required (JWT)
+- Request body: { source, amount, frequency, owner? }
+- Creates new income source
+- Response: created income object
+
+**PUT /api/snapshot/income/:id**
+
+- Auth: Required (JWT)
+- Request body: { source?, amount?, frequency?, isActive? }
+- Updates income source
+- Response: updated income object
+
+**DELETE /api/snapshot/income/:id**
+
+- Auth: Required (JWT)
+- Soft deletes income source (sets isActive = false)
+- Response: { success: true }
+
+**(Similar CRUD endpoints for expenses, assets, liabilities, investments)**
+
+**GET /api/snapshot/cashflow**
+
+- Auth: Required (JWT)
+- Query params: period (1M, 3M, 6M, 1Y)
+- Returns cash flow analysis
+- Response:
+
+```
+{
+  "period": "6M",
+  "totalIncome": 900000,
+  "totalExpenses": 390000,
+  "totalEMI": 210000,
+  "totalInvestments": 300000,
+  "netSavings": 0,
+  "byMonth": [
+    { "month": "Aug 2025", "income": 150000, "expenses": 65000, "emi": 35000, "surplus": 50000 },
+    ...
+  ],
+  "byCategory": [
+    { "category": "1.1 Grocery", "amount": 72000, "percentage": 18.5 },
+    ...
+  ]
+}
+```
+
+---
+
+**Section 3: 8 Life Events Goals API**
+
+**File: src/models/Goal.model.ts**
+**Purpose:** Store life event goals
+**Fields:**
+
+- goalId (UUID, primary key)
+- userId (UUID, foreign key)
+- name (string)
+- type (enum: EDUCATION, MARRIAGE, HOME, VEHICLE, VACATION, RETIREMENT, EMERGENCY, OTHER)
+- targetAmount (decimal, today's value)
+- futureValue (decimal, inflation-adjusted)
+- inflationRate (decimal, based on goal type)
+- targetDate (timestamp)
+- yearsLeft (number, calculated)
+- priority (enum: HIGH, MEDIUM, LOW)
+- requiredSIP (decimal, calculated)
+- currentValue (decimal, current savings towards goal)
+- expectedReturn (decimal, assumed rate of return)
+- isRetirementGoal (boolean, special calculation)
+- retirementMonthlyExpense (decimal, for retirement only)
+- retirementLifeExpectancy (number, for retirement only)
+- isCompleted (boolean)
+- status (enum: ACTIVE, ON_TRACK, BEHIND, PAUSED, COMPLETED)
+- mlOptimized (boolean, if ML adjusted values)
+- originalTargetAmount (decimal, before ML optimization)
+- createdAt (timestamp)
+- updatedAt (timestamp)
+
+**File: src/services/goals.service.ts**
+**Purpose:** Goal calculation and optimization logic
+
+**Method: calculateGoalFutureValue()**
+
+- Parameters: targetAmount, yearsLeft, inflationRate
+- Formula: FV = PV * (1 + r)^n
+- Returns: futureValue (decimal)
+
+**Method: calculateRequiredSIP()**
+
+- Parameters: futureValue, yearsLeft, expectedReturn
+- Formula: SIP = FV * r / ((1+r)^n - 1) where r is monthly rate
+- Returns: requiredSIP (decimal)
+
+**Method: calculateRetirementCorpus()**
+
+- Parameters: monthlyExpense, retirementAge, lifeExpectancy, inflationRate, postRetirementReturn
+- Process:
+  1. Calculate years in retirement = lifeExpectancy - retirementAge
+  2. Calculate inflation-adjusted expense at retirement
+  3. Calculate required corpus using annuity formula
+- Returns: { corpus, inflationAdjustedMonthlyExpense, yearsInRetirement }
+
+**Method: optimizeGoalsBudget()**
+
+- Parameters: goals[], availableBudget, userProfile
+- Process:
+  1. Calculate total SIP required for all goals
+  2. If total > availableBudget:
+     - Apply ML-based optimization OR
+     - Apply rule-based constraints (reduce by priority, extend timeline)
+  3. Return optimized goals with adjusted SIPs
+- Returns: { optimizedGoals[], shortfall, recommendations[] }
+
+**File: src/controllers/goals.controller.ts**
+**Purpose:** Goals management endpoints
+
+**GET /api/goals**
+
+- Auth: Required (JWT)
+- Returns all goals for user with calculations
+- Response:
+
+```
+{
+  "goals": [
+    {
+      "goalId": "uuid",
+      "name": "Child Education",
+      "type": "EDUCATION",
+      "targetAmount": 1500000,
+      "futureValue": 2847430,
+      "yearsLeft": 10,
+      "requiredSIP": 15234,
+      "currentValue": 250000,
+      "progress": 16.7,
+      "status": "ON_TRACK",
+      "priority": "HIGH"
+    },
+    ...
+  ],
+  "summary": {
+    "totalGoals": 5,
+    "totalSIPRequired": 45000,
+    "availableBudget": 50000,
+    "fundingStatus": "FULLY_FUNDED"
+  }
+}
+```
+
+**POST /api/goals**
+
+- Auth: Required (JWT)
+- Request body: { name, type, targetAmount, targetDate, priority, expectedReturn? }
+- Auto-calculates: futureValue, yearsLeft, requiredSIP
+- Response: created goal object
+
+**PUT /api/goals/:id**
+
+- Auth: Required (JWT)
+- Request body: { name?, targetAmount?, targetDate?, priority? }
+- Recalculates derived fields
+- Response: updated goal object
+
+**DELETE /api/goals/:id**
+
+- Auth: Required (JWT)
+- Deletes goal
+- Response: { success: true }
+
+**POST /api/goals/optimize**
+
+- Auth: Required (JWT)
+- Request body: { availableBudget: number }
+- Triggers ML-based or rule-based optimization
+- Response:
+
+```
+{
+  "originalTotalSIP": 75000,
+  "optimizedTotalSIP": 50000,
+  "availableBudget": 50000,
+  "shortfall": 0,
+  "optimizedGoals": [
+    { "goalId": "...", "originalSIP": 15234, "optimizedSIP": 12000, "adjustment": "reduced_amount" },
+    ...
+  ],
+  "recommendations": [
+    "Consider extending Child Education timeline by 2 years",
+    "Dream Vacation priority lowered to Medium"
+  ]
+}
+```
+
+---
+
+**Section 4: Financial Calculators API**
+
+**File: src/services/calculator.service.ts**
+**Purpose:** All financial calculation formulas
+
+**Method: futureValueLumpsum()**
+
+- Parameters: principal, rate, years
+- Formula: FV = P * (1 + r)^n
+- Returns: futureValue
+
+**Method: lumpsumForFutureValue()**
+
+- Parameters: futureValue, rate, years
+- Formula: P = FV / (1 + r)^n
+- Returns: requiredLumpsum
+
+**Method: sipFutureValue()**
+
+- Parameters: monthlyAmount, rate, years
+- Formula: FV = PMT * (((1+r)^n - 1) / r) * (1+r)
+- Returns: futureValue
+
+**Method: sipForFutureValue()**
+
+- Parameters: futureValue, rate, years
+- Formula: PMT = FV * r / (((1+r)^n - 1) * (1+r))
+- Returns: requiredSIP
+
+**Method: swpCalculator()**
+
+- Parameters: corpus, monthlyWithdrawal, rate, inflationRate
+- Process: Calculate how long corpus will last with inflation-adjusted withdrawals
+- Returns: { yearsLasting, totalWithdrawn, finalBalance }
+
+**Method: lumpsumForSWP()**
+
+- Parameters: monthlyWithdrawal, rate, years, inflationRate
+- Returns: requiredCorpus
+
+**Method: limitedPeriodSIPFutureValue()**
+
+- Parameters: monthlyAmount, sipYears, rate, totalYears
+- Process: Calculate FV after SIP stops and grows for remaining period
+- Returns: futureValue
+
+**Method: limitedPeriodSIPForGoal()**
+
+- Parameters: futureValue, sipYears, rate, totalYears
+- Returns: requiredSIP
+
+**Method: comboFutureValue()**
+
+- Parameters: lumpsum, monthlyAmount, rate, years
+- Process: Calculate combined FV of lumpsum + SIP
+- Returns: { lumpsumFV, sipFV, totalFV }
+
+**Method: lumpsumRequiredWithSIP()**
+
+- Parameters: futureValue, monthlyAmount, rate, years
+- Returns: requiredLumpsum (given known SIP)
+
+**Method: sipRequiredWithLumpsum()**
+
+- Parameters: futureValue, lumpsum, rate, years
+- Returns: requiredSIP (given known lumpsum)
+
+**Method: stepUpSIPFutureValue()**
+
+- Parameters: initialSIP, annualStepUp, rate, years
+- Process: Calculate FV with yearly SIP increase
+- Returns: { futureValue, totalInvested, breakdown[] }
+
+**File: src/controllers/calculator.controller.ts**
+**Purpose:** Calculator API endpoints
+
+**POST /api/calculator/future-value**
+
+- Request body: { type: "LUMPSUM" | "SIP", amount, rate, years }
+- Response: { futureValue, totalInvested, gain, gainPercentage }
+
+**POST /api/calculator/required-investment**
+
+- Request body: { type: "LUMPSUM" | "SIP", futureValue, rate, years }
+- Response: { requiredAmount, totalContribution, effectiveReturn }
+
+**POST /api/calculator/swp**
+
+- Request body: { corpus, monthlyWithdrawal, rate, inflationRate? }
+- Response: { yearsLasting, totalWithdrawn, yearlyBreakdown[] }
+
+**POST /api/calculator/goal-sip**
+
+- Request body: { goalAmount, years, inflationRate, expectedReturn, stepUp? }
+- Response: { requiredSIP, futureValue, totalInvested, yearlyBreakdown[] }
+
+**POST /api/calculator/combo**
+
+- Request body: { lumpsum?, sip?, rate, years, target? }
+- Response: { lumpsumFV, sipFV, totalFV, recommendation }
+
+---
+
+**Section 5: Mutual Fund API (Proxy to mfapi.in)**
+
+**File: src/services/mutualfund.service.ts**
+**Purpose:** Mutual fund data fetching and processing
+
+**Method: getAllFunds()**
+
+- API Call: GET https://api.mfapi.in/mf
+- Cache: Redis (24 hours)
+- Returns: Array of all mutual funds
+
+**Method: getFundDetails()**
+
+- Parameters: schemeCode
+- API Call: GET https://api.mfapi.in/mf/{schemeCode}
+- Cache: Redis (1 hour for NAV data)
+- Process:
+  1. Fetch NAV history
+  2. Calculate metrics (CAGR, Sharpe, Sortino, MaxDrawdown)
+  3. Return enriched fund data
+- Returns: Fund details with performance metrics
+
+**Method: calculateFundMetrics()**
+
+- Parameters: navHistory[]
+- Calculates:
+  - CAGR (1Y, 3Y, 5Y, 10Y, 15Y, Since Inception)
+  - Sharpe Ratio (risk-adjusted returns)
+  - Sortino Ratio (downside risk focus)
+  - Max Drawdown
+  - Volatility (Annualized Std Dev)
+  - Rolling Returns
+- Returns: { metrics }
+
+**Method: searchFunds()**
+
+- Parameters: query, category?, amc?
+- Process: Filter funds by name, category, AMC
+- Returns: Filtered fund list with basic metrics
+
+**Method: compareFunds()**
+
+- Parameters: schemeCodes[]
+- Process: Fetch details for each fund, create comparison table
+- Returns: Comparison data
+
+**Method: getRecommendations()**
+
+- Parameters: category, riskProfile, investmentHorizon
+- Process: Rank funds based on user criteria
+- Returns: Top 10 recommended funds
+
+**File: src/controllers/mutualfund.controller.ts**
+**Purpose:** Mutual fund endpoints
+
+**GET /api/mutualfunds**
+
+- Query params: search?, category?, amc?, page?, limit?
+- Returns: Paginated fund list
+
+**GET /api/mutualfunds/:schemeCode**
+
+- Returns: Detailed fund info with all metrics
+
+**GET /api/mutualfunds/compare**
+
+- Query params: codes (comma-separated scheme codes)
+- Returns: Comparison table
+
+**GET /api/mutualfunds/categories**
+
+- Returns: List of all categories with fund counts
+
+**GET /api/mutualfunds/amcs**
+
+- Returns: List of all AMCs with fund counts
+
+**POST /api/mutualfunds/recommendations**
+
+- Request body: { category, riskProfile, horizon, investmentAmount }
+- Returns: Personalized fund recommendations
+
+---
+
+**Section 6: Tax Calculator API**
+
+**File: src/services/tax.service.ts**
+**Purpose:** Income tax calculations
+
+**Method: calculateTax()**
+
+- Parameters: income, regime (OLD | NEW), assessmentYear, deductions?
+- Process:
+  1. Apply standard deduction
+  2. Apply regime-specific slabs
+  3. Calculate cess (4%)
+  4. Apply rebates if eligible
+- Returns: { taxPayable, effectiveRate, breakdown[] }
+
+**Tax Slabs (Assessment Year 2026-27):**
+
+**New Regime:**
+- 0 - 4,00,000: 0%
+- 4,00,001 - 8,00,000: 5%
+- 8,00,001 - 12,00,000: 10%
+- 12,00,001 - 16,00,000: 15%
+- 16,00,001 - 20,00,000: 20%
+- 20,00,001 - 24,00,000: 25%
+- Above 24,00,000: 30%
+- Standard Deduction: Rs. 75,000
+
+**Old Regime:**
+- 0 - 2,50,000: 0%
+- 2,50,001 - 5,00,000: 5%
+- 5,00,001 - 10,00,000: 20%
+- Above 10,00,000: 30%
+- Standard Deduction: Rs. 50,000
+- Deductions: 80C (1.5L), 80D (25K-1L), HRA, etc.
+
+**Method: compareRegimes()**
+
+- Parameters: income, deductions
+- Returns: { oldRegimeTax, newRegimeTax, recommendation, savings }
+
+**Method: calculateCapitalGainsTax()**
+
+- Parameters: gains, type (STCG | LTCG), assetType
+- Returns: { taxAmount, rate }
+
+**File: src/controllers/tax.controller.ts**
+**Purpose:** Tax calculator endpoints
+
+**POST /api/tax/calculate**
+
+- Request body: { income, regime, assessmentYear, deductions? }
+- Response: { taxPayable, breakdown, effectiveRate }
+
+**POST /api/tax/compare**
+
+- Request body: { income, deductions }
+- Response: { oldRegime, newRegime, recommendation, savings }
+
+**POST /api/tax/capital-gains**
+
+- Request body: { gains, type, assetType, holdingPeriod }
+- Response: { taxAmount, rate, exemptions }
+
+---
+
+**Section 7: ML Optimization Service**
+
+**File: src/ml/model-loader.ts**
+**Purpose:** Load TensorFlow.js model for budget optimization
+
+**Method: loadModel()**
+
+- Loads pre-trained model from ml-models/optimization-model.json
+- Returns: tf.LayersModel
+
+**File: src/ml/feature-extractor.ts**
+**Purpose:** Extract features for ML model input
+
+**Method: extractFeatures()**
+
+- Parameters: goals[], userProfile, financialSnapshot
+- Extracts 40+ features:
+  - Goal features: amount, timeline, priority, type
+  - User features: age, income, expenses, risk tolerance
+  - Financial features: net worth, EMI burden, investment rate
+- Returns: normalized feature array
+
+**File: src/ml/optimizer.ts**
+**Purpose:** Run ML optimization
+
+**Method: optimizeGoals()**
+
+- Parameters: goals[], budget, userProfile
+- Process:
+  1. Extract features
+  2. Run model prediction
+  3. Get recommended adjustments (amount reduction %, timeline extension)
+  4. Apply adjustments to goals
+  5. Validate total SIP <= budget
+- Returns: optimizedGoals[]
+
+**Method: fallbackOptimization()**
+
+- Used when ML model unavailable
+- Rule-based approach:
+  1. Sort goals by priority (LOW first)
+  2. Reduce low-priority goals by 10-20%
+  3. Extend timelines by 1-2 years if needed
+  4. Keep HIGH priority goals unchanged if possible
+- Returns: optimizedGoals[]
+
+---
+
+### Phase 3: Mobile App Implementation
+
+#### Repo: wealthelements-app
+
+**Section 1: Authentication Flow**
+
+**File: src/screens/auth/SplashScreen.tsx**
+**Purpose:** App launch screen
+**UI:**
+
+- WealthElements logo (centered)
+- App name: "WealthElements" with tagline
+- Loading indicator
+- Background: Gradient using theme colors
+
+**Flow:**
+
+1. On mount: Check if user exists in encrypted storage
+2. If yes: Navigate to BiometricScreen
+3. If no: Navigate to PinSetupScreen (first-time)
+4. Show splash for minimum 1.5 seconds
+
+**File: src/screens/auth/PinSetupScreen.tsx**
+**Purpose:** First-time PIN setup
+**UI Elements:**
+
+- Header: "Create Your Secure PIN"
+- Subtext: "This PIN will protect your financial data"
+- PIN input: 6 large circles, fill as user types
+- Numeric keypad (0-9) at bottom
+- Biometric option: "Enable Touch ID / Face ID" toggle (if available)
+- Continue button (disabled until 6 digits entered)
+
+**Flow:**
+
+1. User enters 6-digit PIN
+2. Confirm PIN screen (enter again)
+3. If mismatch: Show error "PINs don't match", reset
+4. If biometric available: Show option to enable
+5. Call backend POST /api/auth/register with PIN
+6. If biometric enabled: Setup biometric key
+7. Store JWT token in react-native-keychain
+8. Navigate to Onboarding
+
+**File: src/screens/auth/BiometricScreen.tsx**
+**Purpose:** Login screen with biometric/PIN
+**UI Elements:**
+
+- WealthElements logo at top
+- Large "Welcome Back" text
+- User name (if stored)
+- If biometric enabled: Biometric icon button with prompt text
+- "Use PIN instead" link
+- If PIN mode: Same numeric keypad as setup
+
+**Flow:**
+
+1. On mount: Check if user has biometric enabled
+2. If yes: Automatically trigger biometric prompt
+3. On biometric success: Call backend /api/auth/verify-biometric
+4. On biometric fail: Show "Use PIN instead" option
+5. PIN mode: Enter 6-digit PIN, call backend /api/auth/login
+6. On success: Store JWT token, navigate to Home
+7. On failure: Show error "Incorrect PIN"
+
+**File: src/screens/auth/OnboardingScreen.tsx**
+**Purpose:** First-time user onboarding (slides)
+**UI Elements:**
+
+- 4 onboarding slides with swipe gesture
+- Slide 1: "Plan Your Life Goals" (8 events illustration)
+- Slide 2: "Track Net Worth & Cash Flow" (snapshot illustration)
+- Slide 3: "Smart Financial Calculators" (calculator illustration)
+- Slide 4: "Find Best Mutual Funds" (fund analysis illustration)
+- Skip button (top right)
+- Next/Get Started button (bottom)
+- Dot indicators for slide position
+
+**Flow:**
+
+1. User swipes through slides or taps Next
+2. On last slide: "Get Started" button
+3. Navigate to Step1BasicInfoScreen (8 Events setup)
+4. Mark onboarding as completed in local storage
+
+---
+
+**Section 2: Home Screen (Dashboard)**
+
+**File: src/screens/home/HomeScreen.tsx**
+**Purpose:** Main dashboard - summary of all modules
+**UI Structure (Minimal Clean design):**
+
+```
+<ScrollView>
+  {/* Top Section - Net Worth Banner */}
+  <NetWorthBanner />
+
+  {/* Quick Stats Row */}
+  <View style={styles.statsRow}>
+    <StatCard title="Monthly Income" value={150000} icon="income" />
+    <StatCard title="Monthly Expenses" value={65000} icon="expense" />
+  </View>
+
+  {/* Monthly Surplus */}
+  <SurplusCard surplus={50000} emiAmount={35000} />
+
+  {/* Goals Progress */}
+  <Card title="Life Goals • 5 active">
+    <GoalProgressList goals={goals} limit={3} />
+    <ViewAllButton onPress={() => navigate('EightEvents')} />
+  </Card>
+
+  {/* Quick Actions */}
+  <Card title="Quick Actions">
+    <ActionGrid>
+      <ActionButton icon="calculator" label="Calculators" />
+      <ActionButton icon="fund" label="Mutual Funds" />
+      <ActionButton icon="tax" label="Tax Calculator" />
+      <ActionButton icon="settings" label="Settings" />
+    </ActionGrid>
+  </Card>
+
+  {/* Floating Action Button */}
+  <FloatingActionButton onPress={openQuickAddModal} />
+</ScrollView>
+```
+
+**Styling (Minimal Clean aesthetic):**
+
+- Background: #F0F3FA (light mode), #1A1A2E (dark mode)
+- Cards: #FFFFFF with subtle shadow, 16px padding, 12px border-radius
+- Typography:
+  - Headers: 18px, bold (Inter), #333333
+  - Values: 28-42px, bold (for key numbers)
+  - Labels: 12px, #666666
+  - Amounts: 16px, #333333
+- Spacing: 16px between sections, 12px between cards
+- Colors:
+  - Positive/Assets: #2E7D32 (green)
+  - Negative/Liabilities: #C62828 (red)
+  - Neutral: #333333 (dark gray)
+  - Primary Accent: #2E7D32 (green)
+
+**File: src/components/cards/NetWorthBanner.tsx**
+**Purpose:** Display total networth prominently
+**UI:**
+
+- White background card with gradient accent
+- "YOUR NET WORTH" label (12px, gray, centered)
+- Large amount: Rs. 24,50,000 (42px, bold, black, centered)
+- Breakdown: Assets Rs. 32L | Liabilities Rs. 7.5L (14px, colored)
+- Last updated: "Updated 2h ago" (10px, gray, centered)
+- Tap action: Navigate to SnapshotHomeScreen
+
+**File: src/components/cards/GoalCard.tsx**
+**Purpose:** Individual goal progress card
+**UI:**
+
+- Goal icon (based on type)
+- Goal name (16px, bold)
+- Progress bar (percentage towards target)
+- Target: Rs. 28,47,430 in 10 years (12px, gray)
+- Monthly SIP: Rs. 15,234 (14px, green)
+- Status badge: ON_TRACK / BEHIND / COMPLETED
+
+---
+
+**Section 3: 8 Life Events Screens**
+
+**File: src/screens/eight-events/EightEventsHomeScreen.tsx**
+**Purpose:** Overview of all life goals
+**UI:**
+
+- Header: "8 Life Events Planner"
+- Summary card: Total SIP required vs Available budget
+- List of all goals (GoalCard components)
+- Progress ring chart showing overall completion
+- "Add New Goal" button
+- "Optimize Budget" button (if shortfall exists)
+
+**File: src/screens/eight-events/Step1BasicInfoScreen.tsx**
+**Purpose:** Basic user information (matches web Step 1)
+**UI:**
+
+- Form sections:
+  - Personal Info: Name, Age, City
+  - Family Mode: Individual / Couple toggle
+  - If Couple: Partner name, Partner age
+  - Retirement Age: Number input
+- Navigation: Next button → Step2
+
+**File: src/screens/eight-events/Step2IncomeExpenseScreen.tsx**
+**Purpose:** Income sources and expenses
+**UI:**
+
+- Income Section:
+  - Add income source button
+  - List of income sources (source, amount, frequency)
+  - Total monthly income display
+- Expense Section:
+  - Category-wise expense input
+  - 4 collapsible sections (Household, Lifestyle, Dependent, Misc)
+  - Each category with monthly input
+  - Total monthly expenses display
+- Navigation: Back / Next buttons
+
+**File: src/screens/eight-events/Step3FoundationScreen.tsx**
+**Purpose:** Emergency fund and insurance (matches web Step 3)
+**UI:**
+
+- Emergency Fund Calculator:
+  - Recommended: 6 months expenses
+  - Current emergency fund input
+  - Shortfall display
+- Life Insurance:
+  - Recommended coverage calculation (10-15x annual income)
+  - Current coverage input
+  - Gap analysis
+- Health Insurance:
+  - Family floater recommendation
+  - Current coverage input
+- Navigation: Back / Next buttons
+
+**File: src/screens/eight-events/Step4RetirementScreen.tsx**
+**Purpose:** Retirement planning (matches web Step 4)
+**UI:**
+
+- Input fields:
+  - Retirement age (pre-filled from Step 1)
+  - Life expectancy (default 85)
+  - Monthly expenses in retirement (inflation-adjusted)
+  - Existing retirement corpus
+- Calculations:
+  - Years to retirement
+  - Years in retirement
+  - Required corpus
+  - Monthly SIP needed
+- Visualization: Retirement corpus growth chart
+- Navigation: Back / Next buttons
+
+**File: src/screens/eight-events/Step5GoalsScreen.tsx**
+**Purpose:** Define 8 life event goals (matches web Step 5)
+**UI:**
+
+- 8 Goal Cards (expandable):
+  1. Child Education
+  2. Child Marriage
+  3. Home Purchase
+  4. Vehicle Purchase
+  5. Dream Vacation
+  6. Retirement (auto-filled from Step 4)
+  7. Emergency Fund (auto-filled from Step 3)
+  8. Other Custom Goals
+- Each goal card:
+  - Enable/Disable toggle
+  - Goal name (editable for Other)
+  - Target amount (today's value)
+  - Target year/date
+  - Priority selector (High/Medium/Low)
+- Auto-calculation of future value with inflation
+- Total summary: X goals, Rs. Y total target
+- Navigation: Back / Next buttons
+
+**File: src/screens/eight-events/Step6OptimizationScreen.tsx**
+**Purpose:** Budget optimization (matches web Step 6)
+**UI:**
+
+- Budget Summary:
+  - Monthly investment budget: Rs. X
+  - Total SIP required: Rs. Y
+  - Shortfall/Surplus: Rs. Z
+- If Shortfall:
+  - Warning banner
+  - "Optimize with AI" button
+  - Manual adjustment options
+- Optimization Results:
+  - Before/After comparison table
+  - Recommendations list
+  - Accept/Modify buttons
+- If Surplus:
+  - Success message
+  - Suggestion to increase goal targets
+- Navigation: Back / Next buttons
+
+**File: src/screens/eight-events/Step7SIPCalculationScreen.tsx**
+**Purpose:** Final SIP amounts with step-up option (matches web Step 7)
+**UI:**
+
+- SIP Summary Table:
+  - Goal name | Monthly SIP | Priority
+  - Total row at bottom
+- Step-Up SIP Option:
+  - Enable toggle
+  - Annual increase percentage (5%, 10%, 15%)
+  - Comparison: Regular SIP vs Step-Up SIP
+- Chart: SIP contributions over time
+- Navigation: Back / Next buttons
+
+**File: src/screens/eight-events/Step8RecommendationsScreen.tsx**
+**Purpose:** Mutual fund recommendations (matches web Step 8)
+**UI:**
+
+- Goal-wise fund recommendations:
+  - For each goal, show top 3 recommended funds
+  - Fund card: Name, Category, CAGR, Sharpe Ratio
+  - "View Details" link
+- Investment allocation pie chart
+- Export plan button
+- "Finish Setup" button
+- Navigation: Back / Finish buttons
+
+---
+
+**Section 4: Financial Snapshot Screens**
+
+**File: src/screens/snapshot/SnapshotHomeScreen.tsx**
+**Purpose:** Complete financial snapshot dashboard
+**UI:**
+
+- Net Worth Section:
+  - Large net worth number
+  - Assets vs Liabilities bar
+  - Pie chart breakdown
+- Cash Flow Section:
+  - Income - Expenses - EMI = Surplus
+  - Visual flow diagram
+- Investment Rule:
+  - Current investment percentage
+  - Recommended percentage
+  - Gap indicator
+- Quick Actions:
+  - Add Income
+  - Add Expense
+  - Add Asset
+  - Add Liability
+- Historical trend chart (6M/1Y toggle)
+
+**File: src/screens/snapshot/NetWorthDetailScreen.tsx**
+**Purpose:** Detailed asset and liability breakdown
+**UI:**
+
+- Total Assets section:
+  - List of all assets by type
+  - Add new asset button
+  - Edit/Delete swipe actions
+- Total Liabilities section:
+  - List of all liabilities
+  - EMI schedule
+  - Add new liability button
+- Pie charts for visual breakdown
+
+**File: src/screens/snapshot/CashFlowDetailScreen.tsx**
+**Purpose:** Income and expense details
+**UI:**
+
+- Income Tab:
+  - Monthly income breakdown
+  - Income sources list
+  - Add/Edit functionality
+- Expense Tab:
+  - Category-wise expense breakdown
+  - Expandable category sections
+  - Monthly totals
+- Summary:
+  - Total income
+  - Total expenses
+  - Total EMI
+  - Net surplus/deficit
+
+---
+
+**Section 5: Calculators Screens**
+
+**File: src/screens/calculators/CalculatorsHomeScreen.tsx**
+**Purpose:** Calculator selection grid
+**UI:**
+
+- Grid of calculator cards (2 columns):
+  1. Future Value (Lumpsum)
+  2. Future Value (SIP)
+  3. SIP Calculator
+  4. SWP Calculator
+  5. Goal SIP Calculator
+  6. Combo Calculator
+  7. Step-Up SIP
+  8. Lumpsum Required
+  9. SIP Required
+  10. Limited Period SIP
+  11. Tax Calculator
+- Each card: Icon, Title, Brief description
+- Tap navigates to specific calculator
+
+**File: src/screens/calculators/SIPCalculatorScreen.tsx**
+**Purpose:** SIP future value calculator
+**UI:**
+
+- Input Section:
+  - Monthly SIP amount (slider + input)
+  - Expected return rate (slider: 8-15%)
+  - Investment period (years slider)
+- Results Section:
+  - Future Value (large, prominent)
+  - Total Invested
+  - Total Gains
+  - Gain percentage
+- Visualization:
+  - Line chart showing growth
+  - Invested vs Returns pie chart
+- Share/Export result button
+
+**(Similar UI pattern for all other calculators)**
+
+---
+
+**Section 6: Mutual Funds Screens**
+
+**File: src/screens/mutualfunds/MutualFundsHomeScreen.tsx**
+**Purpose:** Mutual fund discovery and analysis
+**UI:**
+
+- Search bar (search by fund name)
+- Filter chips (Category, AMC)
+- Sort options (Returns, Sharpe, Volatility)
+- Fund list:
+  - Fund name, Category, AMC
+  - 3Y CAGR, Sharpe Ratio
+  - Tap for details
+- Bottom tabs: All Funds | Top Performers | Watchlist
+
+**File: src/screens/mutualfunds/FundDetailScreen.tsx**
+**Purpose:** Detailed fund analysis
+**UI:**
+
+- Fund header: Name, Category, AMC
+- NAV: Current NAV with date
+- Performance Section:
+  - CAGR: 1Y, 3Y, 5Y, 10Y, Since Inception
+  - Risk metrics: Sharpe, Sortino, Max Drawdown
+  - Volatility
+- NAV Chart: Interactive line chart (1M, 3M, 6M, 1Y, 3Y, 5Y, Max)
+- Rolling Returns table
+- Compare button (add to comparison)
+- Add to Watchlist button
+
+**File: src/screens/mutualfunds/FundCompareScreen.tsx**
+**Purpose:** Side-by-side fund comparison
+**UI:**
+
+- Up to 4 funds in columns
+- Comparison rows:
+  - Category
+  - NAV
+  - 1Y/3Y/5Y Returns
+  - Sharpe Ratio
+  - Volatility
+  - Max Drawdown
+- Highlight best value in each row
+- Clear comparison button
+
+---
+
+**Section 7: Tax Calculator Screen**
+
+**File: src/screens/tax/TaxCalculatorScreen.tsx**
+**Purpose:** Income tax calculation
+**UI:**
+
+- Assessment Year selector (2026-27, 2025-26, 2024-25)
+- Annual Income input
+- Regime Toggle: Old vs New
+- Old Regime Deductions (if selected):
+  - 80C deductions
+  - 80D health insurance
+  - HRA exemption
+  - Other deductions
+- Results Section:
+  - Taxable Income
+  - Tax before cess
+  - Cess (4%)
+  - Total Tax Payable
+  - Effective Tax Rate
+- Regime Comparison:
+  - Old vs New side-by-side
+  - Recommendation banner
+  - Potential savings highlight
+- Slab breakdown table
+
+---
+
+**Section 8: Settings & Profile Screens**
+
+**File: src/screens/settings/SettingsScreen.tsx**
+**Purpose:** App settings
+**UI Sections:**
+
+1. **Account**
+   - User profile (name, age)
+   - Change PIN
+   - Enable/Disable Biometric
+   - Logout
+
+2. **Data & Privacy**
+   - Export data (JSON/CSV)
+   - Import data
+   - Clear local cache
+   - Sync status
+
+3. **Preferences**
+   - Theme (Light/Dark/System)
+   - Currency format
+   - Default return rate
+   - Default inflation rate
+
+4. **Notifications** (Future)
+   - Goal reminders
+   - SIP date alerts
+   - Market updates
+
+5. **About**
+   - App version
+   - Privacy Policy
+   - Terms of Service
+   - Contact Support
+   - Rate the App
+
+---
+
+**Section 9: Redux State Management**
+
+**File: src/store/store.ts**
+**Purpose:** Configure Redux store
+
+```typescript
+import { configureStore } from '@reduxjs/toolkit';
+import authReducer from './slices/authSlice';
+import userReducer from './slices/userSlice';
+import goalsReducer from './slices/goalsSlice';
+import snapshotReducer from './slices/snapshotSlice';
+import calculatorReducer from './slices/calculatorSlice';
+import mutualfundReducer from './slices/mutualfundSlice';
+import taxReducer from './slices/taxSlice';
+import { apiSlice } from './api/apiSlice';
+
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    user: userReducer,
+    goals: goalsReducer,
+    snapshot: snapshotReducer,
+    calculator: calculatorReducer,
+    mutualfunds: mutualfundReducer,
+    tax: taxReducer,
+    [apiSlice.reducerPath]: apiSlice.reducer,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(apiSlice.middleware),
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+```
+
+**File: src/store/slices/goalsSlice.ts**
+**Purpose:** Goals state management
+**State:**
+
+```typescript
+interface GoalsState {
+  goals: Goal[];
+  totalSIPRequired: number;
+  availableBudget: number;
+  fundingStatus: 'FULLY_FUNDED' | 'PARTIALLY_FUNDED' | 'SHORTFALL';
+  shortfallAmount: number;
+  isOptimized: boolean;
+  optimizationRecommendations: string[];
+  isLoading: boolean;
+  error: string | null;
+}
+```
+
+**File: src/store/slices/snapshotSlice.ts**
+**Purpose:** Financial snapshot state
+**State:**
+
+```typescript
+interface SnapshotState {
+  netWorth: number;
+  totalAssets: number;
+  totalLiabilities: number;
+  monthlyIncome: number;
+  monthlyExpenses: number;
+  monthlyEMI: number;
+  monthlySurplus: number;
+  investmentBudget: number;
+  assets: Asset[];
+  liabilities: Liability[];
+  incomes: Income[];
+  expenses: Expense[];
+  investments: Investment[];
+  cashflowHistory: CashflowPoint[];
+  isLoading: boolean;
+  error: string | null;
+}
+```
+
+---
+
+**Section 10: Services & Utilities**
+
+**File: src/services/calculation.service.ts**
+**Purpose:** Financial calculation utilities (client-side)
+
+```typescript
+export const CalculationService = {
+  // Future Value of Lumpsum
+  futureValueLumpsum(principal: number, rate: number, years: number): number {
+    const r = rate / 100;
+    return principal * Math.pow(1 + r, years);
+  },
+
+  // Future Value of SIP
+  futureValueSIP(monthlyAmount: number, annualRate: number, years: number): number {
+    const r = annualRate / 100 / 12;
+    const n = years * 12;
+    return monthlyAmount * (((Math.pow(1 + r, n) - 1) / r) * (1 + r));
+  },
+
+  // Required SIP for Goal
+  requiredSIP(futureValue: number, annualRate: number, years: number): number {
+    const r = annualRate / 100 / 12;
+    const n = years * 12;
+    return (futureValue * r) / (((Math.pow(1 + r, n) - 1)) * (1 + r));
+  },
+
+  // Inflation Adjusted Future Value
+  inflationAdjusted(amount: number, inflationRate: number, years: number): number {
+    const r = inflationRate / 100;
+    return amount * Math.pow(1 + r, years);
+  },
+
+  // Retirement Corpus Calculation
+  retirementCorpus(
+    monthlyExpense: number,
+    yearsToRetirement: number,
+    yearsInRetirement: number,
+    inflationRate: number,
+    postRetirementReturn: number
+  ): number {
+    // Inflation-adjusted expense at retirement
+    const retirementExpense = this.inflationAdjusted(monthlyExpense, inflationRate, yearsToRetirement);
+
+    // Required corpus (present value of annuity)
+    const r = postRetirementReturn / 100 / 12;
+    const n = yearsInRetirement * 12;
+    return retirementExpense * ((1 - Math.pow(1 + r, -n)) / r);
+  },
+};
+```
+
+**File: src/utils/formatters.ts**
+**Purpose:** Currency and date formatting
+
+```typescript
+export const formatCurrency = (amount: number): string => {
+  // Format as Indian currency
+  // 2450000 → Rs. 24,50,000
+  const formatter = new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  });
+  return formatter.format(amount).replace('₹', 'Rs. ');
+};
+
+export const formatCompactCurrency = (amount: number): string => {
+  // Format in compact form
+  // 2450000 → Rs. 24.5L
+  // 150000 → Rs. 1.5L
+  // 15000 → Rs. 15K
+  if (amount >= 10000000) {
+    return `Rs. ${(amount / 10000000).toFixed(1)}Cr`;
+  } else if (amount >= 100000) {
+    return `Rs. ${(amount / 100000).toFixed(1)}L`;
+  } else if (amount >= 1000) {
+    return `Rs. ${(amount / 1000).toFixed(1)}K`;
+  }
+  return formatCurrency(amount);
+};
+
+export const formatPercentage = (value: number): string => {
+  return `${value.toFixed(2)}%`;
+};
+```
+
+**File: src/utils/constants.ts**
+**Purpose:** App-wide constants
+
+```typescript
+export const EXPENSE_CATEGORIES = [
+  // Household Expenses
+  { id: '1.1', name: 'Grocery & Toiletries', parent: 'Household', inflation: 4.5 },
+  { id: '1.2', name: 'House Rent, Maintenance, Repair', parent: 'Household', inflation: 5.5 },
+  { id: '1.3', name: 'Vehicle - Fuel, Servicing', parent: 'Household', inflation: 6.0 },
+  { id: '1.4', name: 'Doctor Visits, Medicines', parent: 'Household', inflation: 9.0 },
+  { id: '1.5', name: 'Utilities (Electricity, Water, Gas)', parent: 'Household', inflation: 5.5 },
+  { id: '1.6', name: 'Maid, Laundry, Newspaper', parent: 'Household', inflation: 6.0 },
+  { id: '1.7', name: 'Gadgets - Mobile/TV devices', parent: 'Household', inflation: 3.0 },
+  { id: '1.8', name: 'Internet/Mobile plans', parent: 'Household', inflation: 2.0 },
+  // Lifestyle Expenses
+  { id: '2.1', name: 'Clothes & Accessories', parent: 'Lifestyle', inflation: 5.0 },
+  { id: '2.2', name: 'Shopping, Gifts', parent: 'Lifestyle', inflation: 5.0 },
+  { id: '2.3', name: 'Dining, Movies, Sports', parent: 'Lifestyle', inflation: 5.5 },
+  { id: '2.4', name: 'Coach - Financial, Fitness', parent: 'Lifestyle', inflation: 6.0 },
+  { id: '2.5', name: 'Travel, Annual holidays', parent: 'Lifestyle', inflation: 7.0 },
+  { id: '2.6', name: 'Charity, Donations', parent: 'Lifestyle', inflation: 5.0 },
+  { id: '2.7', name: 'House renovations, Celebrations', parent: 'Lifestyle', inflation: 6.5 },
+  // Dependent Expenses
+  { id: '3.1', name: 'Children school/college fees', parent: 'Dependent', inflation: 12.0 },
+  { id: '3.2', name: 'Children pocket money', parent: 'Dependent', inflation: 6.0 },
+  { id: '3.3', name: 'Contribution to parents, siblings', parent: 'Dependent', inflation: 5.0 },
+  // Misc
+  { id: '4.1', name: 'Personal Expenses', parent: 'Misc', inflation: 5.0 },
+];
+
+export const GOAL_TYPES = [
+  { id: 'EDUCATION', name: 'Child Education', icon: 'school', defaultInflation: 12.0 },
+  { id: 'MARRIAGE', name: 'Child Marriage', icon: 'heart', defaultInflation: 7.0 },
+  { id: 'HOME', name: 'Home Purchase', icon: 'home', defaultInflation: 6.0 },
+  { id: 'VEHICLE', name: 'Vehicle Purchase', icon: 'car', defaultInflation: 5.0 },
+  { id: 'VACATION', name: 'Dream Vacation', icon: 'plane', defaultInflation: 7.0 },
+  { id: 'RETIREMENT', name: 'Retirement', icon: 'trending-up', defaultInflation: 6.0 },
+  { id: 'EMERGENCY', name: 'Emergency Fund', icon: 'shield', defaultInflation: 6.0 },
+  { id: 'OTHER', name: 'Other Goal', icon: 'star', defaultInflation: 6.0 },
+];
+
+export const ASSET_TYPES = [
+  'SAVINGS', 'FD', 'RD', 'PPF', 'EPF', 'NPS', 'STOCKS', 'MUTUAL_FUNDS', 'GOLD', 'REAL_ESTATE', 'OTHER'
+];
+
+export const LIABILITY_TYPES = [
+  'HOME_LOAN', 'CAR_LOAN', 'PERSONAL_LOAN', 'EDUCATION_LOAN', 'CREDIT_CARD', 'OTHER'
+];
+
+export const DEFAULT_RATES = {
+  expectedReturn: 12, // Equity mutual funds
+  debtReturn: 7, // Debt funds
+  inflation: 6, // General inflation
+  postRetirementReturn: 8, // Conservative post-retirement
+  riskFreeRate: 6, // For Sharpe ratio calculation
+};
+
+export const MUTUAL_FUND_CATEGORIES = [
+  'Large Cap', 'Mid Cap', 'Small Cap', 'Flexi Cap', 'Multi Cap',
+  'ELSS', 'Focused', 'Value', 'Contra', 'Dividend Yield',
+  'Large & Mid Cap', 'Index Funds', 'Sectoral/Thematic',
+  'Debt', 'Hybrid', 'Liquid', 'Overnight'
+];
+
+export const AMCS = [
+  'HDFC', 'ICICI Prudential', 'SBI', 'Axis', 'Kotak', 'Nippon India',
+  'Aditya Birla Sun Life', 'UTI', 'DSP', 'Mirae Asset', 'Tata',
+  'Franklin Templeton', 'L&T', 'IDFC', 'Invesco', 'Motilal Oswal',
+  'PPFAS', 'Canara Robeco', 'Edelweiss', 'Bandhan'
+];
+
+export const COLORS = {
+  background: '#F0F3FA',
+  backgroundDark: '#1A1A2E',
+  cardBackground: '#FFFFFF',
+  cardBackgroundDark: '#16213E',
+  border: '#E0E0E0',
+  borderDark: '#3A3A5C',
+  textPrimary: '#333333',
+  textPrimaryDark: '#FFFFFF',
+  textSecondary: '#666666',
+  textSecondaryDark: '#A0A0A0',
+  positive: '#2E7D32',
+  negative: '#C62828',
+  accent: '#2E7D32',
+  warning: '#F57C00',
+};
+```
+
+---
+
+### Phase 4: Testing & Quality Assurance
+
+**Unit Testing:**
+
+- Jest for JavaScript/TypeScript unit tests
+- React Native Testing Library for component tests
+- Test coverage target: 80%
+
+**Integration Testing:**
+
+- API endpoint testing with Supertest
+- Redux action/reducer testing
+- Navigation flow testing
+
+**E2E Testing:**
+
+- Detox for React Native E2E tests
+- Critical flows: Authentication, Goal creation, Calculations
+
+**Manual Testing Checklist:**
+
+1. Authentication flow (PIN setup, biometric, login)
+2. Onboarding completion
+3. 8 Events step-by-step flow
+4. All 11 calculators with various inputs
+5. Mutual fund search and filtering
+6. Tax calculation both regimes
+7. Data persistence (offline mode)
+8. Theme switching (light/dark)
+9. Export/Import functionality
+
+---
+
+### Phase 5: Deployment
+
+**Backend Deployment:**
+
+- Cloud provider: AWS / Google Cloud / Azure
+- Database: MongoDB Atlas
+- Cache: Redis Cloud
+- CI/CD: GitHub Actions
+- Environment: Staging + Production
+
+**Mobile App Deployment:**
+
+- iOS: App Store Connect
+- Android: Google Play Console
+- Beta testing: TestFlight (iOS), Internal testing (Android)
+- Code signing and certificates setup
+
+**Release Checklist:**
+
+1. Version numbering (semver)
+2. Changelog documentation
+3. Privacy policy update
+4. App store descriptions and screenshots
+5. Performance optimization
+6. Security audit
+7. Crash monitoring (Sentry/Crashlytics)
+8. Analytics integration (Firebase Analytics)
+
+---
+
+## Summary
+
+**WealthElements Mobile App** is a comprehensive financial planning application that converts the existing web application into a native mobile experience. It includes:
+
+1. **8 Life Events Planner** - Goal-based financial planning for major life milestones
+2. **Financial Snapshot** - Net worth and cash flow tracking
+3. **11 Financial Calculators** - Various investment and goal planning tools
+4. **Mutual Fund Analyzer** - Real-time fund data with 47+ metrics
+5. **Tax Calculator** - Old vs New regime comparison
+6. **ML Optimization** - Smart budget allocation when goals exceed budget
+
+**Key Differentiators:**
+
+- Offline-first architecture with cloud sync
+- Biometric authentication for security
+- Category-specific inflation rates for accurate projections
+- ML-based budget optimization
+- Real-time mutual fund data integration
+- Comprehensive tax planning tools
+
+**Tech Stack:**
+
+- React Native (CLI) with TypeScript
+- Node.js + Express backend
+- MongoDB for data storage
+- Redis for caching
+- TensorFlow.js for ML models
+- mfapi.in for mutual fund data
+
+This implementation plan provides a complete roadmap for converting WealthElementsv25 into a production-ready mobile application while preserving all existing functionality and adding mobile-specific enhancements.

@@ -1,0 +1,15 @@
+{
+  "version": "1.0",
+  "exportDate": 1763140142937,
+  "exportDateFormatted": "2025-11-14T17:09:02.938Z",
+  "recordCount": 0,
+  "statistics": {
+    "totalOptimizations": 3,
+    "acceptedOptimizations": 1,
+    "successfulPlans": 0,
+    "acceptanceRate": "33.3",
+    "successRate": "0.0",
+    "averageMonthsFollowed": 0
+  },
+  "records": []
+}

@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Step 8: Investment Allocation</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#10b981",
+            "primary-dark": "#059669",
+            "primary-light": "#ecfdf5",
+            "text-primary": "#111827",
+            "text-secondary": "#4b5563",
+            "text-tertiary": "#9ca3af",
+            "background-main": "#ffffff",
+            "background-subtle": "#f9fafb",
+            "surface-card": "#ffffff",
+            "surface-highlight": "#f3f4f6",
+            "border-light": "#e5e7eb",
+            "input-bg": "#ffffff",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.5rem",
+            "lg": "0.75rem",
+            "xl": "1rem",
+            "2xl": "1.5rem",
+            "full": "9999px"
+          },
+          boxShadow: {
+            'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+            'card': '0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06)',
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+
+    /* Custom scrollbar for modal */
+    #risk-quiz-modal .overflow-y-auto::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    #risk-quiz-modal .overflow-y-auto::-webkit-scrollbar-track {
+      background: #f3f4f6;
+      border-radius: 4px;
+    }
+
+    #risk-quiz-modal .overflow-y-auto::-webkit-scrollbar-thumb {
+      background: #10b981;
+      border-radius: 4px;
+    }
+
+    #risk-quiz-modal .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+      background: #059669;
+    }
+
+    /* Firefox scrollbar */
+    #risk-quiz-modal .overflow-y-auto {
+      scrollbar-width: thin;
+      scrollbar-color: #10b981 #f3f4f6;
+    }
+
+    /* Fullscreen loader */
+    .fullscreen-loader {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 0.5s ease-out;
+    }
+
+    .fullscreen-loader.fade-out {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .loader-spinner {
+      width: 60px;
+      height: 60px;
+      border: 4px solid rgba(255, 255, 255, 0.3);
+      border-top: 4px solid #ffffff;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: #ffffff;
+      border-radius: 3px;
+      width: 0%;
+      transition: width 0.3s ease-out;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="step8.js" defer></script>
+</head>
+<body class="bg-gray-100 text-text-primary font-display antialiased selection:bg-primary selection:text-white">
+  <!-- Fullscreen Loading Animation -->
+  <div class="fullscreen-loader" id="fullscreen-loader">
+    <div class="text-center max-w-md px-8">
+      <div class="loader-spinner mx-auto mb-6"></div>
+      <h2 class="text-2xl font-semibold text-white mb-2">Generating Your Investment Plan</h2>
+      <p class="text-sm text-white/90 mb-6">Analyzing your goals and calculating optimal allocations...</p>
+      <div class="w-full h-1.5 bg-white/20 rounded-full overflow-hidden">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mx-auto max-w-md min-h-screen relative pb-28 shadow-2xl overflow-hidden bg-background-main">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-border-light px-4 py-3 shadow-sm">
+      <div class="flex items-center gap-3 mb-1">
+        <button class="p-2 -ml-2 rounded-full hover:bg-gray-100 text-text-primary transition-colors" id="back-step7">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-lg font-bold leading-tight text-text-primary">Step 8: Investment Allocation</h1>
+        </div>
+        <div class="text-xs font-semibold text-primary bg-primary-light px-2 py-1 rounded-full border border-primary/20">8 of 8</div>
+      </div>
+      <p class="text-sm text-text-secondary pl-10 leading-snug">Personalized portfolio recommendations for your goals</p>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="px-6 py-4 flex justify-between gap-1.5 bg-background-main">
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex flex-col gap-6 px-4 bg-background-subtle pt-2 pb-6">
+      <!-- Allocation Strategy Info -->
+      <section class="bg-surface-card rounded-2xl p-5 border border-border-light shadow-card">
+        <h2 class="text-lg font-bold text-text-primary mb-3">Allocation Strategy</h2>
+        <p class="text-sm text-text-secondary mb-3">Goals with similar tenure are grouped together to optimize allocation. Each group gets 2-3 funds maximum, keeping your plan simple and aligned with expected returns.</p>
+        <p class="text-sm text-text-secondary"><strong class="text-text-primary">Note:</strong> Even if you have lumpsum investments for certain goals, you still need to allocate that money into appropriate funds. The allocation shows you where to invest your lumpsum amount.</p>
+      </section>
+
+      <!-- Risk Profile Helper -->
+      <div class="bg-primary-light border border-primary/20 rounded-2xl p-4 flex items-center gap-3">
+        <span class="material-symbols-outlined text-primary text-[24px]">info</span>
+        <p class="text-sm text-text-secondary flex-1">
+          Don't know your risk appetite? <a href="#" id="open-risk-quiz" class="text-primary font-semibold hover:underline">Click here to find out!</a>
+        </p>
+      </div>
+
+      <!-- Allocation Container -->
+      <section class="allocation-container" id="allocation-container">
+        <div class="flex flex-col items-center justify-center py-12" id="allocation-loader">
+          <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+          <p class="text-sm text-text-secondary">Generating your personalized portfolio...</p>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40">
+      <div class="absolute inset-0 bg-white/80 backdrop-blur-lg border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"></div>
+      <div class="relative mx-auto max-w-md px-4 py-4 flex items-center gap-4">
+        <button class="flex-1 py-3.5 px-6 rounded-xl text-sm font-semibold text-text-secondary hover:text-text-primary hover:bg-gray-100 transition-colors" id="back-to-dashboard">
+          Back to Dashboard
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <!-- Risk Profiling Questionnaire Modal -->
+  <div id="risk-quiz-modal" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-2xl w-full flex flex-col max-h-[calc(100vh-2rem)]">
+      <div class="flex-shrink-0 bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between rounded-t-2xl">
+        <h3 class="text-lg font-bold text-text-primary">Risk Profile Questionnaire</h3>
+        <button class="p-2 hover:bg-gray-100 rounded-full transition-colors" id="close-risk-quiz">
+          <span class="material-symbols-outlined text-text-secondary">close</span>
+        </button>
+      </div>
+      <div class="px-6 py-4 overflow-y-auto flex-1">
+        <form id="risk-quiz-form" class="space-y-6 pb-4">
+          <!-- Section 1: Investment Objectives -->
+          <div class="space-y-4">
+            <h4 class="font-bold text-text-primary">1. Investment Objectives</h4>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-text-secondary">Primary investment goal?</label>
+              <div class="space-y-2">
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input type="radio" name="q1" value="1" required class="text-primary focus:ring-primary"/> Capital protection
+                </label>
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input type="radio" name="q1" value="2" class="text-primary focus:ring-primary"/> Income generation
+                </label>
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input type="radio" name="q1" value="4" class="text-primary focus:ring-primary"/> Wealth creation
+                </label>
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input type="radio" name="q1" value="5" class="text-primary focus:ring-primary"/> Aggressive growth
+                </label>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="text-sm font-medium text-text-secondary">Main investment priority?</label>
+              <div class="space-y-2">
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input type="radio" name="q2" value="1" required class="text-primary focus:ring-primary"/> Safety
+                </label>
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input type="radio" name="q2" value="2" class="text-primary focus:ring-primary"/> Stable income
+                </label>
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input type="radio" name="q2" value="3" class="text-primary focus:ring-primary"/> Balanced growth
+                </label>
+                <label class="flex items-center gap-2 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                  <input type="radio" name="q2" value="5" class="text-primary focus:ring-primary"/> High growth
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- More sections would continue here, but keeping it brief for now -->
+        </form>
+      </div>
+      <div class="flex-shrink-0 bg-white border-t border-gray-200 px-6 py-4 flex gap-3 rounded-b-2xl">
+        <button type="button" class="flex-1 py-3 px-6 rounded-xl text-sm font-semibold text-text-secondary hover:bg-gray-100 transition-colors" id="cancel-risk-quiz">
+          Cancel
+        </button>
+        <button type="button" class="flex-1 py-3 px-6 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-lg shadow-primary/30 transition-all" id="submit-risk-quiz">
+          Get My Risk Profile
+        </button>
+      </div>
+
+      <!-- Results Section -->
+      <div class="quiz-results p-6 hidden" id="quiz-results">
+        <div class="text-center">
+          <h3 class="text-lg font-bold text-text-primary mb-4">Your Risk Profile Result</h3>
+          <div class="inline-flex items-center justify-center w-32 h-32 rounded-full bg-primary-light border-4 border-primary mb-4" id="score-circle">
+            <div class="text-center">
+              <span class="text-3xl font-bold text-primary" id="score-value">0</span>
+              <span class="text-sm text-text-secondary">/ 65</span>
+            </div>
+          </div>
+          <div id="result-profile" class="mb-6">
+            <h4 class="font-bold text-text-primary mb-2" id="profile-type"></h4>
+            <p class="text-sm text-text-secondary" id="profile-description"></p>
+          </div>
+          <button class="w-full py-3 px-6 rounded-xl bg-primary hover:bg-primary-dark text-white font-bold transition-all" id="apply-risk-profile">
+            Apply to All Goals
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

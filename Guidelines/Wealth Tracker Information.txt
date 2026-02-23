@@ -1,0 +1,905 @@
+# WealthElements - Complete Implementation Guide
+
+## Overview
+
+A modern Next.js web application for comprehensive net worth tracking with:
+- Assets and Liabilities tracking with visual breakdown
+- Monthly expense tracking with categorization
+- Spending analysis with circular chart visualization
+- Active subscriptions monitoring
+- Recurring payments tracking
+- Rich data visualizations (Bar+Line combo charts, Doughnut charts)
+
+**App Name:** WealthElements
+**Platform:** Next.js 16+ Web Application (React)
+**Design Style:** Mobile-first, Card-based, Minimal Clean aesthetic
+
+---
+
+## Tech Stack
+
+### Core Framework
+| Package | Version | Purpose |
+|---------|---------|---------|
+| next | ^16.x | React framework with App Router |
+| react | ^19.x | UI library |
+| react-dom | ^19.x | React DOM rendering |
+| typescript | ^5.x | Type safety |
+
+### Styling
+| Package | Version | Purpose |
+|---------|---------|---------|
+| tailwindcss | ^4.x | Utility-first CSS |
+| @tailwindcss/postcss | ^4.x | PostCSS integration |
+
+### State Management
+| Package | Version | Purpose |
+|---------|---------|---------|
+| @reduxjs/toolkit | ^2.x | State management |
+| react-redux | ^9.x | React bindings for Redux |
+
+### Data Visualization
+| Package | Version | Purpose |
+|---------|---------|---------|
+| chart.js | ^4.x | Charting library |
+| react-chartjs-2 | ^5.x | React wrapper for Chart.js |
+
+### UI Components
+| Package | Version | Purpose |
+|---------|---------|---------|
+| lucide-react | ^0.400+ | Icon library |
+
+### Utilities
+| Package | Version | Purpose |
+|---------|---------|---------|
+| date-fns | ^3.x | Date manipulation |
+| uuid | ^11.x | Unique ID generation |
+| bcryptjs | ^3.x | Password/PIN hashing |
+
+### Dev Dependencies
+| Package | Version | Purpose |
+|---------|---------|---------|
+| @types/react | ^19.x | React types |
+| @types/node | ^22.x | Node.js types |
+| @types/bcryptjs | ^2.x | bcryptjs types |
+| @types/uuid | ^10.x | uuid types |
+| eslint | ^9.x | Code linting |
+| eslint-config-next | ^16.x | Next.js ESLint config |
+
+---
+
+## Installation Commands
+
+### Step 1: Create Next.js App
+```bash
+npx create-next-app@latest wealth-elements --typescript --tailwind --eslint --app --src-dir
+cd wealth-elements
+```
+
+### Step 2: Install All Dependencies (Single Command)
+```bash
+npm install @reduxjs/toolkit react-redux chart.js react-chartjs-2 lucide-react date-fns uuid bcryptjs && npm install -D @types/bcryptjs @types/uuid
+```
+
+---
+
+## Project Structure
+
+```
+wealth-elements/
+├── src/
+│   ├── app/                          # Next.js App Router
+│   │   ├── layout.tsx                # Root layout with Redux Provider
+│   │   ├── page.tsx                  # Home redirect to dashboard
+│   │   ├── globals.css               # Global styles + Tailwind
+│   │   ├── dashboard/
+│   │   │   └── page.tsx              # Main dashboard (single-page with tabs)
+│   │   ├── auth/
+│   │   │   └── page.tsx              # PIN authentication
+│   │   ├── settings/
+│   │   │   └── page.tsx              # Settings page
+│   │   └── onboarding/
+│   │       └── page.tsx              # Onboarding flow
+│   │
+│   ├── components/
+│   │   ├── common/                   # Reusable UI components
+│   │   │   ├── Button.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Modal.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── LoadingSpinner.tsx
+│   │   │   └── index.ts
+│   │   ├── layout/                   # Layout components
+│   │   │   ├── Sidebar.tsx           # Desktop sidebar + Mobile header
+│   │   │   ├── AppLayout.tsx         # Main app wrapper
+│   │   │   └── index.ts
+│   │   ├── charts/                   # Chart components
+│   │   │   ├── NetWorthBarLineChart.tsx  # Combined bar+line chart
+│   │   │   ├── CircularSpendingChart.tsx # Doughnut chart for spending
+│   │   │   ├── TrendChart.tsx
+│   │   │   ├── ExpenseChart.tsx
+│   │   │   ├── BarChart.tsx
+│   │   │   └── index.ts
+│   │   └── cards/                    # Feature cards
+│   │       ├── NetWorthCard.tsx      # Net worth with bar+line chart
+│   │       ├── NetWorthBanner.tsx
+│   │       ├── BankBalanceCard.tsx   # Bank balance with account list
+│   │       ├── SpendingSummaryCard.tsx # Spending with circular chart
+│   │       ├── RecurringPaymentCard.tsx # Recurring payments section
+│   │       ├── SubscriptionCardNew.tsx  # Subscriptions with brand logos
+│   │       ├── AssetCard.tsx
+│   │       ├── LiabilityCard.tsx
+│   │       ├── ExpenseCard.tsx
+│   │       ├── SubscriptionCard.tsx
+│   │       ├── AccountCard.tsx
+│   │       ├── TransactionItem.tsx
+│   │       └── index.ts
+│   │
+│   ├── store/                        # Redux store
+│   │   ├── store.ts                  # Store configuration
+│   │   ├── provider.tsx              # Redux provider wrapper ('use client')
+│   │   ├── hooks.ts                  # Typed hooks (useAppDispatch, useAppSelector)
+│   │   └── slices/                   # Feature slices
+│   │       ├── authSlice.ts
+│   │       ├── networthSlice.ts
+│   │       ├── transactionSlice.ts
+│   │       └── subscriptionSlice.ts
+│   │
+│   ├── services/                     # Business logic & API
+│   │   ├── auth.ts                   # Auth service (PIN verification)
+│   │   ├── storage.ts                # Local storage service
+│   │   └── mockData.ts               # Mock data for development
+│   │
+│   ├── types/                        # TypeScript types
+│   │   └── index.ts                  # All interfaces & types
+│   │
+│   └── utils/                        # Utility functions
+│       ├── constants.ts              # App constants, categories, colors
+│       └── formatters.ts             # Currency, date, percentage formatting
+│
+├── public/                           # Static assets
+├── package.json
+├── tsconfig.json
+├── next.config.ts
+├── postcss.config.mjs
+└── eslint.config.mjs
+```
+
+---
+
+## Design System
+
+### Color Palette
+```typescript
+const COLORS = {
+  // Backgrounds
+  background: '#F9FAFB',        // gray-50
+  cardBackground: '#FFFFFF',
+
+  // Text
+  textPrimary: '#111827',       // gray-900
+  textSecondary: '#4B5563',     // gray-600
+  textMuted: '#6B7280',         // gray-500
+
+  // Status Colors
+  positive: '#059669',          // emerald-600 (assets, gains)
+  negative: '#EF4444',          // red-500 (liabilities, expenses)
+  warning: '#F59E0B',           // amber-500
+  info: '#3B82F6',              // blue-500
+
+  // Chart Colors - Spending (Red gradient)
+  spendingColors: ['#EF4444', '#F87171', '#FCA5A5', '#FECACA', '#FEE2E2'],
+
+  // UI Elements
+  border: '#E5E7EB',            // gray-200
+  accent: '#111827',            // gray-900
+};
+```
+
+### Typography
+```css
+/* Font: Inter (system fallback) */
+--font-sans: var(--font-inter), system-ui, -apple-system, sans-serif;
+
+/* Sizes */
+text-xs: 0.75rem (12px)    /* Labels, captions */
+text-sm: 0.875rem (14px)   /* Body small */
+text-base: 1rem (16px)     /* Body */
+text-lg: 1.125rem (18px)   /* Section headers */
+text-xl: 1.25rem (20px)    /* Card titles */
+text-2xl: 1.5rem (24px)    /* Large amounts */
+text-3xl: 1.875rem (30px)  /* Hero amounts */
+```
+
+### Spacing & Radius
+```css
+/* Padding */
+p-3: 0.75rem (12px)
+p-4: 1rem (16px)
+p-5: 1.25rem (20px)
+
+/* Gaps */
+gap-2: 0.5rem (8px)
+gap-3: 0.75rem (12px)
+gap-4: 1rem (16px)
+gap-6: 1.5rem (24px)
+
+/* Border Radius */
+rounded-lg: 0.5rem (8px)
+rounded-xl: 0.75rem (12px)
+rounded-2xl: 1rem (16px)
+rounded-full: 9999px
+```
+
+### Common Component Classes
+```css
+/* Cards */
+.card { @apply bg-white rounded-2xl p-5 shadow-sm; }
+
+/* Buttons */
+.btn-primary { @apply bg-gray-900 text-white rounded-xl px-4 py-3 font-medium hover:bg-gray-800; }
+.btn-secondary { @apply bg-gray-100 text-gray-700 rounded-xl px-4 py-3 font-medium hover:bg-gray-200; }
+
+/* Tab Navigation */
+.tab-container { @apply flex gap-1 p-1 bg-gray-100 rounded-xl overflow-x-auto; }
+.tab-active { @apply bg-white text-gray-900 shadow-sm rounded-lg py-2.5 px-3 font-medium; }
+.tab-inactive { @apply text-gray-500 rounded-lg py-2.5 px-3 font-medium hover:text-gray-700; }
+
+/* Scrollbar Hide */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+```
+
+---
+
+## Key Components Specification
+
+### 1. AppLayout (src/components/layout/AppLayout.tsx)
+```typescript
+// Wrapper component with sidebar/header + main content area
+// Desktop: 256px left sidebar, padding-left
+// Mobile: 60px top header, padding-top
+// Mobile bottom padding removed (no bottom nav)
+```
+
+### 2. Sidebar (src/components/layout/Sidebar.tsx)
+```typescript
+// Desktop: Fixed left sidebar with logo + Dashboard link + Settings
+// Mobile: Fixed top header with logo + Settings icon
+// NO bottom navigation - single page dashboard design
+```
+
+### 3. Dashboard Page (src/app/dashboard/page.tsx)
+```typescript
+// Single-page dashboard with 4 tabs:
+// - Overview: Net Worth Card, Quick Stats, Bank Balance, Recurring, Subscriptions
+// - Assets: Asset accounts list, Liability accounts list, Net Worth summary
+// - Spending: Circular spending chart, Category breakdown, Recurring payments
+// - Subscriptions: Monthly total, All subscriptions, Recurring payments
+
+// Tab Navigation: Horizontal scrollable pills at top
+// Each tab shows relevant cards in vertical scrollable layout
+```
+
+### 4. NetWorthCard (src/components/cards/NetWorthCard.tsx)
+```typescript
+interface NetWorthCardProps {
+  currentNetWorth: number;
+  changeAmount: number;
+  totalAssets: number;
+  totalLiabilities: number;
+  trendData: TrendDataPoint[];
+}
+// Displays:
+// - Large net worth amount
+// - Change indicator (green up / red down)
+// - Assets/Liabilities pills
+// - Bar+Line combo chart (3 months)
+// - Pagination dots
+```
+
+### 5. NetWorthBarLineChart (src/components/charts/NetWorthBarLineChart.tsx)
+```typescript
+// Combined bar + line chart using Chart.js
+// Bars: Gray for previous months, Green for current month
+// Line: Green line showing net worth trend
+// Points: White circles with green border
+// X-axis: Month labels (Nov '25, Dec '25, Jan '26)
+// Y-axis: Compact currency format (₹10.0L, ₹12.0L)
+```
+
+### 6. CircularSpendingChart (src/components/charts/CircularSpendingChart.tsx)
+```typescript
+// Full 360° doughnut chart (NOT semi-circular)
+// Colors: Red gradient (darkest to lightest by amount)
+// Center text: "Spent this month" + total amount
+// Cutout: 75% (thick ring)
+// No gaps between segments
+```
+
+### 7. BankBalanceCard (src/components/cards/BankBalanceCard.tsx)
+```typescript
+interface BankBalanceCardProps {
+  totalBalance: number;
+  accounts: Account[];
+  spendingChange?: { percentage: number; days: number; };
+}
+// Displays:
+// - Total balance with eye toggle (show/hide)
+// - Account list with masked numbers (XXXX 1234)
+// - Spending insight banner (green background)
+```
+
+### 8. SpendingSummaryCard (src/components/cards/SpendingSummaryCard.tsx)
+```typescript
+interface SpendingSummaryCardProps {
+  monthName: string;
+  categories: CategorySummary[];
+  totalSpent: number;
+  untaggedPercentage?: number;
+}
+// Displays:
+// - Circular spending chart (centered)
+// - Category legend (colored dots)
+// - Untagged alert banner (amber, clickable)
+// - Category list with icons, counts, amounts
+// - "All spends" link at bottom
+```
+
+### 9. RecurringPaymentsSection (src/components/cards/RecurringPaymentCard.tsx)
+```typescript
+interface RecurringPayment {
+  id: string;
+  name: string;
+  amount: number;
+  dueDate: string;
+  logo?: string;
+  logoColor?: string;
+}
+// Horizontal scrollable cards
+// Each card: Name, Amount, Due date badge
+// Due today: amber, Due soon: orange, Normal: gray
+```
+
+### 10. SubscriptionsSection (src/components/cards/SubscriptionCardNew.tsx)
+```typescript
+// Horizontal scrollable cards
+// Brand colors for known services (Netflix red, Spotify green, etc.)
+// Each card: Name, Amount, Brand logo, Due date
+// Header: "Subscriptions" + active count
+```
+
+---
+
+## TypeScript Types (src/types/index.ts)
+
+```typescript
+export interface User {
+  userId: string;
+  createdAt: string;
+  lastLoginAt: string;
+}
+
+export interface Account {
+  accountId: string;
+  userId: string;
+  accountType: 'SAVINGS' | 'CURRENT' | 'CREDIT_CARD' | 'LOAN' | 'FD' | 'RD' | 'MUTUAL_FUND';
+  accountNumber: string;
+  bankName: string;
+  ifscCode?: string;
+  balance: number;
+  assetOrLiability: 'ASSET' | 'LIABILITY';
+  isActive: boolean;
+  lastSyncedAt: string;
+  createdAt: string;
+}
+
+export interface Transaction {
+  transactionId: string;
+  userId: string;
+  accountId: string;
+  amount: number;
+  type: 'DEBIT' | 'CREDIT';
+  merchantName: string;
+  description: string;
+  category: string;
+  categoryConfidence: number;
+  isManualCategory: boolean;
+  transactionDate: string;
+  balance: number;
+  mode: 'UPI' | 'CARD' | 'NEFT' | 'RTGS' | 'IMPS' | 'CASH';
+  reference: string;
+  isSubscription: boolean;
+  createdAt: string;
+}
+
+export interface Subscription {
+  subscriptionId: string;
+  userId: string;
+  merchantName: string;
+  amount: number;
+  frequency: 'MONTHLY' | 'YEARLY' | 'QUARTERLY';
+  lastChargedAt: string;
+  nextChargeAt: string;
+  detectedAt: string;
+  isConfirmed: boolean;
+  isActive: boolean;
+  category: string;
+  createdAt: string;
+}
+
+export interface TrendDataPoint {
+  month: string;        // Format: "2025-01"
+  assets: number;
+  liabilities: number;
+  netWorth: number;
+}
+
+export interface CategorySummary {
+  category: string;
+  categoryId: string;
+  amount: number;
+  count: number;
+  percentage: number;
+}
+
+export interface TransactionSummary {
+  totalIncome: number;
+  totalExpenses: number;
+  netSavings: number;
+  byCategory: CategorySummary[];
+}
+
+// Redux State Types
+export interface AuthState {
+  isAuthenticated: boolean;
+  userId: string | null;
+  biometricEnabled: boolean;
+  onboardingCompleted: boolean;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface NetworthState {
+  totalNetWorth: number;
+  totalAssets: number;
+  totalLiabilities: number;
+  assetAccounts: Account[];
+  liabilityAccounts: Account[];
+  trendData: TrendDataPoint[];
+  lastUpdated: string;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface TransactionState {
+  transactions: Transaction[];
+  monthlySummary: TransactionSummary | null;
+  isLoading: boolean;
+  error: string | null;
+}
+
+export interface SubscriptionState {
+  activeSubscriptions: Subscription[];
+  detectedSubscriptions: Subscription[];
+  inactiveSubscriptions: Subscription[];
+  isLoading: boolean;
+  error: string | null;
+}
+```
+
+---
+
+## Utility Functions (src/utils/formatters.ts)
+
+```typescript
+import { format, formatDistance, isValid, parseISO } from 'date-fns';
+
+// Format as Indian currency: 1245000 → ₹12,45,000
+export const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: 'INR',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(Math.abs(amount));
+};
+
+// Format compact: 1245000 → ₹12.5L, 15600 → ₹15.6K
+export const formatCompactCurrency = (amount: number): string => {
+  const absAmount = Math.abs(amount);
+  if (absAmount >= 10000000) return `₹${(absAmount / 10000000).toFixed(1)}Cr`;
+  if (absAmount >= 100000) return `₹${(absAmount / 100000).toFixed(1)}L`;
+  if (absAmount >= 1000) return `₹${(absAmount / 1000).toFixed(1)}K`;
+  return formatCurrency(amount);
+};
+
+// Format date: dd MMM yyyy
+export const formatDate = (date: Date | string): string => {
+  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+  if (!isValid(parsedDate)) return 'Invalid date';
+  return format(parsedDate, 'dd MMM yyyy');
+};
+
+// Format relative: "2 hours ago", "3 days ago"
+export const formatRelativeTime = (date: Date | string): string => {
+  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+  if (!isValid(parsedDate)) return 'Unknown';
+  return formatDistance(parsedDate, new Date(), { addSuffix: true });
+};
+
+// Format short month for charts: "Jan", "Feb"
+export const formatShortMonth = (date: Date | string): string => {
+  const parsedDate = typeof date === 'string' ? parseISO(date) : date;
+  if (!isValid(parsedDate)) return '';
+  return format(parsedDate, 'MMM');
+};
+
+// Mask account number: 1234567890 → XXXX 7890
+export const maskAccountNumber = (accountNumber: string): string => {
+  if (accountNumber.length <= 4) return accountNumber;
+  return `XXXX ${accountNumber.slice(-4)}`;
+};
+
+// Format percentage: 12.5 → "12.5%"
+export const formatPercentage = (value: number, decimals: number = 1): string => {
+  return `${value.toFixed(decimals)}%`;
+};
+```
+
+---
+
+## Constants (src/utils/constants.ts)
+
+```typescript
+export const EXPENSE_CATEGORIES = [
+  // Household
+  { id: '1.1', name: 'Grocery & Toiletries', keywords: ['bigbasket', 'grofers', 'dmart', 'zepto', 'blinkit'] },
+  { id: '1.2', name: 'House Rent, Maintenance', keywords: ['rent', 'maintenance', 'society'] },
+  { id: '1.3', name: 'Vehicle - Fuel, Servicing', keywords: ['fuel', 'petrol', 'hp', 'iocl', 'bpcl'] },
+  { id: '1.4', name: 'Doctor Visits, Medicines', keywords: ['pharmacy', 'apollo', 'medplus', 'hospital'] },
+  { id: '1.5', name: 'Utilities', keywords: ['electricity', 'bescom', 'water', 'gas'] },
+  { id: '1.8', name: 'Internet & Mobile Plans', keywords: ['airtel', 'jio', 'vodafone', 'act', 'internet'] },
+  // Lifestyle
+  { id: '2.2', name: 'Shopping, Gifts', keywords: ['amazon', 'flipkart', 'myntra', 'shopping'] },
+  { id: '2.3', name: 'Dining, Movies, Sports', keywords: ['swiggy', 'zomato', 'pvr', 'movie'] },
+  { id: '2.5', name: 'Travel, Annual holidays', keywords: ['uber', 'ola', 'makemytrip', 'flight'] },
+  // Misc
+  { id: '4.1', name: 'Personal Expenses', keywords: ['atm', 'cash'] },
+];
+
+export const STORAGE_KEYS = {
+  USER_ID: 'wealth_user_id',
+  PIN_HASH: 'wealth_pin_hash',
+  AUTH_TOKEN: 'wealth_auth_token',
+  BIOMETRIC_ENABLED: 'wealth_biometric',
+  ONBOARDING_COMPLETED: 'wealth_onboarding',
+};
+
+export const COLORS = {
+  primary: '#059669',
+  danger: '#EF4444',
+  warning: '#F59E0B',
+  info: '#3B82F6',
+  background: '#F9FAFB',
+  card: '#FFFFFF',
+};
+
+export const CHART_COLORS = {
+  assets: '#059669',
+  liabilities: '#EF4444',
+  spending: ['#EF4444', '#F87171', '#FCA5A5', '#FECACA', '#FEE2E2'],
+};
+```
+
+---
+
+## Redux Store Setup
+
+### store.ts
+```typescript
+import { configureStore } from '@reduxjs/toolkit';
+import authReducer from './slices/authSlice';
+import networthReducer from './slices/networthSlice';
+import transactionReducer from './slices/transactionSlice';
+import subscriptionReducer from './slices/subscriptionSlice';
+
+export const store = configureStore({
+  reducer: {
+    auth: authReducer,
+    networth: networthReducer,
+    transactions: transactionReducer,
+    subscriptions: subscriptionReducer,
+  },
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+```
+
+### hooks.ts
+```typescript
+import { TypedUseSelectorHook, useDispatch, useSelector } from 'react-redux';
+import type { RootState, AppDispatch } from './store';
+
+export const useAppDispatch: () => AppDispatch = useDispatch;
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+```
+
+### provider.tsx
+```typescript
+'use client';
+import { Provider } from 'react-redux';
+import { store } from './store';
+
+export function ReduxProvider({ children }: { children: React.ReactNode }) {
+  return <Provider store={store}>{children}</Provider>;
+}
+```
+
+---
+
+## Chart.js Registration
+
+```typescript
+// Required in any component using charts
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  LineElement,
+  PointElement,
+  ArcElement,
+  Title,
+  Tooltip,
+  Legend
+);
+```
+
+---
+
+## Global CSS (src/app/globals.css)
+
+```css
+@import "tailwindcss";
+
+:root {
+  --background: #f9fafb;
+  --foreground: #1f2937;
+  --font-sans: var(--font-inter);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+/* Focus styles */
+*:focus-visible { outline: 2px solid #3b82f6; outline-offset: 2px; }
+
+/* Selection */
+::selection { background: #3b82f6; color: white; }
+
+/* Smooth transitions */
+* {
+  transition-property: background-color, border-color, color, fill, stroke;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Animations */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in { animation: fadeIn 0.3s ease-out; }
+
+/* Number input hide spinners */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+input[type="number"] { -moz-appearance: textfield; }
+
+/* Hide scrollbar for horizontal scroll */
+.scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+.scrollbar-hide::-webkit-scrollbar { display: none; }
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .mobile-card { margin-left: -1rem; margin-right: -1rem; border-radius: 0; }
+}
+```
+
+---
+
+## Authentication Flow
+
+### PIN Setup (First Time)
+1. User opens app → Redirects to /auth
+2. Shows "Create Your PIN" with 6-digit input
+3. User enters PIN → Shows "Confirm Your PIN"
+4. If match → bcrypt hash PIN, store in localStorage
+5. Generate userId (UUID), store in localStorage
+6. Redirect to /onboarding
+
+### PIN Login (Returning User)
+1. User opens app → Checks localStorage for userId
+2. If exists → Shows "Welcome Back" with PIN input
+3. User enters 6 digits → Auto-submit
+4. Verify PIN hash with bcrypt.compare()
+5. If valid → Redirect to /dashboard
+6. If invalid → Show error, clear input
+
+---
+
+## Navigation Structure
+
+### Desktop (lg: breakpoint and above)
+- Fixed left sidebar (256px)
+- Logo + App name at top
+- Single "Dashboard" nav item (always active)
+- "Settings" link at bottom
+- Main content area with padding
+
+### Mobile (below lg: breakpoint)
+- Fixed top header (60px)
+- Logo on left, Settings icon on right
+- NO bottom navigation
+- Main content with top padding
+- Full-width card layout
+
+### Dashboard Tabs (Internal Navigation)
+- Overview | Assets | Spending | Subscriptions
+- Horizontal scrollable pills
+- Content switches based on active tab
+- No page navigation, single-page design
+
+---
+
+## Mock Data Structure
+
+```typescript
+// Asset Accounts
+const mockAssetAccounts: Account[] = [
+  { accountId: 'acc_001', accountType: 'SAVINGS', bankName: 'HDFC Bank', balance: 485000, ... },
+  { accountId: 'acc_002', accountType: 'SAVINGS', bankName: 'ICICI Bank', balance: 125000, ... },
+  { accountId: 'acc_003', accountType: 'FD', bankName: 'SBI', balance: 500000, ... },
+  { accountId: 'acc_004', accountType: 'MUTUAL_FUND', bankName: 'Zerodha', balance: 350000, ... },
+];
+
+// Liability Accounts
+const mockLiabilityAccounts: Account[] = [
+  { accountId: 'acc_005', accountType: 'LOAN', bankName: 'HDFC Bank', balance: 250000, ... },
+  { accountId: 'acc_006', accountType: 'CREDIT_CARD', bankName: 'Axis Bank', balance: 45000, ... },
+];
+
+// Subscriptions
+const mockSubscriptions: Subscription[] = [
+  { merchantName: 'Netflix', amount: 649, frequency: 'MONTHLY', ... },
+  { merchantName: 'Spotify Premium', amount: 119, frequency: 'MONTHLY', ... },
+  { merchantName: 'Amazon Prime', amount: 1499, frequency: 'YEARLY', ... },
+];
+
+// Trend Data (12 months)
+const mockTrendData: TrendDataPoint[] = [
+  { month: '2025-02', assets: 1200000, liabilities: 350000, netWorth: 850000 },
+  { month: '2025-03', assets: 1250000, liabilities: 340000, netWorth: 910000 },
+  // ... up to current month
+];
+```
+
+---
+
+## AI Prompt Template
+
+To recreate this exact application, use this prompt:
+
+```
+Create a net worth tracking web application named "WealthElements" using:
+
+Tech Stack:
+- Next.js 16+ with App Router and TypeScript
+- Tailwind CSS 4 for styling
+- Redux Toolkit for state management
+- Chart.js with react-chartjs-2 for data visualization
+- Lucide React for icons
+- date-fns for date handling
+- bcryptjs for PIN hashing
+
+Design Requirements:
+- Mobile-first responsive design
+- Clean minimal UI with card-based layout
+- Single-page dashboard with tabbed sections (Overview, Assets, Spending, Subscriptions)
+- Desktop: Left sidebar with logo
+- Mobile: Top header with logo, NO bottom navigation
+- Indian locale formatting (₹ currency with lakhs/crores)
+
+Dashboard Tabs:
+1. Overview Tab:
+   - Net Worth Card with combined bar+line chart (gray bars, green current month, green line)
+   - Quick Stats cards (Total Assets, This Month spending) - clickable to switch tabs
+   - Bank Balance Card with eye toggle and account list
+   - Recurring Payments (horizontal scroll)
+   - Subscriptions preview (horizontal scroll)
+
+2. Assets Tab:
+   - Assets summary with green icon
+   - List of asset accounts (Savings, FD, Mutual Fund)
+   - Liabilities summary with red icon
+   - List of liability accounts (Loans, Credit Cards)
+   - Net Worth summary card (dark gradient)
+
+3. Spending Tab:
+   - Circular spending chart (full 360° doughnut, red gradient)
+   - Category legend with colored dots
+   - Untagged alert banner
+   - Category list with icons and amounts
+   - Recurring Payments section
+
+4. Subscriptions Tab:
+   - Monthly subscription total
+   - All subscriptions (horizontal scroll with brand colors)
+   - Recurring Payments section
+
+Authentication:
+- 6-digit PIN setup/login
+- Stored as bcrypt hash in localStorage
+- Auto-submit on 6th digit
+
+Charts:
+- Bar+Line combo: Chart.js with mixed type chart
+- Doughnut: 360° circumference, 75% cutout, red gradient colors
+
+Color Scheme:
+- Assets/Positive: emerald-600 (#059669)
+- Liabilities/Negative: red-500 (#EF4444)
+- Background: gray-50 (#F9FAFB)
+- Cards: white with shadow-sm
+- Text: gray-900, gray-600, gray-500
+```
+
+---
+
+## Verification Checklist
+
+After implementation, verify:
+
+- [ ] App loads at localhost:3000
+- [ ] Redirects to /auth for new users
+- [ ] PIN setup flow works (6 digits, confirm)
+- [ ] PIN login works for returning users
+- [ ] Dashboard loads with 4 tabs
+- [ ] Tab switching works smoothly
+- [ ] Net Worth chart shows bar+line combo
+- [ ] Spending chart shows full 360° doughnut
+- [ ] Bank balance eye toggle works
+- [ ] Horizontal scroll sections work
+- [ ] Mobile header shows (no bottom nav)
+- [ ] Desktop sidebar shows
+- [ ] All amounts format correctly (₹12,45,000 or ₹12.5L)
+- [ ] Build completes without errors (npm run build)
+
+---
+
+## End of Implementation Guide
+
+This document provides complete specifications for recreating the WealthElements application. Follow the structure, use the exact dependencies, and implement components as specified for an identical result.

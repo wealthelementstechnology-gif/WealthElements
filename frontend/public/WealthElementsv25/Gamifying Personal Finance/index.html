@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finance Ladder - Rewards</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="logo">Finance Ladder</div>
+            <div class="user-info">
+                <div class="monthly-sip">
+                    <label>Monthly SIP: ₹</label>
+                    <input type="number" id="monthlySIP" value="5000" min="1000" step="1000" onchange="updateSIPAmount()">
+                </div>
+                <div class="monthly-rewards-counter">
+                    <span class="counter-label">Monthly Rewards</span>
+                    <span class="counter-value" id="monthlyRewardsCounter">0/10</span>
+                </div>
+                <div class="total-points">
+                    <span class="points-label">Total Points</span>
+                    <span class="points-value" id="totalPoints">0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Action Buttons -->
+        <div class="actions-section">
+            <h3 class="section-title">Earn Points</h3>
+
+            <!-- Daily Habits -->
+            <div class="category-group">
+                <h4 class="category-title">Daily Habits</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="earnPoints('dailyLogin', 10)">
+                        <span class="btn-icon">📅</span>
+                        <span class="btn-text">Daily Login Streak</span>
+                        <span class="btn-points">+10</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('dailyTip', 10)">
+                        <span class="btn-icon">💡</span>
+                        <span class="btn-text">Daily Finance Tip</span>
+                        <span class="btn-points">+10</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('dailyChallenge', 20)">
+                        <span class="btn-icon">🎮</span>
+                        <span class="btn-text">Daily Challenge</span>
+                        <span class="btn-points">+20</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('leaderboard', 10)">
+                        <span class="btn-icon">🏆</span>
+                        <span class="btn-text">Check Leaderboard</span>
+                        <span class="btn-points">+10</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Learning & Education -->
+            <div class="category-group">
+                <h4 class="category-title">Learning & Education</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="earnPoints('readArticle', 20)">
+                        <span class="btn-icon">📰</span>
+                        <span class="btn-text">Read Financial Article</span>
+                        <span class="btn-points">+20</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('watchVideo', 25)">
+                        <span class="btn-icon">🎥</span>
+                        <span class="btn-text">Watch Finance Video</span>
+                        <span class="btn-points">+25</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('podcast', 30)">
+                        <span class="btn-icon">🎧</span>
+                        <span class="btn-text">Finance Podcast</span>
+                        <span class="btn-points">+30</span>
+                    </button>
+                    <button class="action-btn quiz-btn" onclick="openQuiz()">
+                        <span class="btn-icon">📚</span>
+                        <span class="btn-text">Take Finance Quiz</span>
+                        <span class="btn-points">+25</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Goal Setting & Planning -->
+            <div class="category-group">
+                <h4 class="category-title">Goal Setting & Planning</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="earnPoints('newGoal', 50)">
+                        <span class="btn-icon">🎯</span>
+                        <span class="btn-text">Set New Financial Goal</span>
+                        <span class="btn-points">+50</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('emergencyFund', 25)">
+                        <span class="btn-icon">🆘</span>
+                        <span class="btn-text">Emergency Fund Check</span>
+                        <span class="btn-points">+25</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('netWorth', 40)">
+                        <span class="btn-icon">💼</span>
+                        <span class="btn-text">Update Net Worth</span>
+                        <span class="btn-points">+40</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('milestone', 12)">
+                        <span class="btn-icon">🎊</span>
+                        <span class="btn-text">Celebrate Milestone</span>
+                        <span class="btn-points">+12</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Investment Actions -->
+            <div class="category-group">
+                <h4 class="category-title">Investment Actions</h4>
+                <div class="action-buttons">
+                    <button class="action-btn sip-btn" onclick="simulateSIPTopup()">
+                        <span class="btn-icon">💰</span>
+                        <span class="btn-text">SIP Topped Up</span>
+                        <span class="btn-points">+50</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('increasedSIP', 80)">
+                        <span class="btn-icon">📈</span>
+                        <span class="btn-text">Increased SIP Amount</span>
+                        <span class="btn-points">+80</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('autoInvest', 60)">
+                        <span class="btn-icon">🤖</span>
+                        <span class="btn-text">Set Auto-Investment</span>
+                        <span class="btn-points">+60</span>
+                    </button>
+                    <button class="action-btn corpus-btn" onclick="simulateCorpusReached()">
+                        <span class="btn-icon">🏅</span>
+                        <span class="btn-text">Corpus Milestone</span>
+                        <span class="btn-points">+150</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Market Performance -->
+            <div class="category-group">
+                <h4 class="category-title">Market Performance</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="earnPoints('positiveReturns', 50)">
+                        <span class="btn-icon">📊</span>
+                        <span class="btn-text">Portfolio Positive Returns</span>
+                        <span class="btn-points">+50</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('beatBenchmark', 100)">
+                        <span class="btn-icon">🥇</span>
+                        <span class="btn-text">Beat Benchmark</span>
+                        <span class="btn-points">+100</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Community & Social -->
+            <div class="category-group">
+                <h4 class="category-title">Community & Social</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="earnPoints('referFriend', 150)">
+                        <span class="btn-icon">👥</span>
+                        <span class="btn-text">Refer a Friend</span>
+                        <span class="btn-points">+150</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('discussion', 20)">
+                        <span class="btn-icon">💬</span>
+                        <span class="btn-text">Join Discussion</span>
+                        <span class="btn-points">+20</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('helpAnswer', 35)">
+                        <span class="btn-icon">🙋</span>
+                        <span class="btn-text">Help Answer Question</span>
+                        <span class="btn-points">+35</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('weeklyChallenge', 50)">
+                        <span class="btn-icon">🏁</span>
+                        <span class="btn-text">Weekly Challenge</span>
+                        <span class="btn-points">+50</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Notifications & Alerts -->
+            <div class="category-group">
+                <h4 class="category-title">Notifications & Alerts</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="earnPoints('pushNotif', 25)">
+                        <span class="btn-icon">🔔</span>
+                        <span class="btn-text">Enable Push Notifications</span>
+                        <span class="btn-points">+25</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('whatsapp', 20)">
+                        <span class="btn-icon">💬</span>
+                        <span class="btn-text">WhatsApp Updates</span>
+                        <span class="btn-points">+20</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('emailPref', 15)">
+                        <span class="btn-icon">✉️</span>
+                        <span class="btn-text">Email Preferences</span>
+                        <span class="btn-points">+15</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('marketAlert', 22)">
+                        <span class="btn-icon">📲</span>
+                        <span class="btn-text">Set Market Alert</span>
+                        <span class="btn-points">+22</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('paymentReminder', 10)">
+                        <span class="btn-icon">⏰</span>
+                        <span class="btn-text">Payment Reminder</span>
+                        <span class="btn-points">+10</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Investment Discipline -->
+            <div class="category-group">
+                <h4 class="category-title">Investment Discipline</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="earnPoints('zeroBounce3m', 80)">
+                        <span class="btn-icon">✅</span>
+                        <span class="btn-text">Zero SIP Bounce - 3 Months</span>
+                        <span class="btn-points">+80</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('zeroBounce6m', 150)">
+                        <span class="btn-icon">🎖️</span>
+                        <span class="btn-text">Zero SIP Bounce - 6 Months</span>
+                        <span class="btn-points">+150</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('noRedemption', 100)">
+                        <span class="btn-icon">🔒</span>
+                        <span class="btn-text">No Redemption - 1 Year</span>
+                        <span class="btn-points">+100</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('marketFall', 120)">
+                        <span class="btn-icon">💪</span>
+                        <span class="btn-text">SIP During Market Fall</span>
+                        <span class="btn-points">+120</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('sipDip', 100)">
+                        <span class="btn-icon">🎯</span>
+                        <span class="btn-text">Increased SIP During Dip</span>
+                        <span class="btn-points">+100</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Feedback & Improvement -->
+            <div class="category-group">
+                <h4 class="category-title">Feedback & Improvement</h4>
+                <div class="action-buttons">
+                    <button class="action-btn" onclick="earnPoints('feedback', 35)">
+                        <span class="btn-icon">📝</span>
+                        <span class="btn-text">Give Feedback</span>
+                        <span class="btn-points">+35</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('featureRequest', 40)">
+                        <span class="btn-icon">💭</span>
+                        <span class="btn-text">Feature Request</span>
+                        <span class="btn-points">+40</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('bugReport', 50)">
+                        <span class="btn-icon">🐛</span>
+                        <span class="btn-text">Report Bug</span>
+                        <span class="btn-points">+50</span>
+                    </button>
+                    <button class="action-btn" onclick="earnPoints('badgeUnlock', 15)">
+                        <span class="btn-icon">🏅</span>
+                        <span class="btn-text">Badge Unlocked</span>
+                        <span class="btn-points">+15</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Daily Objectives -->
+        <div class="daily-objectives-section">
+            <div class="section-header">
+                <h3 class="section-title">Daily Objectives</h3>
+                <div class="reset-timer" id="resetTimer">Resets in: --:--:--</div>
+            </div>
+            <div class="daily-objectives-grid" id="dailyObjectivesContainer">
+                <!-- Daily objectives will be rendered here by JavaScript -->
+            </div>
+        </div>
+
+        <!-- Rewards Ladder -->
+        <div class="ladder-section">
+            <h3 class="section-title">Rewards Ladder</h3>
+
+            <div class="ladder-container">
+                <div class="ladder-content">
+                    <!-- Point Scale (Left Side) -->
+                    <div class="point-scale">
+                        <div class="scale-marker">25000</div>
+                        <div class="scale-marker">22500</div>
+                        <div class="scale-marker">20000</div>
+                        <div class="scale-marker">17500</div>
+                        <div class="scale-marker">15000</div>
+                        <div class="scale-marker">12500</div>
+                        <div class="scale-marker">10000</div>
+                        <div class="scale-marker">7500</div>
+                        <div class="scale-marker">5000</div>
+                        <div class="scale-marker">2500</div>
+                        <div class="scale-marker">0</div>
+                    </div>
+
+                    <!-- Progress Bar -->
+                    <div class="progress-track">
+                        <div class="progress-fill" id="progressFill"></div>
+                        <div class="player-indicator" id="playerIndicator">
+                            <span class="player-icon">👤</span>
+                        </div>
+                    </div>
+
+                    <!-- Reward Boxes (Right Side) - All 50 Rewards -->
+                    <div class="reward-boxes">
+                    <div class="reward-box" data-points="100" id="reward-100"><div class="reward-content locked"><div class="reward-icon">🎁</div><div class="reward-name">Welcome Bonus</div><div class="reward-desc">₹50 Amazon Voucher</div></div></div>
+                    <div class="reward-box" data-points="200" id="reward-200"><div class="reward-content locked"><div class="reward-icon">🎧</div><div class="reward-name">BoAt Reward</div><div class="reward-desc">10% Off Coupon</div></div></div>
+                    <div class="reward-box choice-box" data-points="300" id="reward-300"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="400" id="reward-400"><div class="reward-content locked"><div class="reward-icon">✈️</div><div class="reward-name">MakeMyTrip</div><div class="reward-desc">₹200 Off Coupon</div></div></div>
+                    <div class="reward-box cashback-box" data-points="500" id="reward-500"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Cashback!</div><div class="reward-desc">1% of Monthly SIP</div><div class="reward-amount" id="cashback-500">₹50</div></div></div>
+                    <div class="reward-box choice-box" data-points="600" id="reward-600"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="700" id="reward-700"><div class="reward-content locked"><div class="reward-icon">🍿</div><div class="reward-name">BookMyShow</div><div class="reward-desc">Movie Voucher ₹300</div></div></div>
+                    <div class="reward-box" data-points="800" id="reward-800"><div class="reward-content locked"><div class="reward-icon">🛍️</div><div class="reward-name">Flipkart</div><div class="reward-desc">₹250 Voucher</div></div></div>
+                    <div class="reward-box choice-box" data-points="900" id="reward-900"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box cashback-box" data-points="1000" id="reward-1000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Cashback!</div><div class="reward-desc">1% of Monthly SIP</div><div class="reward-amount" id="cashback-1000">₹50</div></div></div>
+                    <div class="reward-box" data-points="1100" id="reward-1100"><div class="reward-content locked"><div class="reward-icon">🛒</div><div class="reward-name">BigBasket</div><div class="reward-desc">₹300 Grocery Voucher</div></div></div>
+                    <div class="reward-box choice-box" data-points="1200" id="reward-1200"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="1300" id="reward-1300"><div class="reward-content locked"><div class="reward-icon">🚗</div><div class="reward-name">Uber</div><div class="reward-desc">₹400 Ride Credits</div></div></div>
+                    <div class="reward-box" data-points="1400" id="reward-1400"><div class="reward-content locked"><div class="reward-icon">👟</div><div class="reward-name">Nike</div><div class="reward-desc">20% Off Coupon</div></div></div>
+                    <div class="reward-box cashback-box" data-points="1500" id="reward-1500"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Cashback!</div><div class="reward-desc">1.5% of Monthly SIP</div><div class="reward-amount" id="cashback-1500">₹75</div></div></div>
+                    <div class="reward-box choice-box" data-points="1600" id="reward-1600"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="1700" id="reward-1700"><div class="reward-content locked"><div class="reward-icon">🏨</div><div class="reward-name">OYO Rooms</div><div class="reward-desc">₹500 Off Booking</div></div></div>
+                    <div class="reward-box" data-points="1800" id="reward-1800"><div class="reward-content locked"><div class="reward-icon">📖</div><div class="reward-name">Amazon Kindle</div><div class="reward-desc">3 Free Books</div></div></div>
+                    <div class="reward-box choice-box" data-points="1900" id="reward-1900"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box cashback-box" data-points="2000" id="reward-2000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Big Cashback!</div><div class="reward-desc">1.5% of Monthly SIP</div><div class="reward-amount" id="cashback-2000">₹75</div></div></div>
+                    <div class="reward-box" data-points="2100" id="reward-2100"><div class="reward-content locked"><div class="reward-icon">💻</div><div class="reward-name">Microsoft Store</div><div class="reward-desc">₹600 Voucher</div></div></div>
+                    <div class="reward-box choice-box" data-points="2200" id="reward-2200"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="2300" id="reward-2300"><div class="reward-content locked"><div class="reward-icon">✈️</div><div class="reward-name">Cleartrip</div><div class="reward-desc">₹700 Flight Voucher</div></div></div>
+                    <div class="reward-box" data-points="2400" id="reward-2400"><div class="reward-content locked"><div class="reward-icon">🛍️</div><div class="reward-name">Myntra</div><div class="reward-desc">₹500 Fashion Voucher</div></div></div>
+                    <div class="reward-box cashback-box" data-points="2500" id="reward-2500"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Mega Cashback!</div><div class="reward-desc">2% of Monthly SIP</div><div class="reward-amount" id="cashback-2500">₹100</div></div></div>
+                    <div class="reward-box choice-box" data-points="2600" id="reward-2600"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="2700" id="reward-2700"><div class="reward-content locked"><div class="reward-icon">🎬</div><div class="reward-name">Disney+ Hotstar</div><div class="reward-desc">1 Year Subscription</div></div></div>
+                    <div class="reward-box" data-points="2800" id="reward-2800"><div class="reward-content locked"><div class="reward-icon">🍔</div><div class="reward-name">McDonald's</div><div class="reward-desc">₹400 Meal Voucher</div></div></div>
+                    <div class="reward-box choice-box" data-points="2900" id="reward-2900"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box cashback-box" data-points="3000" id="reward-3000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Super Cashback!</div><div class="reward-desc">2% of Monthly SIP</div><div class="reward-amount" id="cashback-3000">₹100</div></div></div>
+                    <div class="reward-box" data-points="3100" id="reward-3100"><div class="reward-content locked"><div class="reward-icon">🎨</div><div class="reward-name">Adobe Creative</div><div class="reward-desc">1 Month Subscription</div></div></div>
+                    <div class="reward-box choice-box" data-points="3200" id="reward-3200"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="3300" id="reward-3300"><div class="reward-content locked"><div class="reward-icon">⌚</div><div class="reward-name">Titan</div><div class="reward-desc">25% Off Watches</div></div></div>
+                    <div class="reward-box" data-points="3400" id="reward-3400"><div class="reward-content locked"><div class="reward-icon">🛍️</div><div class="reward-name">Nykaa</div><div class="reward-desc">₹700 Beauty Voucher</div></div></div>
+                    <div class="reward-box cashback-box" data-points="3500" id="reward-3500"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Ultra Cashback!</div><div class="reward-desc">2.5% of Monthly SIP</div><div class="reward-amount" id="cashback-3500">₹125</div></div></div>
+                    <div class="reward-box choice-box" data-points="3600" id="reward-3600"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="3700" id="reward-3700"><div class="reward-content locked"><div class="reward-icon">🏃</div><div class="reward-name">Decathlon</div><div class="reward-desc">₹800 Sports Voucher</div></div></div>
+                    <div class="reward-box" data-points="3800" id="reward-3800"><div class="reward-content locked"><div class="reward-icon">📱</div><div class="reward-name">Croma</div><div class="reward-desc">₹1000 Electronics</div></div></div>
+                    <div class="reward-box choice-box" data-points="3900" id="reward-3900"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box cashback-box" data-points="4000" id="reward-4000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Mega Cashback!</div><div class="reward-desc">2.5% of Monthly SIP</div><div class="reward-amount" id="cashback-4000">₹125</div></div></div>
+                    <div class="reward-box" data-points="4100" id="reward-4100"><div class="reward-content locked"><div class="reward-icon">🍽️</div><div class="reward-name">Barbeque Nation</div><div class="reward-desc">₹800 Dining Voucher</div></div></div>
+                    <div class="reward-box choice-box" data-points="4200" id="reward-4200"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="4300" id="reward-4300"><div class="reward-content locked"><div class="reward-icon">📸</div><div class="reward-name">Canon Store</div><div class="reward-desc">₹1200 Photo Voucher</div></div></div>
+                    <div class="reward-box" data-points="4400" id="reward-4400"><div class="reward-content locked"><div class="reward-icon">🎁</div><div class="reward-name">Ferns N Petals</div><div class="reward-desc">₹600 Gift Voucher</div></div></div>
+                    <div class="reward-box cashback-box" data-points="4500" id="reward-4500"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Premium Cashback!</div><div class="reward-desc">3% of Monthly SIP</div><div class="reward-amount" id="cashback-4500">₹150</div></div></div>
+                    <div class="reward-box choice-box" data-points="4600" id="reward-4600"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="4700" id="reward-4700"><div class="reward-content locked"><div class="reward-icon">🏨</div><div class="reward-name">Airbnb</div><div class="reward-desc">₹1500 Stay Credit</div></div></div>
+                    <div class="reward-box" data-points="4800" id="reward-4800"><div class="reward-content locked"><div class="reward-icon">🛍️</div><div class="reward-name">Tata CLiQ</div><div class="reward-desc">₹1000 Shopping</div></div></div>
+                    <div class="reward-box choice-box" data-points="4900" id="reward-4900"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box cashback-box" data-points="5000" id="reward-5000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Ultimate Cashback!</div><div class="reward-desc">3% of Monthly SIP</div><div class="reward-amount" id="cashback-5000">₹150</div></div></div>
+                    <div class="reward-box" data-points="5500" id="reward-5500"><div class="reward-content locked"><div class="reward-icon">🎵</div><div class="reward-name">Concert Tickets</div><div class="reward-desc">₹2000 Live Show</div></div></div>
+                    <div class="reward-box cashback-box" data-points="6000" id="reward-6000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Elite Cashback!</div><div class="reward-desc">3.5% of Monthly SIP</div><div class="reward-amount" id="cashback-6000">₹175</div></div></div>
+                    <div class="reward-box choice-box" data-points="6500" id="reward-6500"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="7000" id="reward-7000"><div class="reward-content locked"><div class="reward-icon">✈️</div><div class="reward-name">International Flight</div><div class="reward-desc">₹3000 Off</div></div></div>
+                    <div class="reward-box cashback-box" data-points="7500" id="reward-7500"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Premium Cashback!</div><div class="reward-desc">4% of Monthly SIP</div><div class="reward-amount" id="cashback-7500">₹200</div></div></div>
+                    <div class="reward-box choice-box" data-points="8000" id="reward-8000"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="8500" id="reward-8500"><div class="reward-content locked"><div class="reward-icon">💻</div><div class="reward-name">Laptop Upgrade</div><div class="reward-desc">₹5000 Off</div></div></div>
+                    <div class="reward-box cashback-box" data-points="9000" id="reward-9000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Super Elite Cashback!</div><div class="reward-desc">4.5% of Monthly SIP</div><div class="reward-amount" id="cashback-9000">₹225</div></div></div>
+                    <div class="reward-box choice-box" data-points="9500" id="reward-9500"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box cashback-box" data-points="10000" id="reward-10000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Mega Elite Cashback!</div><div class="reward-desc">5% of Monthly SIP</div><div class="reward-amount" id="cashback-10000">₹250</div></div></div>
+                    <div class="reward-box" data-points="11000" id="reward-11000"><div class="reward-content locked"><div class="reward-icon">🏨</div><div class="reward-name">Luxury Hotel Stay</div><div class="reward-desc">₹8000 Voucher</div></div></div>
+                    <div class="reward-box cashback-box" data-points="12000" id="reward-12000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Champion Cashback!</div><div class="reward-desc">5.5% of Monthly SIP</div><div class="reward-amount" id="cashback-12000">₹275</div></div></div>
+                    <div class="reward-box choice-box" data-points="13000" id="reward-13000"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="14000" id="reward-14000"><div class="reward-content locked"><div class="reward-icon">📱</div><div class="reward-name">Smartphone</div><div class="reward-desc">₹15000 Off</div></div></div>
+                    <div class="reward-box cashback-box" data-points="15000" id="reward-15000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Master Cashback!</div><div class="reward-desc">6% of Monthly SIP</div><div class="reward-amount" id="cashback-15000">₹300</div></div></div>
+                    <div class="reward-box choice-box" data-points="16000" id="reward-16000"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="17000" id="reward-17000"><div class="reward-content locked"><div class="reward-icon">⌚</div><div class="reward-name">Smartwatch Premium</div><div class="reward-desc">₹18000 Off</div></div></div>
+                    <div class="reward-box cashback-box" data-points="18000" id="reward-18000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Legend Cashback!</div><div class="reward-desc">7% of Monthly SIP</div><div class="reward-amount" id="cashback-18000">₹350</div></div></div>
+                    <div class="reward-box choice-box" data-points="19000" id="reward-19000"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box cashback-box" data-points="20000" id="reward-20000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Epic Cashback!</div><div class="reward-desc">8% of Monthly SIP</div><div class="reward-amount" id="cashback-20000">₹400</div></div></div>
+                    <div class="reward-box" data-points="21000" id="reward-21000"><div class="reward-content locked"><div class="reward-icon">💍</div><div class="reward-name">Jewelry Voucher</div><div class="reward-desc">₹25000 Off</div></div></div>
+                    <div class="reward-box cashback-box" data-points="22000" id="reward-22000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Platinum Cashback!</div><div class="reward-desc">9% of Monthly SIP</div><div class="reward-amount" id="cashback-22000">₹450</div></div></div>
+                    <div class="reward-box choice-box" data-points="23000" id="reward-23000"><div class="reward-content locked"><div class="reward-icon">🎲</div><div class="reward-name">Choose Your Reward</div><div class="reward-desc">Pick 1 of 2</div></div></div>
+                    <div class="reward-box" data-points="24000" id="reward-24000"><div class="reward-content locked"><div class="reward-icon">💎</div><div class="reward-name">Premium Experience</div><div class="reward-desc">₹35000 Voucher</div></div></div>
+                    <div class="reward-box cashback-box" data-points="25000" id="reward-25000"><div class="reward-content locked"><div class="reward-icon">💵</div><div class="reward-name">Diamond Cashback!</div><div class="reward-desc">10% of Monthly SIP</div><div class="reward-amount" id="cashback-25000">₹500</div></div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="activity-section">
+            <h3 class="section-title">Recent Activity</h3>
+            <div class="activity-log" id="activityLog">
+                <div class="activity-item welcome">
+                    <span class="activity-icon">👋</span>
+                    <span class="activity-text">Welcome to Finance Ladder!</span>
+                    <span class="activity-time">Just now</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quiz Modal -->
+    <div class="modal" id="quizModal">
+        <div class="modal-content quiz-modal">
+            <div class="modal-header">
+                <h2>Finance Quiz</h2>
+                <button class="close-btn" onclick="closeQuiz()">✕</button>
+            </div>
+            <div class="modal-body">
+                <div class="quiz-question" id="quizQuestion"></div>
+                <div class="quiz-options" id="quizOptions"></div>
+                <div class="quiz-feedback" id="quizFeedback"></div>
+            </div>
+            <div class="modal-footer">
+                <div class="quiz-progress">Question <span id="questionNumber">1</span> of <span id="totalQuestions">20</span></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reward Choice Modal -->
+    <div class="modal" id="rewardChoiceModal">
+        <div class="modal-content reward-choice-modal">
+            <div class="modal-header">
+                <h2>Choose Your Reward</h2>
+                <button class="close-btn" onclick="closeRewardChoice()">✕</button>
+            </div>
+            <div class="modal-body">
+                <p class="choice-instruction">Select one of the following rewards:</p>
+                <div class="reward-choices" id="rewardChoices">
+                    <!-- Dynamically populated -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reward Claim Modal -->
+    <div class="modal" id="rewardClaimModal">
+        <div class="modal-content celebration-modal">
+            <div class="celebration-content">
+                <div class="celebration-icon" id="rewardIcon">🎁</div>
+                <h2 id="rewardTitle">Reward Unlocked!</h2>
+                <p id="rewardMessage">You earned a reward!</p>
+                <div class="reward-code" id="rewardCode">REWARD123</div>
+                <button class="claim-btn" onclick="closeRewardClaim()">Claim Reward</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Celebration Modal -->
+    <div class="modal" id="celebrationModal">
+        <div class="modal-content celebration-modal">
+            <div class="celebration-content">
+                <div class="celebration-icon" id="celebrationIcon">🎉</div>
+                <h2 id="celebrationTitle">Awesome!</h2>
+                <p id="celebrationMessage">You earned points!</p>
+                <div class="points-earned" id="pointsEarned">+0</div>
+                <button class="ok-btn" onclick="closeCelebration()">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

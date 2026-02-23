@@ -1,0 +1,465 @@
+// Step 8 Chart Override - Replace Chart.js with beautiful SVG Donut Charts
+// This creates proper SVG donut charts matching the reference design exactly
+
+(function() {
+  console.log('Step 8 Chart Override loaded');
+
+  // Function to get stroke color for SVG charts
+  function getStrokeColor(fundCategory) {
+    const category = fundCategory.toLowerCase();
+
+    // Match colors from reference design
+    if (category.includes('flexi') || category.includes('large cap')) return '#1e293b';
+    if (category.includes('mid cap')) return '#10b981';
+    if (category.includes('small cap')) return '#fb923c';
+    if (category.includes('gold') || category.includes('goldbees')) return '#facc15';
+    if (category.includes('liquid')) return '#10b981';
+    if (category.includes('arbitrage')) return '#475569';
+    if (category.includes('debt')) return '#475569';
+    if (category.includes('hybrid')) return '#f59e0b';
+
+    return '#10b981'; // Default green
+  }
+
+  // Function to get CSS color class for legend dots
+  function getCategoryColorClass(fundCategory) {
+    const category = fundCategory.toLowerCase();
+
+    if (category.includes('flexi') || category.includes('large cap')) return 'bg-slate-800';
+    if (category.includes('mid cap')) return 'bg-primary';
+    if (category.includes('small cap')) return 'bg-orange-400';
+    if (category.includes('gold') || category.includes('goldbees')) return 'bg-yellow-400';
+    if (category.includes('liquid')) return 'bg-primary';
+    if (category.includes('arbitrage')) return 'bg-slate-600';
+    if (category.includes('debt')) return 'bg-slate-600';
+    if (category.includes('hybrid')) return 'bg-amber-400';
+
+    return 'bg-primary';
+  }
+
+  // Create SVG donut chart with proper styling
+  function createSVGDonutChart(container, allocation, expectedReturn) {
+    if (!container) return;
+
+    // Generate SVG circles for donut
+    let offset = 0;
+    const circles = allocation.map((item) => {
+      const percentage = item.percentage;
+      const dashArray = `${percentage}, 100`;
+      const dashOffset = -offset;
+      const color = getStrokeColor(item.fundCategory);
+      offset += percentage;
+
+      return `<circle class="chart-path" cx="18" cy="18" fill="none" r="15.9155" stroke="${color}" stroke-dasharray="${dashArray}" stroke-dashoffset="${dashOffset}" stroke-width="4"></circle>`;
+    }).join('');
+
+    // Create the complete donut chart HTML
+    const chartHTML = `
+      <div class="donut-chart">
+        <svg viewBox="0 0 36 36">
+          <circle cx="18" cy="18" fill="none" r="15.9155" stroke="#e2e8f0" stroke-width="4"></circle>
+          ${circles}
+        </svg>
+        <div class="donut-center">
+          <p class="donut-label">Ret</p>
+          <p class="donut-value">${expectedReturn}</p>
+        </div>
+      </div>
+    `;
+
+    container.innerHTML = chartHTML;
+  }
+
+  // Create allocation list with unique categories only
+  function createAllocationList(container, allocation, recommendations) {
+    if (!container) return;
+
+    // Group by unique fund categories and sum percentages
+    const categoryMap = new Map();
+    allocation.forEach(item => {
+      const category = item.fundCategory;
+      if (categoryMap.has(category)) {
+        categoryMap.set(category, categoryMap.get(category) + item.percentage);
+      } else {
+        categoryMap.set(category, item.percentage);
+      }
+    });
+
+    // Convert back to array
+    const uniqueAllocation = Array.from(categoryMap.entries()).map(([category, percentage]) => ({
+      fundCategory: category,
+      percentage: Math.round(percentage)
+    }));
+
+    // Create allocation list
+    const listHTML = uniqueAllocation.map((item) => {
+      const colorClass = getCategoryColorClass(item.fundCategory);
+      return `
+        <div class="allocation-list-item">
+          <div class="allocation-category">
+            <span class="category-dot ${colorClass}"></span>
+            <span>${item.fundCategory}</span>
+          </div>
+          <span class="allocation-percent">${item.percentage}%</span>
+        </div>
+      `;
+    }).join('');
+
+    // Create fund recommendations section if available
+    let fundsHTML = '';
+    if (recommendations && Object.keys(recommendations).length > 0) {
+      const fundItems = uniqueAllocation.map((item, index) => {
+        const rec = recommendations[item.fundCategory];
+        let fundName = 'Select Fund';
+        let fundDesc = 'No recommendation available';
+
+        if (rec) {
+          if (rec.type === 'fund' && rec.schemeName) {
+            fundName = rec.schemeName;
+            fundDesc = rec.category || 'Recommended Fund';
+          } else if (rec.message) {
+            fundName = rec.message;
+            fundDesc = rec.type === 'etf' ? 'ETF/Index Fund' : 'Manual Selection';
+          }
+        }
+
+        const percentColor = index === 0 ? 'text-slate-700 bg-slate-200' :
+                             index === 1 ? 'text-primary-dark bg-primary/10' :
+                             'text-yellow-700 bg-yellow-100';
+
+        return `
+          <div class="fund-item">
+            <div class="fund-info">
+              <p class="fund-name">${fundName}</p>
+              <p class="fund-description">${fundDesc}</p>
+            </div>
+            <span class="fund-percentage ${percentColor}">${item.percentage}%</span>
+          </div>
+        `;
+      }).join('');
+
+      fundsHTML = `
+        <div class="funds-section">
+          <p class="funds-label">Recommended Funds</p>
+          <div class="fund-list">
+            ${fundItems}
+          </div>
+        </div>
+      `;
+    }
+
+    container.innerHTML = `
+      <div class="allocation-display">
+        <div class="allocation-list">
+          ${listHTML}
+        </div>
+      </div>
+      ${fundsHTML}
+    `;
+  }
+
+  // Calculate expected return from allocation
+  function calculateExpectedReturn(allocation) {
+    const expectedReturn = allocation.reduce((sum, item) => {
+      const category = item.fundCategory.toLowerCase();
+      let estimatedReturn = 10;
+
+      if (category.includes('equity') || category.includes('flexi') || category.includes('mid') || category.includes('small')) {
+        estimatedReturn = 12;
+      } else if (category.includes('liquid')) {
+        estimatedReturn = 6;
+      } else if (category.includes('arbitrage')) {
+        estimatedReturn = 6;
+      } else if (category.includes('debt')) {
+        estimatedReturn = 7;
+      } else if (category.includes('hybrid')) {
+        estimatedReturn = 9;
+      } else if (category.includes('gold')) {
+        estimatedReturn = 8;
+      }
+
+      return sum + (estimatedReturn * item.percentage / 100);
+    }, 0);
+
+    return `${Math.round(expectedReturn)}%`;
+  }
+
+  // Override the original createChart function
+  window.createChart = function(canvasId, allocation) {
+    console.log('Creating SVG chart for:', canvasId);
+
+    // Find the canvas element
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+      console.warn('Canvas not found:', canvasId);
+      return null;
+    }
+
+    // Get the parent container (chart-container)
+    const chartContainer = canvas.closest('.chart-container');
+    if (!chartContainer) {
+      console.warn('Chart container not found for:', canvasId);
+      return null;
+    }
+
+    // Calculate expected return
+    const expectedReturn = calculateExpectedReturn(allocation);
+
+    // Remove the canvas
+    canvas.remove();
+
+    // Create SVG donut chart
+    createSVGDonutChart(chartContainer, allocation, expectedReturn);
+
+    // Update allocation details with fund recommendations
+    const allocationDetailsId = canvasId.replace('chart-', 'allocation-details-');
+    const allocationContainer = document.getElementById(allocationDetailsId);
+
+    if (allocationContainer) {
+      const recommendations = window.fundRecommendationsCache || {};
+
+      // Completely clear all old content including allocation-items
+      allocationContainer.innerHTML = '';
+
+      // Remove any lingering allocation-item divs
+      const oldItems = allocationContainer.querySelectorAll('.allocation-item');
+      oldItems.forEach(item => item.remove());
+
+      // Create new allocation list
+      createAllocationList(allocationContainer, allocation, recommendations);
+    }
+
+    // Also update the expected return display in goal header if it exists
+    const goalIndex = canvasId.match(/chart-(\d+)-(\d+)/);
+    if (goalIndex) {
+      const returnElement = document.getElementById(`expected-return-${goalIndex[1]}-${goalIndex[2]}`);
+      if (returnElement) {
+        returnElement.textContent = expectedReturn;
+      }
+    }
+
+    return {
+      destroy: () => {},
+      data: { labels: allocation.map(a => a.fundCategory), datasets: [{ data: allocation.map(a => a.percentage) }] }
+    };
+  };
+
+  // Update portfolio summary when goals are loaded
+  function updatePortfolioSummary() {
+    setTimeout(() => {
+      if (!window.currentGroups || window.currentGroups.length === 0) return;
+
+      // Calculate totals from all groups
+      let totalSip = 0;
+      const categoryTotals = {};
+      let totalWeightedReturn = 0;
+
+      window.currentGroups.forEach(group => {
+        // Sum SIPs
+        if (group.goals && Array.isArray(group.goals)) {
+          group.goals.forEach(goal => {
+            totalSip += goal.sip || 0;
+          });
+        }
+
+        // Sum allocations by category
+        if (group.allocation && Array.isArray(group.allocation)) {
+          group.allocation.forEach(item => {
+            const cat = item.fundCategory;
+            if (!categoryTotals[cat]) {
+              categoryTotals[cat] = 0;
+            }
+            categoryTotals[cat] += item.percentage;
+          });
+        }
+      });
+
+      // Calculate average allocation percentages
+      const numGroups = window.currentGroups.length;
+      const avgAllocations = {};
+      Object.keys(categoryTotals).forEach(cat => {
+        avgAllocations[cat] = Math.round(categoryTotals[cat] / numGroups);
+      });
+
+      // Categorize into Equity, Debt, Gold
+      let equityPercent = 0;
+      let debtPercent = 0;
+      let goldPercent = 0;
+
+      Object.keys(avgAllocations).forEach(cat => {
+        const lowerCat = cat.toLowerCase();
+        const percent = avgAllocations[cat];
+
+        if (lowerCat.includes('equity') || lowerCat.includes('flexi') || lowerCat.includes('mid') || lowerCat.includes('small') || lowerCat.includes('large')) {
+          equityPercent += percent;
+        } else if (lowerCat.includes('gold')) {
+          goldPercent += percent;
+        } else {
+          debtPercent += percent;
+        }
+      });
+
+      // Normalize to 100%
+      const total = equityPercent + debtPercent + goldPercent;
+      if (total > 0) {
+        equityPercent = Math.round((equityPercent / total) * 100);
+        debtPercent = Math.round((debtPercent / total) * 100);
+        goldPercent = 100 - equityPercent - debtPercent;
+      }
+
+      // Calculate weighted average return
+      const avgReturn = ((equityPercent * 12) + (debtPercent * 7) + (goldPercent * 8)) / 100;
+
+      // Update summary card
+      const totalSipElement = document.getElementById('total-sip');
+      const expectedReturnElement = document.getElementById('expected-return');
+      const allocationBar = document.getElementById('allocation-bar');
+
+      if (totalSipElement) {
+        totalSipElement.textContent = new Intl.NumberFormat('en-IN', {
+          style: 'currency',
+          currency: 'INR',
+          maximumFractionDigits: 0
+        }).format(totalSip);
+      }
+
+      if (expectedReturnElement) {
+        expectedReturnElement.textContent = `${avgReturn.toFixed(1)}%`;
+      }
+
+      if (allocationBar) {
+        allocationBar.innerHTML = `
+          <div class="bar-segment-equity" style="width: ${equityPercent}%"></div>
+          <div class="bar-segment-debt" style="width: ${debtPercent}%"></div>
+          <div class="bar-segment-gold" style="width: ${goldPercent}%"></div>
+        `;
+
+        // Update legend
+        const legend = allocationBar.nextElementSibling;
+        if (legend) {
+          legend.innerHTML = `
+            <div class="legend-item">
+              <span class="legend-dot bg-equity"></span> Equity ${equityPercent}%
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot bg-debt"></span> Debt ${debtPercent}%
+            </div>
+            <div class="legend-item">
+              <span class="legend-dot bg-gold"></span> Gold ${goldPercent}%
+            </div>
+          `;
+        }
+      }
+
+      console.log('Portfolio summary updated:', { totalSip, equityPercent, debtPercent, goldPercent, avgReturn });
+    }, 500);
+  }
+
+  // Watch for charts being added and portfolio updates
+  const observer = new MutationObserver((mutations) => {
+    let shouldUpdateSummary = false;
+
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (node.nodeType === 1) {
+          // Check for goal-group additions
+          if (node.classList && (node.classList.contains('goal-group') || node.classList.contains('goal-card'))) {
+            shouldUpdateSummary = true;
+          }
+
+          // Hide any old allocation-item divs that get added
+          if (node.classList && node.classList.contains('allocation-item')) {
+            node.style.display = 'none';
+            node.remove();
+          }
+
+          // Check for allocation-item divs within added nodes
+          const allocationItems = node.querySelectorAll && node.querySelectorAll('.allocation-item');
+          if (allocationItems) {
+            allocationItems.forEach(item => {
+              item.style.display = 'none';
+              item.remove();
+            });
+          }
+
+          // Check for canvas elements
+          const canvases = node.tagName === 'CANVAS' ? [node] : node.querySelectorAll('canvas');
+          canvases.forEach((canvas) => {
+            if (canvas.id && canvas.id.startsWith('chart-')) {
+              console.log('Canvas detected, will be replaced with SVG:', canvas.id);
+            }
+          });
+        }
+      });
+    });
+
+    if (shouldUpdateSummary) {
+      updatePortfolioSummary();
+    }
+  });
+
+  // Start observing
+  const container = document.getElementById('allocation-container');
+  if (container) {
+    observer.observe(container, {
+      childList: true,
+      subtree: true
+    });
+  }
+
+  // Update summary when page loads
+  window.addEventListener('load', () => {
+    updatePortfolioSummary();
+    setupGlobalRiskSlider();
+  });
+
+  // Setup global risk slider to update ALL goal allocations
+  function setupGlobalRiskSlider() {
+    const globalSlider = document.getElementById('global-risk-slider');
+    if (!globalSlider) {
+      // Try again after a delay
+      setTimeout(setupGlobalRiskSlider, 100);
+      return;
+    }
+
+    console.log('Setting up global risk slider');
+
+    globalSlider.addEventListener('input', (e) => {
+      const riskLevel = parseInt(e.target.value);
+      console.log('Global risk changed to:', riskLevel);
+
+      // Update all goals to use this risk level
+      if (window.currentGroups && typeof window.updateAllocation === 'function') {
+        window.currentGroups.forEach((group, groupIndex) => {
+          window.updateAllocation(groupIndex, 0, riskLevel);
+        });
+      }
+
+      // Update portfolio summary after changes
+      setTimeout(() => {
+        updatePortfolioSummary();
+      }, 300);
+    });
+  }
+
+  // Also setup when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', setupGlobalRiskSlider);
+  } else {
+    setTimeout(setupGlobalRiskSlider, 100);
+  }
+
+  // Also update when charts are created
+  const originalTimeout = window.setTimeout;
+  window.setTimeout = function(callback, delay, ...args) {
+    return originalTimeout.call(window, function() {
+      callback.apply(this, args);
+      // Check if this might be after chart creation
+      if (window.currentGroups && window.currentGroups.length > 0) {
+        updatePortfolioSummary();
+      }
+    }, delay);
+  };
+
+  console.log('Chart override and portfolio summary updater initialized');
+})();

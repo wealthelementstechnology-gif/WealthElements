@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 3: Building Your Financial Foundation</title>
+  <link rel="stylesheet" href="../design-system.css" />
+  <link rel="stylesheet" href="8-events.css" />
+  <link rel="stylesheet" href="step3.css" />
+  <script src="../theme.js" defer></script>
+  
+  <script src="step3.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <button class="btn back" id="back-step2">← Back</button>
+      <div>
+        <h1>Welcome <span id="userName">Friend</span>, Time to Build Your Financial Foundation!</h1>
+        <p class="subtitle">Step 3: Building Your Financial Foundation. A strong base supports a tall building.</p>
+      </div>
+    </header>
+
+    <!-- Individual Mode Layout -->
+    <section class="foundation-cards individual-layout" id="individual-layout">
+      <div class="f-card emergency-card emergency-card-wide">
+        <div class="card-icon">🛡️</div>
+        <div class="title">Emergency Fund</div>
+        <div class="value" id="val-emergency">₹0</div>
+        <div class="desc">6 months of expenses for unexpected situations</div>
+      </div>
+
+      <div class="f-card life-card">
+        <div class="card-icon">❤️</div>
+        <div class="title">Life Insurance</div>
+        <div class="value" id="val-life">₹0</div>
+        <div class="desc">15x annual income coverage needed</div>
+      </div>
+
+      <div class="f-card health-card">
+        <div class="card-icon">🏥</div>
+        <div class="title">Health Insurance</div>
+        <div class="value" id="val-health">₹0</div>
+        <div class="desc" id="health-desc">Coverage based on city and income</div>
+      </div>
+    </section>
+
+    <!-- Couple Mode Layout -->
+    <section class="couple-layout" id="couple-layout" style="display: none;">
+      <!-- Emergency Fund (Full Width) -->
+      <div class="emergency-section">
+        <div class="f-card emergency-card-large">
+          <div class="card-icon">🛡️</div>
+          <div class="title">Emergency Fund</div>
+          <div class="value" id="val-emergency-couple">₹0</div>
+          <div class="desc">6 months of combined family expenses</div>
+        </div>
+      </div>
+
+      <!-- Insurance Grid -->
+      <div class="insurance-grid">
+        <!-- Life Insurance Column -->
+        <div class="insurance-column">
+          <div class="column-header">
+            <div class="header-icon">❤️</div>
+            <h3>Life Insurance</h3>
+          </div>
+          <div class="column-desc">Separate coverage for each earning spouse</div>
+
+          <div class="spouse-cards" id="life-spouse-cards">
+            <div class="spouse-card husband-card">
+              <div class="spouse-name" id="husband-name-life">Husband</div>
+              <div class="spouse-value" id="val-life-husband">₹0</div>
+              <div class="spouse-desc">15x annual income</div>
+            </div>
+            <div class="spouse-card wife-card">
+              <div class="spouse-name" id="wife-name-life">Wife</div>
+              <div class="spouse-value" id="val-life-wife">₹0</div>
+              <div class="spouse-desc">15x annual income</div>
+            </div>
+          </div>
+
+          <div class="total-bar life-total">
+            <span class="total-label">Total:</span>
+            <span class="total-value" id="life-total">₹0</span>
+          </div>
+        </div>
+
+        <!-- Health Insurance Column -->
+        <div class="insurance-column">
+          <div class="column-header">
+            <div class="header-icon">🏥</div>
+            <h3>Health Insurance</h3>
+          </div>
+          <div class="column-desc">Split into two separate policies for better protection</div>
+
+          <div class="spouse-cards">
+            <div class="spouse-card husband-card">
+              <div class="spouse-name" id="husband-name-health">Husband</div>
+              <div class="spouse-value" id="val-health-husband">₹0</div>
+              <div class="spouse-desc">Policy A + dependents</div>
+            </div>
+            <div class="spouse-card wife-card">
+              <div class="spouse-name" id="wife-name-health">Wife</div>
+              <div class="spouse-value" id="val-health-wife">₹0</div>
+              <div class="spouse-desc">Policy B + dependents</div>
+            </div>
+          </div>
+
+          <div class="total-bar health-total">
+            <span class="total-label">Total:</span>
+            <span class="total-value" id="health-total">₹0</span>
+          </div>
+        </div>
+      </div>
+    </section>
+    <div class="actions">
+      <button class="btn btn-lg" id="to-step4">Next →</button>
+    </div>
+  </main>
+
+  <!-- Emergency Fund Popup Modal -->
+  <div id="emergency-fund-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Emergency Fund Check</h3>
+      </div>
+      <div class="modal-body">
+        <p>Do you currently have an emergency fund of <strong id="emergency-amount">₹0</strong> or more?</p>
+        <p class="modal-note">An emergency fund should cover 6 months of your expenses to help you during unexpected situations.</p>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="emergency-yes">Yes, I have it</button>
+        <button class="btn btn-primary" id="emergency-no">No, I need to build it</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Marriage Checker Popup Modal -->
+  <div id="marriage-checker-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3>Marriage Planning</h3>
+      </div>
+      <div class="modal-body">
+        <p>Do you want to plan for your marriage?</p>
+        <div id="marriage-details" style="display: none;">
+          <div class="form-group">
+            <label for="marriage-age">At what age do you want to get married?</label>
+            <input type="number" id="marriage-age" min="18" max="80" placeholder="e.g., 28" />
+          </div>
+          <div class="form-group">
+            <label for="marriage-amount">What amount do you want to plan for your marriage?</label>
+            <div class="amount-input">
+              <span class="prefix">₹</span>
+              <input type="number" id="marriage-amount" min="0" step="1000" placeholder="e.g., 1000000" />
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="marriage-no">No, I don't want to plan</button>
+        <button class="btn btn-primary" id="marriage-yes">Yes, I want to plan</button>
+        <button class="btn btn-primary" id="marriage-save" style="display: none;">Save & Continue</button>
+      </div>
+    </div>
+  </div>
+
+</body>
+</html>
+
+

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple ML Test (No TensorFlow Required)</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      background: #f8f9fa;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    h1 { color: #2c3e50; margin-bottom: 10px; }
+    .subtitle { color: #7f8c8d; margin-bottom: 30px; }
+    .test {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid #95a5a6;
+      background: #ecf0f1;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .test.pass {
+      border-left-color: #27ae60;
+      background: #d5f4e6;
+    }
+    .test.fail {
+      border-left-color: #e74c3c;
+      background: #fadbd8;
+    }
+    .icon { font-size: 24px; min-width: 30px; }
+    .label { flex: 1; font-weight: 600; }
+    .status { font-size: 12px; color: #7f8c8d; }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover { background: #2980b9; }
+    .log {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+    .log-line { margin: 3px 0; }
+    .success { color: #2ecc71; }
+    .error { color: #e74c3c; }
+    .warning { color: #f39c12; }
+  </style>
+
+  <!-- Only load the ML scripts (NO TensorFlow) -->
+  <script src="outcome-tracker.js"></script>
+  <script src="ml-features.js"></script>
+  <script src="ml-model.js"></script>
+</head>
+<body>
+  <div class="card">
+    <h1>🧪 Simple ML Test</h1>
+    <p class="subtitle">Testing ML components without TensorFlow (uses rule-based fallback)</p>
+
+    <div id="tests"></div>
+
+    <button onclick="runTests()">▶️ Run Tests</button>
+    <button onclick="createSampleData()">📊 Create Sample Data</button>
+    <button onclick="showStats()">📈 Show Statistics</button>
+    <button onclick="clearData()">🗑️ Clear Data</button>
+
+    <div id="log" class="log"></div>
+  </div>
+
+  <script>
+    const tests = [];
+    const logs = [];
+
+    function log(message, type = 'info') {
+      const time = new Date().toLocaleTimeString();
+      const color = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : '';
+      logs.push({ message: `[${time}] ${message}`, color });
+      updateLog();
+    }
+
+    function updateLog() {
+      const logDiv = document.getElementById('log');
+      logDiv.innerHTML = logs.map(l =>
+        `<div class="log-line ${l.color}">${l.message}</div>`
+      ).join('');
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    function showTest(label, passed, details = '') {
+      tests.push({ label, passed, details });
+      renderTests();
+    }
+
+    function renderTests() {
+      const testsDiv = document.getElementById('tests');
+      testsDiv.innerHTML = tests.map(t => `
+        <div class="test ${t.passed ? 'pass' : 'fail'}">
+          <div class="icon">${t.passed ? '✅' : '❌'}</div>
+          <div class="label">${t.label}</div>
+          <div class="status">${t.details}</div>
+        </div>
+      `).join('');
+    }
+
+    function runTests() {
+      tests.length = 0;
+      logs.length = 0;
+      renderTests();
+
+      log('🧪 Starting tests...', 'info');
+
+      // Test 1: Outcome Tracker
+      try {
+        if (typeof window.outcomeTracker !== 'undefined') {
+          const stats = window.outcomeTracker.getStatistics();
+          showTest('Outcome Tracker', true, `${stats.totalOptimizations} records`);
+          log('✅ Outcome Tracker loaded', 'success');
+        } else {
+          showTest('Outcome Tracker', false, 'Not found');
+          log('❌ Outcome Tracker not found', 'error');
+        }
+      } catch (e) {
+        showTest('Outcome Tracker', false, e.message);
+        log(`❌ Outcome Tracker error: ${e.message}`, 'error');
+      }
+
+      // Test 2: Feature Extractor
+      try {
+        if (typeof window.featureExtractor !== 'undefined') {
+          const features = window.featureExtractor.extractGoalFeatures(
+            { name: 'Test', type: 'other', priority: 'Medium', fv: 100000, yearsLeft: 5, sip: 1000 },
+            { age: 30, monthlyIncome: 50000, investmentBudget: 15000 },
+            [], []
+          );
+          showTest('Feature Extractor', true, `${Object.keys(features).length} features`);
+          log('✅ Feature Extractor loaded', 'success');
+        } else {
+          showTest('Feature Extractor', false, 'Not found');
+          log('❌ Feature Extractor not found', 'error');
+        }
+      } catch (e) {
+        showTest('Feature Extractor', false, e.message);
+        log(`❌ Feature Extractor error: ${e.message}`, 'error');
+      }
+
+      // Test 3: ML Model
+      try {
+        if (typeof window.mlModel !== 'undefined') {
+          const info = window.mlModel.getModelInfo();
+          showTest('ML Model', true, info.fallbackMode ? 'Rule-based' : 'ML Active');
+          log(`✅ ML Model loaded (${info.fallbackMode ? 'Rule-based fallback' : 'ML active'})`, 'success');
+        } else {
+          showTest('ML Model', false, 'Not found');
+          log('❌ ML Model not found', 'error');
+        }
+      } catch (e) {
+        showTest('ML Model', false, e.message);
+        log(`❌ ML Model error: ${e.message}`, 'error');
+      }
+
+      // Test 4: Make a prediction
+      try {
+        if (typeof window.mlModel !== 'undefined' && typeof window.featureExtractor !== 'undefined') {
+          window.mlModel.predictConstraints(
+            { name: 'Retirement', type: 'retirement', priority: 'High', fv: 10000000, yearsLeft: 25, sip: 15000 },
+            { age: 35, monthlyIncome: 100000, investmentBudget: 30000 },
+            [], []
+          ).then(prediction => {
+            showTest('Predictions', true, `${(prediction.maxAmountReduction * 100).toFixed(1)}% / ${prediction.maxTenureExtension}y`);
+            log(`✅ Prediction: Reduce ${(prediction.maxAmountReduction * 100).toFixed(1)}%, Extend ${prediction.maxTenureExtension}y (${prediction.source})`, 'success');
+          });
+        }
+      } catch (e) {
+        showTest('Predictions', false, e.message);
+        log(`❌ Prediction error: ${e.message}`, 'error');
+      }
+
+      log('🎯 Tests complete!', 'success');
+    }
+
+    function createSampleData() {
+      log('📊 Creating sample optimization data...', 'info');
+
+      const optId = window.outcomeTracker.recordOptimizationAttempt({
+        userAge: 35,
+        monthlyIncome: 100000,
+        monthlyExpenses: 60000,
+        city: 'test',
+        familyStatus: 'married',
+        riskProfile: 'moderate',
+        goals: [
+          { name: 'Test Goal', fv: 5000000, yearsLeft: 10, sip: 20000, priority: 'Medium' }
+        ],
+        originalGoals: [
+          { name: 'Test Goal', fv: 5000000, yearsLeft: 10, sip: 25000, priority: 'Medium' }
+        ],
+        stepUpBefore: 8,
+        stepUpAfter: 10,
+        investmentBudget: 30000,
+        originalTotalSIP: 25000,
+        optimizedTotalSIP: 20000
+      });
+
+      window.outcomeTracker.recordUserDecision(optId, true, {
+        sentiment: 'positive',
+        comments: 'Test sample'
+      });
+
+      log(`✅ Sample created with ID: ${optId.substring(0, 20)}...`, 'success');
+      showStats();
+    }
+
+    function showStats() {
+      const stats = window.outcomeTracker.getStatistics();
+      log('📈 Current Statistics:', 'info');
+      log(`   Total Optimizations: ${stats.totalOptimizations}`, 'info');
+      log(`   Accepted: ${stats.acceptedOptimizations}`, 'info');
+      log(`   Acceptance Rate: ${stats.acceptanceRate}%`, 'info');
+      log(`   Success Rate: ${stats.successRate}%`, 'info');
+    }
+
+    function clearData() {
+      if (confirm('Clear all data? This cannot be undone.')) {
+        localStorage.removeItem('we_optimization_outcomes');
+        log('🗑️ All data cleared', 'warning');
+        showStats();
+      }
+    }
+
+    // Auto-run tests on load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        log('🚀 Page loaded, running initial tests...', 'info');
+        runTests();
+      }, 500);
+    });
+  </script>
+</body>
+</html>

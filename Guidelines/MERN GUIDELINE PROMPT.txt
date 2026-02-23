@@ -1,0 +1,141 @@
+You are a senior full-stack engineer and DevOps architect.
+
+Your task is to design a scalable, clean, and beginner-friendly MERN boilerplate that allows me to create new applications quickly with minimal setup each time.
+
+Goals:
+
+Extremely easy to extend for new apps
+
+Clean architecture (separation of concerns)
+
+Production-ready but simple
+
+Optimized for rapid feature development
+
+Tech Stack (Fixed)
+
+MongoDB (Mongoose)
+
+Express.js
+
+React (Vite preferred)
+
+Node.js
+
+JWT Authentication
+
+Role-based access control
+
+1️⃣ Project Structure
+
+Design a clear folder structure for:
+
+Backend (API)
+
+Frontend (React)
+
+Shared utilities
+
+Environment configuration
+
+Explain why each folder exists.
+
+2️⃣ Backend Requirements
+
+Express server setup
+
+MongoDB connection with best practices
+
+Centralized error handling
+
+Request validation middleware
+
+Auth system (JWT + refresh tokens)
+
+User model (email, password, role)
+
+API versioning (/api/v1)
+
+Clean controller → service → route pattern
+
+Provide starter code snippets for:
+
+Server entry file
+
+Auth middleware
+
+Sample protected route
+
+3️⃣ Frontend Requirements
+
+Vite + React setup
+
+Folder structure for:
+
+Pages
+
+Components
+
+Hooks
+
+Services (API layer)
+
+Auth context
+
+Axios instance with interceptors
+
+Route protection
+
+Provide starter code for:
+
+Auth context
+
+Protected route
+
+API service file
+
+4️⃣ Environment & Config
+
+.env structure for backend and frontend
+
+Secure handling of secrets
+
+Development vs production config
+
+5️⃣ Developer Experience
+
+One-command startup for frontend + backend
+
+Hot reload
+
+ESLint + Prettier setup
+
+Useful npm scripts
+
+6️⃣ Scalability & Reuse
+
+Design this boilerplate so I can:
+
+Clone it
+
+Rename the app
+
+Add new modules (payments, analytics, admin panel) without refactoring
+
+Include clear instructions on:
+
+How to add a new feature module
+
+How to deploy later (brief overview only)
+
+Output Format
+
+Step-by-step explanation
+
+Code blocks where needed
+
+Clear comments in code
+
+No unnecessary theory
+
+Assume this boilerplate will be reused to build multiple SaaS and consumer apps. Optimize for speed, clarity, and maintainability.

@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 6: Required SIP Calculation</title>
+  <link rel="stylesheet" href="../design-system.css" />
+  <link rel="stylesheet" href="8-events.css" />
+  <link rel="stylesheet" href="step6.css" />
+  <script src="../theme.js" defer></script>
+
+  <!-- TensorFlow.js for ML (OPTIONAL - system works without it using rule-based fallback) -->
+  <script>
+    // Try loading TensorFlow.js from multiple CDNs
+    (function loadTensorFlow() {
+      const cdnUrls = [
+        'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js',
+        'https://unpkg.com/@tensorflow/tfjs@4.11.0/dist/tf.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.11.0/tf.min.js'
+      ];
+
+      let currentIndex = 0;
+
+      function tryLoadScript() {
+        if (currentIndex >= cdnUrls.length) {
+          console.warn('⚠️ All TensorFlow.js CDNs failed. Using rule-based fallback.');
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = cdnUrls[currentIndex];
+        script.defer = true;
+
+        script.onload = function() {
+          console.log('✅ TensorFlow.js loaded successfully');
+        };
+
+        script.onerror = function() {
+          currentIndex++;
+          tryLoadScript();
+        };
+
+        document.head.appendChild(script);
+      }
+
+      tryLoadScript();
+    })();
+  </script>
+
+  <!-- Firebase SDK (load synchronously, no defer) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+
+  <!-- Firebase Config -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyAkGo2d1uLesX2WJik2lfhCKhYlC_dCEOs",
+      authDomain: "wealthelements-10498.firebaseapp.com",
+      projectId: "wealthelements-10498",
+      storageBucket: "wealthelements-10498.firebasestorage.app",
+      messagingSenderId: "720153929292",
+      appId: "1:720153929292:web:dd9fced0047c8e48b336e9"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    console.log('✅ Firebase initialized');
+  </script>
+
+  <!-- ML Scripts (load in order with defer) -->
+  <!-- outcome-tracker-firebase.js must load after Firebase is initialized -->
+  <script src="outcome-tracker-firebase.js" defer></script>
+  <script src="ml-features.js" defer></script>
+  <script src="ml-model.js" defer></script>
+
+  <!-- Original step6.js -->
+  <script src="step6.js" defer></script>
+
+  <!-- ML Integration (load after step6.js) -->
+  <script src="step6-ml-integration.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <button class="btn back" id="back-step5">← Back</button>
+      <div>
+        <h1>Step 6: Required SIP Calculation</h1>
+        <p class="subtitle">Edit target values and see SIP update in real-time.</p>
+      </div>
+    </header>
+
+    <section class="opt-explain">
+      <div id="optExplain" class="opt-box">Your plan is optimized to fit your budget. Details will appear here.</div>
+      <div id="budgetInfo" class="budget-info" style="display: none;">
+        <div class="budget-card">
+          <div class="budget-label">Your Investment Budget</div>
+          <div class="budget-amount" id="budgetAmount">₹0</div>
+          <div class="budget-note">Based on your income and investment rules</div>
+        </div>
+      </div>
+      
+      <!-- Optimization Button -->
+      <div class="optimization-section">
+        <button class="btn btn-optimize" id="optimizeBtn">
+          <span class="btn-icon">🎯</span>
+          OPTIMIZE (3 left)
+        </button>
+        <button class="btn btn-secondary" id="resetOptimizationBtn" style="display: none; margin-left: 10px;">
+          <span class="btn-icon">🔄</span>
+          RESET
+        </button>
+        <p class="optimization-note">Automatically adjust step-up to 10%, reduce goal amounts, and extend tenure to fit your budget (maintains 200-500 buffer above budget). Emergency funds, retirement, marriage, and children education goals are constrained to max 1 year extension. Other goals are more flexible. Maximum 3 optimization attempts allowed.</p>
+      </div>
+    </section>
+
+    <section class="table-wrap">
+      <table class="sip-table">
+        <thead>
+          <tr>
+            <th>Goal</th>
+            <th>Priority</th>
+            <th>Target Value (Future) ⚡</th>
+            <th>Existing/Lumpsum (₹)</th>
+            <th>Target Year</th>
+            <th>Expected Return</th>
+            <th>Annual Step-up</th>
+            <th>Required Monthly SIP</th>
+          </tr>
+        </thead>
+        <tbody id="sipRows"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="7">Total Required Monthly Investment</td>
+            <td id="sipTotal">₹0</td>
+          </tr>
+        </tfoot>
+      </table>
+    </section>
+  </main>
+  <div class="actions">
+    <button class="btn btn-lg" id="to-step7">Next →</button>
+  </div>
+</body>
+</html>
+
+

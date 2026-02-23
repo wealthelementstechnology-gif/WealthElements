@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Growth Journey & Summary</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#10b981",
+            "primary-dark": "#059669",
+            "primary-light": "#ecfdf5",
+            "background-light": "#f6f8f6",
+            "background-dark": "#102216",
+            "surface": "#ffffff",
+            "surface-dark": "#1a1a1a",
+            "text-main": "#111813",
+            "text-secondary": "#6b7280",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"],
+            "sans": ["Inter", "sans-serif"]
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    .hide-scrollbar::-webkit-scrollbar {
+      height: 4px;
+    }
+    .hide-scrollbar::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .hide-scrollbar::-webkit-scrollbar-thumb {
+      background: #d1d5db;
+      border-radius: 10px;
+    }
+    body {
+      min-height: max(884px, 100dvh);
+    }
+
+    /* Hidden elements for data storage */
+    .hidden-data {
+      display: none !important;
+    }
+
+    /* Year-by-Year Projection Table Styling */
+    #projHead tr {
+      background: #f9fafb;
+    }
+
+    #projHead th {
+      padding: 14px 20px;
+      font-weight: 700;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      white-space: nowrap;
+      border-bottom: 2px solid #e5e7eb;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    #projHead th:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 30;
+      background: #f9fafb;
+      border-right: 2px solid #d1d5db;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.08);
+      min-width: 120px;
+    }
+
+    #projBody tr {
+      border-bottom: 1px solid #f3f4f6;
+      transition: background-color 0.2s ease;
+    }
+
+    #projBody tr:hover {
+      background-color: #f0fdf4;
+    }
+
+    #projBody tr:nth-child(even) {
+      background-color: #f9fafb;
+    }
+
+    #projBody tr:nth-child(even):hover {
+      background-color: #f0fdf4;
+    }
+
+    #projBody td {
+      padding: 14px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      color: #374151;
+      white-space: nowrap;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    #projBody td:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 20;
+      font-weight: 700;
+      color: #111827;
+      font-size: 14px;
+      background: #ffffff;
+      border-right: 2px solid #d1d5db;
+      box-shadow: 2px 0 5px rgba(0, 0, 0, 0.08);
+      min-width: 120px;
+    }
+
+    /* Ensure even rows have proper background on sticky column */
+    #projBody tr:nth-child(even) td:first-child {
+      background: #f9fafb;
+    }
+
+    #projBody tr:hover td:first-child {
+      background: #f0fdf4;
+    }
+
+    #projBody tr:nth-child(even):hover td:first-child {
+      background: #f0fdf4;
+    }
+
+    #projBody td:last-child {
+      font-weight: 800;
+      color: #059669;
+      font-size: 14px;
+      background: linear-gradient(to right, transparent, #f0fdf4);
+      padding-right: 30px;
+    }
+
+    /* Specific column widths */
+    #projHead th:nth-child(2),
+    #projBody td:nth-child(2) {
+      min-width: 90px;
+    }
+
+    #projHead th:nth-child(3),
+    #projBody td:nth-child(3) {
+      min-width: 110px;
+    }
+
+    /* Goal columns */
+    #projHead th:nth-child(n+4):nth-last-child(n+3),
+    #projBody td:nth-child(n+4):nth-last-child(n+3) {
+      min-width: 120px;
+    }
+
+    #projHead th:nth-last-child(2),
+    #projBody td:nth-last-child(2) {
+      min-width: 130px;
+    }
+
+    #projHead th:last-child,
+    #projBody td:last-child {
+      min-width: 140px;
+    }
+
+    /* Goal-specific column colors */
+    #projHead th:nth-child(4) {
+      color: #ea580c; /* Retirement */
+    }
+
+    #projHead th:nth-child(5) {
+      color: #2563eb; /* Emergency */
+    }
+
+    #projHead th:nth-child(6) {
+      color: #ec4899; /* Marriage */
+    }
+
+    #projHead th:nth-child(7) {
+      color: #a855f7; /* Car */
+    }
+
+    #projHead th:nth-child(8) {
+      color: #14b8a6; /* Home */
+    }
+
+    /* Legend Item Styling - Toggle Buttons */
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      background: #ffffff;
+      border: 2px solid #e5e7eb;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-size: 13px;
+      font-weight: 600;
+      color: #111827;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    }
+
+    .legend-item:hover {
+      background: #f9fafb;
+      border-color: #13ec5b;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 8px rgba(19, 236, 91, 0.15);
+    }
+
+    .legend-item:active {
+      transform: translateY(0);
+      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Active state - dataset visible */
+    .legend-item.active {
+      background: linear-gradient(135deg, #13ec5b 0%, #0eb545 100%);
+      border-color: #0eb545;
+      color: #000000;
+      box-shadow: 0 4px 12px rgba(19, 236, 91, 0.3);
+    }
+
+    .legend-item.active:hover {
+      background: linear-gradient(135deg, #0eb545 0%, #0c9a39 100%);
+      box-shadow: 0 6px 16px rgba(19, 236, 91, 0.4);
+    }
+
+    .legend-item.active .swatch {
+      border: 2px solid #000000;
+      box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+    }
+
+    /* Hidden state - dataset hidden */
+    .legend-item.dataset-hidden {
+      opacity: 0.5;
+      background: #f9fafb;
+      border-color: #d1d5db;
+      color: #9ca3af;
+    }
+
+    .legend-item.dataset-hidden:hover {
+      opacity: 0.7;
+      border-color: #b0b7c0;
+    }
+
+    .legend-item .swatch {
+      width: 14px;
+      height: 14px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      border: 2px solid transparent;
+      transition: all 0.25s ease;
+    }
+
+    .legend-item.dataset-hidden .swatch {
+      opacity: 0.4;
+      border: 2px solid #d1d5db;
+    }
+
+    /* Mobile optimizations */
+    @media (max-width: 640px) {
+      #projHead th {
+        padding: 10px 12px;
+        font-size: 10px;
+      }
+
+      #projBody td {
+        padding: 10px 12px;
+        font-size: 12px;
+      }
+
+      .legend-item {
+        font-size: 11px;
+        padding: 5px 10px;
+      }
+
+      .legend-item .swatch {
+        width: 10px;
+        height: 10px;
+      }
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="step7.js" defer></script>
+</head>
+<body class="bg-gray-100 text-text-main font-display antialiased selection:bg-primary selection:text-white">
+  <div class="mx-auto max-w-md min-h-screen relative pb-28 shadow-2xl overflow-hidden bg-background-main">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-3 shadow-sm">
+      <div class="flex items-center gap-3 mb-1">
+        <button id="back-step6" class="p-2 -ml-2 rounded-full hover:bg-gray-100 text-text-main transition-colors">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-lg font-bold leading-tight text-text-main">Step 7: Growth Journey</h1>
+        </div>
+        <div class="text-xs font-semibold text-primary bg-primary-light px-2 py-1 rounded-full border border-primary/20">7 of 8</div>
+      </div>
+      <p class="text-sm text-text-secondary pl-10 leading-snug">Complete recap and yearly projection</p>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="px-6 py-4 flex justify-between gap-1.5 bg-background-main">
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex flex-col bg-background-light pt-2 pb-6">
+
+    <!-- Insurance Needs Section -->
+    <div class="bg-surface px-5 py-6">
+      <h3 class="text-text-main text-lg font-bold leading-tight tracking-tight mb-4 flex items-center gap-2">
+        Insurance Needs
+        <span class="material-symbols-outlined text-gray-400 text-lg">info</span>
+      </h3>
+      <div class="grid grid-cols-2 gap-3">
+        <!-- Life Insurance Card -->
+        <div class="flex flex-col gap-3 rounded-2xl p-4 border border-gray-100 bg-white shadow-sm ring-1 ring-black/5">
+          <div class="flex items-center gap-2 text-text-secondary">
+            <div class="p-1.5 bg-blue-50 rounded-lg text-blue-600">
+              <span class="material-symbols-outlined text-lg">diversity_1</span>
+            </div>
+            <p class="text-xs font-semibold uppercase tracking-wider">Life</p>
+          </div>
+          <div>
+            <p class="text-xs text-text-secondary mb-0.5">Cover Required</p>
+            <p id="lifeNeed" class="text-text-main tracking-tight text-lg font-bold">₹0</p>
+          </div>
+        </div>
+
+        <!-- Health Insurance Card -->
+        <div class="flex flex-col gap-3 rounded-2xl p-4 border border-gray-100 bg-white shadow-sm ring-1 ring-black/5">
+          <div class="flex items-center gap-2 text-text-secondary">
+            <div class="p-1.5 bg-red-50 rounded-lg text-red-600">
+              <span class="material-symbols-outlined text-lg">medical_services</span>
+            </div>
+            <p class="text-xs font-semibold uppercase tracking-wider">Health</p>
+          </div>
+          <div>
+            <p class="text-xs text-text-secondary mb-0.5">Cover Required</p>
+            <p id="healthNeed" class="text-text-main tracking-tight text-lg font-bold">₹0</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-2 bg-background-light"></div>
+
+    <!-- Goal Investments Section -->
+    <div class="bg-surface px-5 py-6">
+      <div class="flex justify-between items-end mb-4">
+        <h3 class="text-text-main text-lg font-bold leading-tight tracking-tight">Goal Investments</h3>
+        <span class="text-xs font-medium text-primary bg-primary/10 px-2 py-1 rounded">Editable</span>
+      </div>
+
+      <!-- Goals Container (cards will be dynamically rendered here) -->
+      <div id="goalsCardsContainer" class="flex flex-col gap-4">
+        <!-- Goal cards will be inserted here by JavaScript -->
+      </div>
+    </div>
+
+    <!-- Hidden table for data storage (required by step7.js) -->
+    <table class="hidden-data">
+      <thead>
+        <tr>
+          <th>Goal</th>
+          <th>Target Value (Future)</th>
+          <th>Lumpsum</th>
+          <th>Target Year</th>
+          <th>Tenure</th>
+          <th>Expected Return</th>
+          <th>Step-up</th>
+          <th>Monthly SIP</th>
+        </tr>
+      </thead>
+      <tbody id="goalsBody"></tbody>
+    </table>
+
+    <div class="h-2 bg-background-light"></div>
+
+    <!-- Year-by-Year Projection Section -->
+    <div class="bg-surface py-6">
+      <div class="px-5 mb-4">
+        <button id="toggleProjection" class="w-full flex items-center justify-between py-3 px-4 bg-white rounded-xl border border-gray-200 hover:bg-gray-50 transition-colors group">
+          <div class="flex items-center gap-3">
+            <div class="p-2 bg-primary/10 rounded-lg group-hover:bg-primary/20 transition-colors">
+              <span class="material-symbols-outlined text-primary text-xl">table_chart</span>
+            </div>
+            <h3 class="text-text-main text-lg font-bold leading-tight tracking-tight">Year-by-Year Projection</h3>
+          </div>
+          <span id="projectionToggleIcon" class="material-symbols-outlined text-text-secondary transition-transform duration-300">expand_more</span>
+        </button>
+      </div>
+
+      <div id="projectionContent" class="overflow-hidden transition-all duration-300" style="max-height: 0; opacity: 0;">
+        <div class="w-full overflow-x-auto hide-scrollbar border-y border-gray-100 bg-white">
+          <table class="min-w-full border-collapse text-sm">
+            <thead id="projHead">
+              <!-- Headers will be generated by JavaScript -->
+            </thead>
+            <tbody id="projBody">
+              <!-- Rows will be generated by JavaScript -->
+            </tbody>
+          </table>
+        </div>
+        <div class="px-5 pt-3 pb-3">
+          <p class="text-[11px] text-text-secondary italic flex items-center justify-center gap-1.5 opacity-70">
+            <span class="material-symbols-outlined text-[16px]">swipe_left</span>
+            Swipe to view all goals and years
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div class="h-2 bg-background-light"></div>
+
+    <!-- SIP Growth Journey Section -->
+    <div class="bg-surface px-5 py-6">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="text-text-main text-lg font-bold leading-tight tracking-tight">SIP Growth Journey</h3>
+        <button id="resetChart" class="text-[11px] uppercase tracking-wider font-bold text-primary border border-primary/30 px-3 py-1.5 rounded-full hover:bg-primary/5 transition-colors">Reset</button>
+      </div>
+
+      <!-- Chart Canvas -->
+      <div class="relative bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
+        <canvas id="growthChart" style="max-height: 300px;"></canvas>
+      </div>
+
+      <!-- Legend -->
+      <div id="legend" class="flex flex-wrap gap-x-4 gap-y-2 mt-6 justify-center">
+        <!-- Legend items will be generated by JavaScript -->
+      </div>
+    </div>
+
+    <div class="h-2 bg-background-light"></div>
+
+    <!-- What-If Analysis Section -->
+    <div class="bg-surface px-5 py-6 pb-8">
+      <h3 class="text-text-main text-lg font-bold leading-tight tracking-tight mb-4">What-If Analysis</h3>
+
+      <!-- Tabs -->
+      <div class="flex border-b border-gray-100 mb-6 overflow-x-auto hide-scrollbar gap-6">
+        <button class="tab-btn pb-2 text-sm font-bold text-primary border-b-2 border-primary whitespace-nowrap px-1 active" data-tab="investment-cap">Investment Cap</button>
+        <button class="tab-btn pb-2 text-sm font-medium text-text-secondary hover:text-text-main whitespace-nowrap px-1 transition-colors" data-tab="job-loss">Job Loss</button>
+        <button class="tab-btn pb-2 text-sm font-medium text-text-secondary hover:text-text-main whitespace-nowrap px-1 transition-colors" data-tab="raise">Salary Raise</button>
+      </div>
+
+      <!-- Tab 1: Investment Cap -->
+      <div class="tab-content active" id="investment-cap">
+        <div class="bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-inner">
+          <p class="text-sm text-text-secondary mb-4 leading-relaxed">See how capping your monthly investment affects your wealth creation and goals.</p>
+          <div class="mb-4">
+            <label class="block text-xs font-bold text-text-main mb-1.5">Max Monthly Investment Cap</label>
+            <div class="relative">
+              <span class="absolute left-3 top-3 text-text-main font-medium">₹</span>
+              <input id="whatIfCap" class="w-full rounded-xl border-gray-200 pl-7 py-3 text-text-main font-semibold focus:border-primary focus:ring-primary shadow-sm bg-white" placeholder="Enter amount" type="number"/>
+            </div>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button id="resetWhatIf" class="flex-1 bg-white border border-gray-300 text-text-main text-sm font-semibold py-3 rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all">Reset</button>
+            <button id="applyWhatIf" class="flex-1 bg-primary text-black text-sm font-bold py-3 rounded-xl shadow-sm hover:bg-primary-dark hover:shadow-md active:scale-[0.98] transition-all">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 2: Job Loss -->
+      <div class="tab-content" id="job-loss" style="display: none;">
+        <div class="bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-inner">
+          <p class="text-sm text-text-secondary mb-4 leading-relaxed">See the impact of temporary job loss on your goals and emergency fund.</p>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-bold text-text-main mb-1.5">Months without job</label>
+              <input id="jobLossMonths" class="w-full rounded-xl border-gray-200 py-3 px-3 text-text-main font-semibold focus:border-primary focus:ring-primary shadow-sm bg-white" placeholder="e.g., 6" type="number" min="1" max="24"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-text-main mb-1.5">At what age</label>
+              <input id="jobLossAge" class="w-full rounded-xl border-gray-200 py-3 px-3 text-text-main font-semibold focus:border-primary focus:ring-primary shadow-sm bg-white" placeholder="e.g., 30" type="number" min="18" max="100"/>
+            </div>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button id="resetJobLoss" class="flex-1 bg-white border border-gray-300 text-text-main text-sm font-semibold py-3 rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all">Reset</button>
+            <button id="applyJobLoss" class="flex-1 bg-primary text-black text-sm font-bold py-3 rounded-xl shadow-sm hover:bg-primary-dark hover:shadow-md active:scale-[0.98] transition-all">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab 3: Salary Raise -->
+      <div class="tab-content" id="raise" style="display: none;">
+        <div class="bg-gray-50 rounded-2xl p-5 border border-gray-200 shadow-inner">
+          <p class="text-sm text-text-secondary mb-4 leading-relaxed">See how a salary raise accelerates your financial goals.</p>
+          <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+              <label class="block text-xs font-bold text-text-main mb-1.5">Raise %</label>
+              <input id="raisePercent" class="w-full rounded-xl border-gray-200 py-3 px-3 text-text-main font-semibold focus:border-primary focus:ring-primary shadow-sm bg-white" placeholder="e.g., 20" type="number" min="1" max="200"/>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-text-main mb-1.5">At what age</label>
+              <input id="raiseAge" class="w-full rounded-xl border-gray-200 py-3 px-3 text-text-main font-semibold focus:border-primary focus:ring-primary shadow-sm bg-white" placeholder="e.g., 28" type="number" min="18" max="100"/>
+            </div>
+          </div>
+          <div class="mb-4">
+            <label class="block text-xs font-bold text-text-main mb-1.5">Allocation</label>
+            <select id="raiseAllocation" class="w-full rounded-xl border-gray-200 py-3 px-3 text-text-main font-semibold focus:border-primary focus:ring-primary shadow-sm bg-white">
+              <option value="proportional">Proportional to all SIPs</option>
+              <option value="wealth">100% to Wealth Creation</option>
+            </select>
+          </div>
+          <div class="flex gap-3 mt-6">
+            <button id="resetRaise" class="flex-1 bg-white border border-gray-300 text-text-main text-sm font-semibold py-3 rounded-xl hover:bg-gray-50 active:scale-[0.98] transition-all">Reset</button>
+            <button id="applyRaise" class="flex-1 bg-primary text-black text-sm font-bold py-3 rounded-xl shadow-sm hover:bg-primary-dark hover:shadow-md active:scale-[0.98] transition-all">Apply</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Results Summary (appears after Apply) -->
+      <div class="whatif-results mt-6" id="whatifResults" style="display: none;">
+        <h3 class="text-text-main font-bold text-base mb-3">Impact Summary</h3>
+        <div id="resultsSummary"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Fixed Bottom Button -->
+  <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-xl border-t border-gray-200 p-4 pb-6 shadow-[0_-8px_30px_rgba(0,0,0,0.04)] z-50">
+    <button id="to-step8" class="w-full bg-primary text-black text-lg font-bold py-4 rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary-dark hover:shadow-xl active:scale-[0.99] transition-all flex items-center justify-center gap-2 group">
+      Next
+      <span class="material-symbols-outlined text-2xl transition-transform group-hover:translate-x-1">arrow_forward</span>
+    </button>
+  </div>
+
+  <script>
+    // Sync hidden table with visual goal cards
+    function syncGoalCards() {
+      const tbody = document.getElementById('goalsBody');
+      const cardsContainer = document.getElementById('goalsCardsContainer');
+
+      if (!tbody || !cardsContainer) return;
+
+      // Helper to format money
+      function formatMoney(n) {
+        return `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(Math.round(n))}`;
+      }
+
+      // Icon mapping
+      const iconMap = {
+        'retirement': { icon: 'elderly_woman', bg: 'bg-orange-100', text: 'text-orange-600' },
+        'emergency': { icon: 'emergency', bg: 'bg-blue-100', text: 'text-blue-600' },
+        'marriage': { icon: 'favorite', bg: 'bg-pink-100', text: 'text-pink-600' },
+        'car': { icon: 'directions_car', bg: 'bg-purple-100', text: 'text-purple-600' },
+        'home': { icon: 'home', bg: 'bg-teal-100', text: 'text-teal-600' },
+        'education': { icon: 'school', bg: 'bg-indigo-100', text: 'text-indigo-600' },
+        'travel': { icon: 'flight', bg: 'bg-cyan-100', text: 'text-cyan-600' }
+      };
+
+      function getIcon(name) {
+        const lowerName = (name || '').toLowerCase();
+        for (const key in iconMap) {
+          if (lowerName.includes(key)) return iconMap[key];
+        }
+        return { icon: 'flag', bg: 'bg-green-100', text: 'text-green-600' };
+      }
+
+      // Clear existing cards
+      cardsContainer.innerHTML = '';
+
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+
+      rows.forEach((tr, index) => {
+        const nameCell = tr.querySelector('td:nth-child(1)');
+        const fvInput = tr.querySelector('input[data-fv]');
+        const lumpInput = tr.querySelector('input[data-lump]');
+        const yearInput = tr.querySelector('input[data-year]');
+        const tenureCell = tr.querySelector('[data-tenure]');
+        const expectedReturnCell = tr.querySelector('td:nth-child(6)');
+        const stepUpCell = tr.querySelector('td:nth-child(7)');
+        const sipCell = tr.querySelector('[data-sip]');
+
+        const name = (nameCell && nameCell.textContent) || 'Goal';
+        const fv = parseFloat((fvInput && fvInput.value) || '0');
+        const lump = parseFloat((lumpInput && lumpInput.value) || '0');
+        const targetYear = parseInt((yearInput && yearInput.value) || '0', 10);
+        const tenure = (tenureCell && tenureCell.textContent) || '0 years';
+        const expectedReturn = (expectedReturnCell && expectedReturnCell.textContent) || '0%';
+        const stepUp = (stepUpCell && stepUpCell.textContent) || '0%';
+        const sipText = (sipCell && sipCell.textContent) || '₹0';
+
+        const iconInfo = getIcon(name);
+
+        // Create goal card
+        const isExpanded = index === 0; // First goal expanded by default
+        const card = document.createElement('div');
+        card.className = 'flex flex-col rounded-2xl border border-gray-200 bg-white shadow-sm overflow-hidden' + (isExpanded ? ' ring-2 ring-primary/10' : '');
+
+        card.innerHTML = `
+          <button class="goal-header ${isExpanded ? 'bg-gray-50/80' : 'bg-white'} px-4 py-3 border-b border-gray-100 flex justify-between items-center w-full" data-index="${index}">
+            <div class="flex items-center gap-3">
+              <div class="${iconInfo.bg} p-1.5 rounded-lg ${iconInfo.text}">
+                <span class="material-symbols-outlined text-xl">${iconInfo.icon}</span>
+              </div>
+              <div class="text-left">
+                <span class="font-bold text-text-main block text-sm">${name}</span>
+              </div>
+            </div>
+            <span class="material-symbols-outlined text-text-main transition-transform ${isExpanded ? 'rotate-180' : ''}">expand_more</span>
+          </button>
+          <div class="goal-details p-4 grid grid-cols-2 gap-4 bg-white" style="display: ${isExpanded ? 'grid' : 'none'};" data-index="${index}">
+            <div class="col-span-2">
+              <label class="block text-xs font-semibold text-text-secondary mb-1.5">Target Value (Future)</label>
+              <div class="relative group">
+                <span class="absolute left-3 top-2.5 text-text-secondary font-medium">₹</span>
+                <input class="w-full rounded-xl border-gray-200 bg-gray-50 pl-7 py-2.5 text-text-main font-bold focus:border-primary focus:ring-primary focus:bg-white transition-all shadow-sm" type="text" data-card-fv="${index}" value="${formatMoney(fv).replace('₹', '')}"/>
+              </div>
+            </div>
+            <div class="col-span-1">
+              <label class="block text-xs font-semibold text-text-secondary mb-1.5">Lumpsum</label>
+              <div class="relative">
+                <span class="absolute left-3 top-2.5 text-text-secondary font-medium">₹</span>
+                <input class="w-full rounded-xl border-gray-200 bg-gray-50 pl-6 py-2.5 text-text-main font-semibold focus:border-primary focus:ring-primary focus:bg-white transition-all shadow-sm text-center" type="text" data-card-lump="${index}" value="${lump}"/>
+              </div>
+            </div>
+            <div class="col-span-1">
+              <label class="block text-xs font-semibold text-text-secondary mb-1.5">Target Year</label>
+              <input class="w-full rounded-xl border-gray-200 bg-gray-50 py-2.5 text-text-main font-semibold focus:border-primary focus:ring-primary focus:bg-white transition-all shadow-sm text-center" type="text" data-card-year="${index}" value="${targetYear}"/>
+            </div>
+            <div class="col-span-2 bg-gray-50 rounded-xl p-3 grid grid-cols-3 gap-y-3 mt-1 border border-gray-100">
+              <div>
+                <p class="text-[10px] uppercase tracking-wide text-text-secondary mb-0.5">Tenure</p>
+                <p class="text-sm font-semibold text-text-main">${tenure}</p>
+              </div>
+              <div>
+                <p class="text-[10px] uppercase tracking-wide text-text-secondary mb-0.5">Exp. Ret</p>
+                <p class="text-sm font-semibold text-text-main">${expectedReturn}</p>
+              </div>
+              <div>
+                <p class="text-[10px] uppercase tracking-wide text-text-secondary mb-0.5">Step-up</p>
+                <p class="text-sm font-semibold text-text-main">${stepUp}</p>
+              </div>
+              <div class="col-span-3 border-t border-gray-200 pt-2 flex justify-between items-center">
+                <p class="text-xs font-medium text-text-secondary">Monthly SIP Required</p>
+                <p class="text-lg font-bold text-primary">${sipText}</p>
+              </div>
+            </div>
+          </div>
+        `;
+
+        cardsContainer.appendChild(card);
+      });
+
+      // Add toggle functionality
+      document.querySelectorAll('.goal-header').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const index = this.getAttribute('data-index');
+          const detailsPanel = document.querySelector(`.goal-details[data-index="${index}"]`);
+          const icon = this.querySelector('.material-symbols-outlined');
+          const card = this.closest('.flex');
+
+          if (detailsPanel) {
+            const isVisible = detailsPanel.style.display === 'grid';
+            detailsPanel.style.display = isVisible ? 'none' : 'grid';
+            icon.classList.toggle('rotate-180');
+
+            if (isVisible) {
+              this.classList.remove('bg-gray-50/80');
+              this.classList.add('bg-white');
+              card.classList.remove('ring-2', 'ring-primary/10');
+            } else {
+              this.classList.add('bg-gray-50/80');
+              this.classList.remove('bg-white');
+              card.classList.add('ring-2', 'ring-primary/10');
+            }
+          }
+        });
+      });
+
+      // Add input event listeners to sync with hidden table
+      cardsContainer.querySelectorAll('input[data-card-fv], input[data-card-year], input[data-card-lump]').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.getAttribute('data-card-fv') || this.getAttribute('data-card-year') || this.getAttribute('data-card-lump'));
+          const tr = rows[index];
+
+          if (tr) {
+            if (this.getAttribute('data-card-fv') !== null) {
+              const fvInput = tr.querySelector('input[data-fv]');
+              const cleanValue = this.value.replace(/,/g, '');
+              if (fvInput) fvInput.value = cleanValue;
+            } else if (this.getAttribute('data-card-year') !== null) {
+              const yearInput = tr.querySelector('input[data-year]');
+              if (yearInput) yearInput.value = this.value;
+            } else if (this.getAttribute('data-card-lump') !== null) {
+              const lumpInput = tr.querySelector('input[data-lump]');
+              if (lumpInput) lumpInput.value = this.value;
+            }
+
+            // Trigger input event on hidden table to recalculate
+            const event = new Event('input', { bubbles: true });
+            tr.querySelector('input[data-fv]').dispatchEvent(event);
+          }
+        });
+      });
+    }
+
+    // Watch for changes in the hidden table and update cards
+    function observeTableChanges() {
+      const tbody = document.getElementById('goalsBody');
+      if (!tbody) return;
+
+      // Initial sync
+      setTimeout(syncGoalCards, 500);
+
+      // Create observer to watch for changes
+      const observer = new MutationObserver(() => {
+        syncGoalCards();
+      });
+
+      observer.observe(tbody, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true
+      });
+    }
+
+    // Tab switching for What-If Analysis
+    document.addEventListener('DOMContentLoaded', function() {
+      observeTableChanges();
+
+      const tabBtns = document.querySelectorAll('.tab-btn');
+      const tabContents = document.querySelectorAll('.tab-content');
+
+      tabBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Remove active class from all
+          tabBtns.forEach(b => {
+            b.classList.remove('active', 'font-bold', 'text-primary', 'border-b-2', 'border-primary');
+            b.classList.add('font-medium', 'text-text-secondary');
+          });
+          tabContents.forEach(c => {
+            c.style.display = 'none';
+            c.classList.remove('active');
+          });
+
+          // Add active to clicked
+          btn.classList.add('active', 'font-bold', 'text-primary', 'border-b-2', 'border-primary');
+          btn.classList.remove('font-medium', 'text-text-secondary');
+
+          const tabId = btn.getAttribute('data-tab');
+          const selectedTab = document.getElementById(tabId);
+          if (selectedTab) {
+            selectedTab.style.display = 'block';
+            selectedTab.classList.add('active');
+          }
+
+          // Hide results when switching tabs
+          const resultsDiv = document.getElementById('whatifResults');
+          if (resultsDiv) resultsDiv.style.display = 'none';
+        });
+      });
+    });
+
+    // Year-by-Year Projection Toggle
+    document.addEventListener('DOMContentLoaded', function() {
+      const toggleBtn = document.getElementById('toggleProjection');
+      const content = document.getElementById('projectionContent');
+      const icon = document.getElementById('projectionToggleIcon');
+      let isExpanded = false;
+
+      if (toggleBtn && content && icon) {
+        toggleBtn.addEventListener('click', function() {
+          isExpanded = !isExpanded;
+
+          if (isExpanded) {
+            // Expand
+            content.style.maxHeight = content.scrollHeight + 'px';
+            content.style.opacity = '1';
+            icon.style.transform = 'rotate(180deg)';
+
+            // After animation, set to auto for dynamic content
+            setTimeout(() => {
+              if (isExpanded) {
+                content.style.maxHeight = 'none';
+              }
+            }, 300);
+          } else {
+            // Collapse
+            content.style.maxHeight = content.scrollHeight + 'px';
+            // Force reflow
+            void content.offsetHeight;
+            content.style.maxHeight = '0';
+            content.style.opacity = '0';
+            icon.style.transform = 'rotate(0deg)';
+          }
+        });
+      }
+    });
+
+    // Custom legend rendering for chart
+    document.addEventListener('DOMContentLoaded', function() {
+      // Store original renderLegend to override it
+      const checkAndOverrideLegend = setInterval(() => {
+        if (typeof window.renderLegend === 'function' && window.chart) {
+          clearInterval(checkAndOverrideLegend);
+
+          // Override renderLegend
+          const originalRenderLegend = window.renderLegend;
+          window.renderLegend = function() {
+            const legendBox = document.getElementById('legend');
+            if (!legendBox || !window.chart) return;
+
+            legendBox.innerHTML = '';
+            legendBox.className = 'flex flex-wrap gap-3 mt-6 justify-center';
+
+            window.chart.data.datasets.forEach((ds, i) => {
+              const el = document.createElement('button');
+              el.className = 'legend-item';
+              el.setAttribute('data-dataset-index', i);
+
+              const meta = window.chart.getDatasetMeta(i);
+
+              // Hide Wealth Creation by default
+              if (ds.label === 'Wealth Creation') {
+                meta.hidden = true;
+              }
+
+              // Apply classes based on visibility state
+              if (meta.hidden === true) {
+                el.classList.add('dataset-hidden');
+                el.classList.remove('active');
+              } else {
+                el.classList.add('active');
+                el.classList.remove('dataset-hidden');
+              }
+
+              el.innerHTML = `
+                <span class="swatch" style="background-color: ${ds.backgroundColor};"></span>
+                <span>${ds.label}</span>
+              `;
+
+              el.onclick = () => {
+                const m = window.chart.getDatasetMeta(i);
+
+                // Toggle the hidden state
+                if (m.hidden === true) {
+                  m.hidden = false;
+                  el.classList.add('active');
+                  el.classList.remove('dataset-hidden');
+                } else {
+                  m.hidden = true;
+                  el.classList.add('dataset-hidden');
+                  el.classList.remove('active');
+                }
+
+                window.chart.update();
+              };
+
+              legendBox.appendChild(el);
+            });
+
+            window.chart.update();
+          };
+
+          // Trigger the override if chart already exists
+          if (window.chart) {
+            window.renderLegend();
+          }
+        }
+      }, 100);
+
+      // Also style the projection table headers with colors
+      setTimeout(() => {
+        const projHead = document.getElementById('projHead');
+        if (projHead) {
+          const headerCells = projHead.querySelectorAll('th');
+          const colors = {
+            'RETIREMENT': '#ea580c',
+            'EMERGENCY': '#2563eb',
+            'MARRIAGE': '#ec4899',
+            'CAR': '#a855f7',
+            'HOME': '#14b8a6',
+            'EDUCATION': '#6366f1',
+            'TRAVEL': '#06b6d4'
+          };
+
+          headerCells.forEach(th => {
+            const text = th.textContent.toUpperCase();
+            for (const [key, color] of Object.entries(colors)) {
+              if (text.includes(key)) {
+                th.style.color = color;
+                break;
+              }
+            }
+          });
+        }
+      }, 1000);
+    });
+  </script>
+</body>
+</html>

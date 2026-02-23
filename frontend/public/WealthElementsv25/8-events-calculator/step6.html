@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html class="light" lang="en">
+<head>
+  <meta charset="utf-8"/>
+  <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+  <title>Financial Plan - Step 6</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#10b981",
+            "primary-dark": "#059669",
+            "primary-light": "#ecfdf5",
+            "background-light": "#f6f8f6",
+            "background-dark": "#102216",
+            "surface-light": "#ffffff",
+            "surface-subtle": "#f0f4f2",
+            "text-main": "#111813",
+            "text-secondary": "#61896f",
+            "danger": "#ef4444",
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          },
+          borderRadius: {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "2xl": "1rem",
+            "full": "9999px"
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      -webkit-font-smoothing: antialiased;
+      min-height: max(884px, 100dvh);
+    }
+    .no-scrollbar::-webkit-scrollbar {
+      display: none;
+    }
+    .no-scrollbar {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    /* Hidden table for data storage */
+    #sipRows {
+      display: none !important;
+    }
+  </style>
+
+  <!-- TensorFlow.js for ML (OPTIONAL - system works without it using rule-based fallback) -->
+  <script>
+    // Try loading TensorFlow.js from multiple CDNs
+    (function loadTensorFlow() {
+      const cdnUrls = [
+        'https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.11.0/dist/tf.min.js',
+        'https://unpkg.com/@tensorflow/tfjs@4.11.0/dist/tf.min.js',
+        'https://cdnjs.cloudflare.com/ajax/libs/tensorflow/4.11.0/tf.min.js'
+      ];
+
+      let currentIndex = 0;
+
+      function tryLoadScript() {
+        if (currentIndex >= cdnUrls.length) {
+          console.warn('⚠️ All TensorFlow.js CDNs failed. Using rule-based fallback.');
+          return;
+        }
+
+        const script = document.createElement('script');
+        script.src = cdnUrls[currentIndex];
+        script.defer = true;
+
+        script.onload = function() {
+          console.log('✅ TensorFlow.js loaded successfully');
+        };
+
+        script.onerror = function() {
+          currentIndex++;
+          tryLoadScript();
+        };
+
+        document.head.appendChild(script);
+      }
+
+      tryLoadScript();
+    })();
+  </script>
+
+  <!-- ML Scripts (load in order with defer) -->
+  <script src="outcome-tracker.js" defer></script>
+  <script src="ml-features.js" defer></script>
+  <script src="ml-model.js" defer></script>
+
+  <!-- Original step6.js -->
+  <script src="step6.js" defer></script>
+
+  <!-- ML Integration (load after step6.js) -->
+  <script src="step6-ml-integration.js" defer></script>
+</head>
+<body class="bg-gray-100 text-text-main font-display antialiased selection:bg-primary selection:text-white">
+  <div class="mx-auto max-w-md min-h-screen relative pb-28 shadow-2xl overflow-hidden bg-background-main">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-gray-200 px-4 py-3 shadow-sm">
+      <div class="flex items-center gap-3 mb-1">
+        <button id="back-step5" class="p-2 -ml-2 rounded-full hover:bg-gray-100 text-text-main transition-colors">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-lg font-bold leading-tight text-text-main">Step 6: SIP Calculation</h1>
+        </div>
+        <div class="text-xs font-semibold text-primary bg-primary-light px-2 py-1 rounded-full border border-primary/20">6 of 8</div>
+      </div>
+      <p class="text-sm text-text-secondary pl-10 leading-snug">Edit target values and see SIP update</p>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="px-6 py-4 flex justify-between gap-1.5 bg-background-main">
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+    </div>
+
+    <!-- Main Content Scroll Area -->
+    <main class="flex-1 overflow-y-auto no-scrollbar pb-24 px-4 bg-background-subtle pt-2">
+
+      <!-- Budget Warning Card (shown when exceeds budget) -->
+      <section id="budgetWarningCard" class="mt-4 mb-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-4" style="display: none;">
+        <div class="flex items-start gap-3">
+          <span class="material-symbols-outlined text-danger text-[20px] mt-0.5">warning</span>
+          <div class="flex-1">
+            <h3 class="text-danger font-semibold text-sm mb-1">Budget Exceeded</h3>
+            <p id="shortfallText" class="text-danger text-xs leading-relaxed">Your plan exceeds your budget by ₹0. Click optimize to adjust.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Investment Budget Card -->
+      <section class="mb-4">
+        <div class="bg-gradient-to-br from-primary/10 to-primary/5 dark:from-primary/20 dark:to-primary/10 rounded-xl p-5 shadow-sm border border-primary/20">
+          <div class="flex items-center gap-2 mb-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
+            <p class="text-text-secondary dark:text-gray-400 text-xs font-medium uppercase tracking-wide">Investment Budget</p>
+          </div>
+          <p id="budgetAmount" class="text-text-main dark:text-white tracking-tight text-2xl font-bold mb-1">₹0</p>
+          <p class="text-xs text-text-secondary dark:text-gray-500 leading-normal">Based on your income and investment rules</p>
+        </div>
+      </section>
+
+      <!-- Goals Section Header -->
+      <div class="pt-2 pb-2 flex justify-between items-center">
+        <h2 class="text-text-main dark:text-white text-lg font-bold">Your Goals</h2>
+        <span id="goals-count" class="bg-primary/10 text-primary text-xs font-semibold px-2.5 py-1 rounded-full">0 Items</span>
+      </div>
+
+      <!-- Goals Container (cards will be dynamically rendered here) -->
+      <div id="goalsContainer" class="pb-4 space-y-3">
+        <!-- Goal cards will be inserted here by JavaScript -->
+      </div>
+
+      <!-- Hidden table for data storage (required by step6.js) -->
+      <table class="sip-table" style="display: none;">
+        <thead>
+          <tr>
+            <th>Goal</th>
+            <th>Priority</th>
+            <th>Target Value (Future)</th>
+            <th>Existing/Lumpsum (₹)</th>
+            <th>Target Year</th>
+            <th>Expected Return</th>
+            <th>Annual Step-up</th>
+            <th>Required Monthly SIP</th>
+          </tr>
+        </thead>
+        <tbody id="sipRows"></tbody>
+        <tfoot>
+          <tr>
+            <td colspan="7">Total Required Monthly Investment</td>
+            <td id="sipTotal">₹0</td>
+          </tr>
+        </tfoot>
+      </table>
+
+      <!-- Spacer for fixed bottom -->
+      <div class="h-6 w-full"></div>
+    </div>
+
+    <!-- Sticky Bottom Section -->
+    <div class="bg-surface-light dark:bg-background-dark p-4 border-t border-gray-100 dark:border-gray-800 fixed bottom-0 w-full max-w-md z-20">
+      <!-- Total Monthly Investment -->
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-text-secondary dark:text-gray-400 text-sm font-medium">Total Monthly Investment</span>
+        <span id="totalSipDisplay" class="text-text-main dark:text-white text-lg font-bold">₹0</span>
+      </div>
+
+      <!-- Primary Action Button (switches between Optimize and Next) -->
+      <button id="primaryActionBtn" class="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-dark text-white font-bold text-base h-12 rounded-xl transition-colors shadow-lg shadow-primary/20">
+        <span id="primaryActionIcon" class="material-symbols-outlined text-[20px]">tune</span>
+        <span id="primaryActionText">Optimize SIP (3 left)</span>
+      </button>
+
+      <!-- Reset Button (hidden initially, smaller size) -->
+      <button id="resetOptimizationBtn" class="w-full flex items-center justify-center gap-1.5 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-text-secondary dark:text-white font-medium text-xs h-8 rounded-lg transition-colors mt-2" style="display: none;">
+        <span class="material-symbols-outlined text-[16px]">refresh</span>
+        Reset
+      </button>
+
+      <!-- Optimization Note -->
+      <p class="text-xs text-text-secondary dark:text-gray-500 leading-relaxed mt-3 text-center">
+        Automatically adjust step-up to 10%, reduce goal amounts, and extend tenure to fit your budget.
+      </p>
+    </main>
+  </div>
+
+  <script>
+    // Get investment budget (same function as in step6.js)
+    function getInvestmentBudget(){
+      try {
+        function getInvestRule(){
+          try{
+            const raw = localStorage.getItem('we_invest_rule');
+            return raw ? JSON.parse(raw) : { autoStepUp: 0 };
+          } catch(e){
+            return { autoStepUp: 0 };
+          }
+        }
+
+        const data = JSON.parse(localStorage.getItem('we_step1') || '{}');
+        const investRule = getInvestRule();
+
+        // Calculate monthly income
+        const monthlyIncome = (data.income || []).reduce((sum, item) => sum + (item.value || 0), 0);
+
+        // Calculate monthly expenses
+        const monthlyExpenses = (data.expenses || []).reduce((sum, item) => {
+          return sum + (item.monthly || 0) + ((item.annual || 0) / 12);
+        }, 0);
+
+        // Calculate existing investments and EMIs
+        const existingInvestments = (data.investments || []).reduce((sum, item) => {
+          const amount = item.amount || 0;
+          const mode = item.mode || 'Monthly';
+          // Convert to monthly equivalent
+          switch (mode.toLowerCase()) {
+            case 'monthly':
+            case 'month':
+            case 'mon':
+              return sum + amount;
+            case 'quarterly':
+            case 'quarter':
+            case 'qtr':
+              return sum + (amount / 3);
+            case 'yearly':
+            case 'year':
+            case 'yr':
+              return sum + (amount / 12);
+            default:
+              return sum + amount;
+          }
+        }, 0);
+        const existingEMIs = (data.assets || []).reduce((sum, item) => {
+          return sum + ((item.type && item.type.toLowerCase() === 'liability') ? (item.emi || 0) : 0);
+        }, 0);
+
+        const totalExpenses = monthlyExpenses + existingEMIs;
+
+        // Use percentage rule
+        const pct = investRule.pct || 30;
+        return (monthlyIncome * pct) / 100;
+      } catch(e) {
+        console.error('Error calculating investment budget:', e);
+        return 0;
+      }
+    }
+
+    // Sync hidden table with visual cards
+    function syncCardsWithTable() {
+      const tbody = document.getElementById('sipRows');
+      const goalsContainer = document.getElementById('goalsContainer');
+      const goalsCountEl = document.getElementById('goals-count');
+      const totalSipDisplay = document.getElementById('totalSipDisplay');
+      const budgetAmount = document.getElementById('budgetAmount');
+      const budgetWarningCard = document.getElementById('budgetWarningCard');
+      const shortfallText = document.getElementById('shortfallText');
+
+      if (!tbody || !goalsContainer) return;
+
+      // Helper to format money
+      function formatMoney(n) {
+        return `₹${new Intl.NumberFormat('en-IN', { maximumFractionDigits: 0 }).format(Math.round(n))}`;
+      }
+
+      // Update budget display
+      const budget = getInvestmentBudget();
+      if (budgetAmount) {
+        budgetAmount.textContent = formatMoney(budget);
+      }
+
+      // Icon and color mapping
+      const iconMap = {
+        'retirement': { icon: 'elderly_woman', bg: '#dbeafe', text: '#2563eb' },
+        'emergency': { icon: 'medical_services', bg: '#ffedd5', text: '#ea580c' },
+        'marriage': { icon: 'favorite', bg: '#fce7f3', text: '#ec4899' },
+        'car': { icon: 'directions_car', bg: '#f3e8ff', text: '#a855f7' },
+        'home': { icon: 'home', bg: '#f9fafb', text: '#9ca3af' },
+        'education': { icon: 'school', bg: '#e0e7ff', text: '#6366f1' },
+        'travel': { icon: 'flight', bg: '#cffafe', text: '#06b6d4' }
+      };
+
+      function getIcon(name) {
+        const lowerName = (name || '').toLowerCase();
+        for (const key in iconMap) {
+          if (lowerName.includes(key)) return iconMap[key];
+        }
+        return { icon: 'flag', bg: '#dcfce7', text: '#16a34a' };
+      }
+
+      // Clear existing cards
+      goalsContainer.innerHTML = '';
+
+      const rows = Array.from(tbody.querySelectorAll('tr'));
+      const totalGoals = rows.length;
+
+      if (goalsCountEl) {
+        goalsCountEl.textContent = `${totalGoals} Item${totalGoals !== 1 ? 's' : ''}`;
+      }
+
+      let totalSip = 0;
+
+      // Render each goal as a card
+      rows.forEach((tr, index) => {
+        const nameCell = tr.querySelector('td');
+        const name = (nameCell && nameCell.textContent) || 'Goal';
+        const priorityBadge = tr.querySelectorAll('td')[1];
+        const priority = (priorityBadge && priorityBadge.textContent) || 'Medium';
+        const fvInput = tr.querySelector('input[data-fv]');
+        const lumpInput = tr.querySelector('input[data-lump]');
+        const yearInput = tr.querySelector('input[data-year]');
+        const expectedReturnCell = tr.querySelectorAll('td')[5];
+        const stepUpCell = tr.querySelectorAll('td')[6];
+        const sipCell = tr.querySelector('[data-sip]');
+
+        const fv = parseFloat((fvInput && fvInput.value) || '0');
+        const lump = parseFloat((lumpInput && lumpInput.value) || '0');
+        const targetYear = parseInt((yearInput && yearInput.value) || '0', 10);
+        const expectedReturn = (expectedReturnCell && expectedReturnCell.textContent) || '0%';
+        const stepUp = (stepUpCell && stepUpCell.textContent) || '0%';
+        const sipText = sipCell ? sipCell.textContent : '0';
+        const sip = parseFloat(String(sipText).replace(/[^0-9.]/g,'')) || 0;
+
+        totalSip += sip;
+
+        const iconInfo = getIcon(name);
+
+        // Priority badge colors
+        let priorityBadgeClass = 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
+        if (priority.toLowerCase().includes('high')) {
+          priorityBadgeClass = 'bg-primary text-white';
+        } else if (priority.toLowerCase().includes('medium')) {
+          priorityBadgeClass = 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400';
+        } else if (priority.toLowerCase().includes('low')) {
+          priorityBadgeClass = 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400';
+        }
+
+        // Create goal card
+        const card = document.createElement('div');
+        card.className = 'bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden';
+        card.innerHTML = `
+          <div class="p-4">
+            <!-- Goal Header -->
+            <div class="flex justify-between items-start mb-3">
+              <div class="flex items-center gap-2">
+                <div class="size-10 rounded-full flex items-center justify-center" style="background-color: ${iconInfo.bg}; color: ${iconInfo.text};">
+                  <span class="material-symbols-outlined" style="font-size: 20px;">${iconInfo.icon}</span>
+                </div>
+                <div>
+                  <h4 class="text-text-main dark:text-white font-semibold text-sm">${name}</h4>
+                  <span class="text-[10px] font-medium ${priorityBadgeClass} px-1.5 py-0.5 rounded inline-block mt-0.5">${priority} Priority</span>
+                </div>
+              </div>
+              <button class="toggle-details text-text-secondary dark:text-gray-400 hover:text-text-main dark:hover:text-white transition-colors" data-index="${index}">
+                <span class="material-symbols-outlined" style="font-size: 20px;">expand_more</span>
+              </button>
+            </div>
+
+            <!-- Required SIP Amount -->
+            <div class="flex justify-between items-end mb-3">
+              <span class="text-text-secondary dark:text-gray-400 text-xs font-medium">Required SIP</span>
+              <span class="text-text-main dark:text-white font-bold text-lg">${formatMoney(sip)}/mo</span>
+            </div>
+
+            <!-- Expandable Details -->
+            <div class="details-panel" data-index="${index}" style="display: none;">
+              <div class="border-t border-gray-100 dark:border-gray-700 pt-3 space-y-3">
+                <!-- Target Value -->
+                <div>
+                  <label class="block text-text-secondary dark:text-gray-400 text-xs font-medium mb-1">Target Value (Future)</label>
+                  <input type="number" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-text-main dark:text-white" data-card-fv="${index}" value="${Math.round(fv)}" />
+                </div>
+
+                <!-- Target Year -->
+                <div>
+                  <label class="block text-text-secondary dark:text-gray-400 text-xs font-medium mb-1">Target Year</label>
+                  <input type="number" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-text-main dark:text-white" data-card-year="${index}" value="${targetYear}" min="${new Date().getFullYear()}" max="${new Date().getFullYear() + 50}" />
+                </div>
+
+                <!-- Existing Amount -->
+                <div>
+                  <label class="block text-text-secondary dark:text-gray-400 text-xs font-medium mb-1">Existing/Lumpsum Amount</label>
+                  <input type="number" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg px-3 py-2 text-sm text-text-main dark:text-white" data-card-lump="${index}" value="${Math.round(lump)}" />
+                </div>
+
+                <!-- Display only fields -->
+                <div class="grid grid-cols-3 gap-2">
+                  <div>
+                    <label class="block text-text-secondary dark:text-gray-400 text-[10px] font-medium mb-1">Expected Return</label>
+                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg px-2 py-1.5 text-xs text-text-main dark:text-white font-medium text-center">${expectedReturn}</div>
+                  </div>
+                  <div>
+                    <label class="block text-text-secondary dark:text-gray-400 text-[10px] font-medium mb-1">Step-up</label>
+                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg px-2 py-1.5 text-xs text-text-main dark:text-white font-medium text-center">${stepUp}</div>
+                  </div>
+                  <div>
+                    <label class="block text-text-secondary dark:text-gray-400 text-[10px] font-medium mb-1">Inflation</label>
+                    <div class="bg-gray-100 dark:bg-gray-900 rounded-lg px-2 py-1.5 text-xs text-text-main dark:text-white font-medium text-center">6%</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+
+        goalsContainer.appendChild(card);
+      });
+
+      // Update total SIP display
+      if (totalSipDisplay) {
+        totalSipDisplay.textContent = formatMoney(totalSip);
+      }
+
+      // Update budget warning card
+      if (budgetWarningCard && shortfallText) {
+        if (totalSip > budget) {
+          const shortfall = totalSip - budget;
+          budgetWarningCard.style.display = 'block';
+          shortfallText.textContent = `Your plan exceeds your budget by ${formatMoney(shortfall)}. Click optimize to adjust.`;
+        } else {
+          budgetWarningCard.style.display = 'none';
+        }
+      }
+
+      // Add toggle functionality for details
+      document.querySelectorAll('.toggle-details').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const index = this.getAttribute('data-index');
+          const detailsPanel = document.querySelector(`.details-panel[data-index="${index}"]`);
+          const icon = this.querySelector('.material-symbols-outlined');
+
+          if (detailsPanel) {
+            const isVisible = detailsPanel.style.display !== 'none';
+            detailsPanel.style.display = isVisible ? 'none' : 'block';
+            icon.textContent = isVisible ? 'expand_more' : 'expand_less';
+          }
+        });
+      });
+
+      // Add input event listeners to sync with hidden table
+      goalsContainer.querySelectorAll('input[data-card-fv], input[data-card-year], input[data-card-lump]').forEach(input => {
+        input.addEventListener('input', function() {
+          const index = parseInt(this.getAttribute('data-card-fv') || this.getAttribute('data-card-year') || this.getAttribute('data-card-lump'));
+          const tr = rows[index];
+
+          if (tr) {
+            if (this.getAttribute('data-card-fv') !== null) {
+              const fvInput = tr.querySelector('input[data-fv]');
+              if (fvInput) fvInput.value = this.value;
+            } else if (this.getAttribute('data-card-year') !== null) {
+              const yearInput = tr.querySelector('input[data-year]');
+              if (yearInput) yearInput.value = this.value;
+            } else if (this.getAttribute('data-card-lump') !== null) {
+              const lumpInput = tr.querySelector('input[data-lump]');
+              if (lumpInput) lumpInput.value = this.value;
+            }
+
+            // Trigger input event on hidden table to recalculate
+            const event = new Event('input', { bubbles: true });
+            tr.querySelector('input[data-fv]').dispatchEvent(event);
+          }
+        });
+      });
+    }
+
+    // Watch for changes in the hidden table and update cards
+    function observeTableChanges() {
+      const tbody = document.getElementById('sipRows');
+      if (!tbody) return;
+
+      // Initial sync
+      setTimeout(syncCardsWithTable, 500);
+
+      // Create observer to watch for changes
+      const observer = new MutationObserver(() => {
+        syncCardsWithTable();
+      });
+
+      observer.observe(tbody, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true
+      });
+
+      // Also observe changes to individual cells
+      tbody.addEventListener('DOMSubtreeModified', () => {
+        setTimeout(syncCardsWithTable, 100);
+      });
+    }
+
+    // Update button visibility based on optimization count
+    function updateButtonVisibility() {
+      const optimizeBtn = document.getElementById('optimizeBtn');
+      const nextBtn = document.getElementById('to-step7');
+      const resetBtn = document.getElementById('resetOptimizationBtn');
+
+      // Check optimization count
+      const count = window.optimizationCount || 0;
+      const maxOptimizations = window.maxOptimizations || 3;
+
+      // Always keep Next button visible
+      if (nextBtn) nextBtn.style.display = 'flex';
+
+      if (count >= maxOptimizations) {
+        // Hide optimize button after max optimizations
+        if (optimizeBtn) optimizeBtn.style.display = 'none';
+        if (resetBtn) resetBtn.style.display = 'block';
+      } else {
+        // Show optimize button with remaining count
+        if (optimizeBtn) {
+          optimizeBtn.style.display = 'flex';
+          const remaining = maxOptimizations - count;
+          optimizeBtn.innerHTML = `
+            <span class="material-symbols-outlined" style="font-size: 20px;">tune</span>
+            Optimize SIP (${remaining} left)
+          `;
+        }
+      }
+    }
+
+    // Override the original optimize button click to update visibility
+    document.addEventListener('DOMContentLoaded', function() {
+      observeTableChanges();
+
+      // Periodically check and update button visibility
+      setInterval(updateButtonVisibility, 500);
+
+      // Initial button state
+      updateButtonVisibility();
+    });
+  </script>
+</body>
+</html>

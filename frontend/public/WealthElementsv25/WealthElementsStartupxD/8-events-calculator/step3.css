@@ -1,0 +1,652 @@
+/* Step 3 specific styles using design system */
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.page-header h1 {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+}
+.subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+.btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.btn:hover {
+  background: var(--primary-500);
+  border-color: var(--primary-500);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+/* Individual Mode Layout */
+.individual-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: var(--space-6);
+  margin-bottom: var(--space-6);
+  align-items: stretch;
+}
+
+.emergency-card-wide {
+  /* Remove special grid positioning for more balanced layout */
+}
+
+/* Couple Mode Layout */
+.couple-layout {
+  display: block;
+  margin-bottom: var(--space-6);
+}
+
+.emergency-section {
+  margin-bottom: var(--space-8);
+}
+
+.emergency-card-large {
+  background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+  border: 2px solid var(--border-primary);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  text-align: center;
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.emergency-card-large:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+}
+
+/* Insurance Grid for Couple Mode */
+.insurance-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-8);
+  margin-top: var(--space-6);
+}
+
+.insurance-column {
+  background: var(--bg-card);
+  border: 2px solid var(--border-primary);
+  border-radius: var(--radius-2xl);
+  padding: var(--space-6);
+  box-shadow: var(--shadow-lg);
+  transition: all var(--transition-normal);
+}
+
+.insurance-column:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+  border-color: var(--primary-300);
+}
+
+.column-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-6);
+  padding-bottom: var(--space-4);
+  border-bottom: 2px solid var(--border-secondary);
+}
+
+.header-icon {
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  background: linear-gradient(135deg, var(--primary-100) 0%, var(--primary-200) 100%);
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-sm);
+}
+
+.column-header h3 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  flex: 1;
+}
+
+.column-desc {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-style: italic;
+  margin-bottom: var(--space-4);
+  padding: 0 var(--space-2);
+}
+
+.spouse-cards {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.spouse-card {
+  background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  transition: all var(--transition-normal);
+  position: relative;
+  overflow: hidden;
+}
+
+.spouse-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--primary-400) 0%, var(--primary-600) 100%);
+}
+
+.husband-card::before {
+  background: linear-gradient(90deg, #3b82f6 0%, #1d4ed8 100%);
+}
+
+.wife-card::before {
+  background: linear-gradient(90deg, #ec4899 0%, #be185d 100%);
+}
+
+.spouse-card:hover {
+  transform: translateX(4px);
+  box-shadow: var(--shadow-md);
+  border-color: var(--primary-300);
+}
+
+.spouse-name {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-2);
+}
+
+.spouse-value {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--primary-600);
+  margin-bottom: var(--space-2);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.spouse-desc {
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.total-bar {
+  background: linear-gradient(135deg, #f0f3fa 0%, #f1f5f9 100%);
+  border: 2px solid var(--primary-300);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-weight: var(--font-weight-bold);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.total-label {
+  color: #1e293b;
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-bold);
+}
+
+.total-value {
+  color: #0f172a;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-extrabold);
+}
+
+/* Enhanced Card Icons */
+.card-icon {
+  font-size: 3rem;
+  margin-bottom: var(--space-3);
+  display: block;
+  text-align: center;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+}
+
+
+/* ========================================
+   RESPONSIVE DESIGN - MOBILE FIRST ENHANCED
+   ======================================== */
+
+/* Mobile Base (< 480px) - Stack all cards */
+.individual-layout {
+  grid-template-columns: 1fr;
+  gap: var(--space-3);
+}
+
+.insurance-grid {
+  grid-template-columns: 1fr;
+  gap: var(--space-4);
+}
+
+.column-header {
+  flex-direction: column;
+  text-align: center;
+  gap: var(--space-2);
+}
+
+.header-icon {
+  width: 45px;
+  height: 45px;
+  font-size: 1.25rem;
+}
+
+.spouse-value {
+  font-size: var(--font-size-2xl);
+}
+
+.total-bar {
+  flex-direction: column;
+  gap: var(--space-2);
+  text-align: center;
+  padding: var(--space-3);
+}
+
+/* Small Mobile and Above (480px+) */
+@media (min-width: 480px) {
+  .individual-layout {
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+  }
+
+  .insurance-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
+  .header-icon {
+    width: 50px;
+    height: 50px;
+    font-size: 1.5rem;
+  }
+
+  .spouse-value {
+    font-size: var(--font-size-3xl);
+  }
+
+  .total-bar {
+    padding: var(--space-4);
+  }
+}
+
+/* Tablet and Above (768px+) */
+@media (min-width: 768px) {
+  .page-header h1 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .individual-layout {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .emergency-card-wide {
+    grid-column: 1 / -1;
+  }
+
+  .insurance-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-8);
+  }
+
+  .insurance-column {
+    padding: var(--space-6);
+  }
+
+  .column-header {
+    flex-direction: row;
+    text-align: left;
+    gap: var(--space-3);
+  }
+
+  .header-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+
+  .spouse-value {
+    font-size: var(--font-size-3xl);
+  }
+
+  .total-bar {
+    flex-direction: row;
+    text-align: left;
+  }
+
+  .emergency-card-large {
+    max-width: 100%;
+  }
+}
+
+/* Desktop and Above (1024px+) */
+@media (min-width: 1024px) {
+  .page-header h1 {
+    font-size: var(--font-size-4xl);
+  }
+
+  .individual-layout {
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .emergency-card-wide {
+    grid-column: auto;
+  }
+
+  .insurance-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-8);
+  }
+
+  .emergency-card-large {
+    max-width: 800px;
+  }
+}
+
+/* Large Desktop and Above (1440px+) */
+@media (min-width: 1440px) {
+  .insurance-column {
+    padding: var(--space-8);
+  }
+}
+
+/* MAX-WIDTH QUERIES FOR FINE-TUNING */
+
+/* Mobile (< 480px) */
+@media (max-width: 479px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .f-card .value {
+    font-size: var(--font-size-3xl);
+  }
+
+  .modal-content,
+  .modal-content-large {
+    width: 95%;
+    padding: var(--space-3);
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+
+  .card-icon {
+    font-size: 2.5rem;
+  }
+
+  .insurance-column {
+    padding: var(--space-4);
+  }
+}
+.f-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+.f-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.f-card .title {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-2);
+}
+.f-card .value {
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-extrabold);
+  color: var(--primary-500);
+}
+.f-card .desc {
+  color: var(--text-muted);
+  margin-top: var(--space-3);
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-6);
+  max-width: 500px;
+  width: 90%;
+  box-shadow: var(--shadow-xl);
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.modal-header {
+  margin-bottom: var(--space-4);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+}
+
+.modal-body {
+  margin-bottom: var(--space-6);
+}
+
+.modal-body p {
+  margin: 0 0 var(--space-3) 0;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.modal-body strong {
+  color: var(--primary-500);
+  font-weight: var(--font-weight-bold);
+}
+
+.modal-note {
+  color: var(--text-muted) !important;
+  font-size: var(--font-size-sm);
+  font-style: italic;
+}
+
+.modal-actions {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: flex-end;
+}
+
+.modal-actions .btn {
+  min-width: 140px;
+  padding: var(--space-3) var(--space-4);
+  font-weight: var(--font-weight-medium);
+}
+
+.btn-secondary {
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+}
+
+.btn-secondary:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--border-secondary);
+}
+
+.btn-primary {
+  background: var(--primary-500);
+  color: white;
+  border: 1px solid var(--primary-500);
+}
+
+.btn-primary:hover {
+  background: var(--primary-600);
+  border-color: var(--primary-600);
+}
+
+/* Form Elements in Modal */
+.form-group {
+  margin-bottom: var(--space-4);
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: var(--space-2);
+  color: var(--text-primary);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.form-group input[type="number"] {
+  width: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.form-group input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.form-group .amount-input {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.form-group .amount-input .prefix {
+  color: var(--text-muted);
+  font-weight: var(--font-weight-medium);
+}
+
+.form-group .amount-input input {
+  flex: 1;
+}
+
+.form-group input::placeholder {
+  color: var(--text-muted);
+}
+
+/* Large Modal for Children Planning */
+.modal-content-large {
+  max-width: 700px;
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+/* Children Entry Styles */
+.child-entry {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-secondary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  margin-bottom: var(--space-4);
+  transition: all var(--transition-fast);
+}
+
+.child-entry:hover {
+  border-color: var(--primary-300);
+  box-shadow: var(--shadow-sm);
+}
+
+.child-entry-header {
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+  padding-bottom: var(--space-2);
+  border-bottom: 1px solid var(--border-secondary);
+}
+
+.child-entry .form-group {
+  margin-bottom: var(--space-3);
+}
+
+.child-entry .form-group:last-child {
+  margin-bottom: 0;
+}
+
+/* Responsive Modal */
+@media (max-width: 768px) {
+  .modal-content,
+  .modal-content-large {
+    max-width: 95%;
+    width: 95%;
+    padding: var(--space-4);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+  }
+
+  .modal-actions .btn {
+    width: 100%;
+  }
+}
+

@@ -1,0 +1,356 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║                                                                   ║
+║         ✅ FEEDBACK DIALOG - DELAY & POSITIONING UPDATE          ║
+║                                                                   ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+CHANGES APPLIED:
+══════════════════════════════════════════════════════════════════════
+
+1. DELAY INCREASED: 1 second → 5 seconds
+2. POSITION CHANGED: Center of screen → Top-right corner
+3. OVERLAY DIMMED: 50% black → 20% black (less intrusive)
+4. WIDTH ADJUSTED: Smaller, doesn't block content
+
+
+══════════════════════════════════════════════════════════════════════
+
+CHANGE #1: Delay Increased to 5 Seconds
+══════════════════════════════════════════════════════════════════════
+
+File: step6-ml-integration.js (line 199)
+
+BEFORE:
+───────
+  setTimeout(() => {
+    showOptimizationFeedbackDialog(currentOptimizationId);
+  }, 1000);  // 1 second
+
+AFTER:
+──────
+  setTimeout(() => {
+    showOptimizationFeedbackDialog(currentOptimizationId);
+  }, 5000);  // 5 seconds ✅
+
+REASON:
+───────
+Gives users 5 seconds to review:
+- Optimized goal values
+- New SIP amounts
+- Updated table data
+- Step-up percentage changes
+
+Before feedback dialog appears.
+
+
+══════════════════════════════════════════════════════════════════════
+
+CHANGE #2: Position Changed to Top-Right
+══════════════════════════════════════════════════════════════════════
+
+File: step6-ml-integration.js (lines 376-395)
+
+BEFORE:
+───────
+  .ml-feedback-modal {
+    position: fixed;
+    top: 50%;              /* Center vertically */
+    left: 50%;             /* Center horizontally */
+    transform: translate(-50%, -50%);
+    max-width: 500px;
+    width: 90%;
+    animation: slideUp 0.3s ease;
+  }
+
+AFTER:
+──────
+  .ml-feedback-modal {
+    position: fixed;
+    top: 20px;             /* 20px from top ✅ */
+    right: 20px;           /* 20px from right ✅ */
+    max-width: 400px;      /* Smaller width ✅ */
+    width: calc(100% - 40px);
+    animation: slideInRight 0.3s ease;  /* Slides from right ✅ */
+  }
+
+  @media (min-width: 768px) {
+    .ml-feedback-modal {
+      width: 380px;        /* Fixed width on desktop ✅ */
+    }
+  }
+
+VISUAL REPRESENTATION:
+──────────────────────
+
+BEFORE (Center):                AFTER (Top-Right):
+┌────────────────────┐          ┌────────────────────┐
+│                    │          │          ┌────────┐│
+│                    │          │          │ Dialog ││
+│     ┌────────┐     │          │          │        ││
+│     │ Dialog │     │          │          │  😊🤔😟││
+│     │        │     │          │          └────────┘│
+│     │  😊🤔😟 │     │          │                    │
+│     └────────┘     │          │  [Goals Table]     │
+│                    │          │  [SIP Values]      │
+│  ❌ Blocks table   │          │  ✅ Visible!       │
+└────────────────────┘          └────────────────────┘
+
+
+══════════════════════════════════════════════════════════════════════
+
+CHANGE #3: Overlay Dimmed
+══════════════════════════════════════════════════════════════════════
+
+File: step6-ml-integration.js (line 371)
+
+BEFORE:
+───────
+  .ml-feedback-overlay {
+    background: rgba(0, 0, 0, 0.5);  /* 50% black - very dark */
+  }
+
+AFTER:
+──────
+  .ml-feedback-overlay {
+    background: rgba(0, 0, 0, 0.2);  /* 20% black - subtle ✅ */
+  }
+
+REASON:
+───────
+- Less intrusive
+- Users can still see table underneath
+- Dialog stands out but doesn't dominate
+
+
+══════════════════════════════════════════════════════════════════════
+
+CHANGE #4: Animation Updated
+══════════════════════════════════════════════════════════════════════
+
+File: step6-ml-integration.js (lines 509-518)
+
+BEFORE:
+───────
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -40%);  /* Slides from bottom-center */
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%);  /* To center */
+    }
+  }
+
+AFTER:
+──────
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(100px);  /* Slides from right side ✅ */
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);      /* To final position ✅ */
+    }
+  }
+
+EFFECT:
+───────
+Dialog now slides in from the right side instead of up from center.
+More natural for a right-positioned element.
+
+
+══════════════════════════════════════════════════════════════════════
+
+HOW TO TEST:
+══════════════════════════════════════════════════════════════════════
+
+STEP 1: Refresh step6.html
+──────────────────────────────────────────────────────────────────────
+
+1. Open step6.html in browser (or refresh if already open)
+2. Hard refresh to clear cache: Ctrl+Shift+R (Windows) or Cmd+Shift+R (Mac)
+3. Press F12 to open console (optional, to see timing)
+
+
+STEP 2: Click OPTIMIZE
+──────────────────────────────────────────────────────────────────────
+
+1. Make sure you have goals in your plan
+2. Click the OPTIMIZE button
+3. Optimization runs and completes
+
+
+STEP 3: Wait and Observe (5 seconds)
+──────────────────────────────────────────────────────────────────────
+
+Timeline:
+─────────
+
+[0 sec]  Click OPTIMIZE
+         └─> Optimization starts running
+
+[1 sec]  Optimization completes
+         └─> Goals table updates with new values
+         └─> New SIP amounts visible
+
+[2 sec]  ⏳ User can review results...
+
+[3 sec]  ⏳ User can review results...
+
+[4 sec]  ⏳ User can review results...
+
+[5 sec]  ✨ Feedback dialog slides in from right
+         └─> Positioned at top-right corner
+         └─> Goals table STILL VISIBLE on left/center
+         └─> Light overlay (20% black)
+
+
+STEP 4: Verify Position
+──────────────────────────────────────────────────────────────────────
+
+When dialog appears, check:
+
+✅ Dialog is in TOP-RIGHT corner (not center)
+✅ Goals table is STILL VISIBLE (not blocked)
+✅ SIP values are STILL READABLE (not covered)
+✅ Overlay is LIGHT (you can see content underneath)
+✅ Dialog slides in from the RIGHT side
+
+
+STEP 5: Submit Feedback
+──────────────────────────────────────────────────────────────────────
+
+1. Select emoji (😊/🤔/😟)
+2. Optionally add comment
+3. Click Submit
+4. Dialog closes
+
+
+══════════════════════════════════════════════════════════════════════
+
+EXPECTED BEHAVIOR:
+══════════════════════════════════════════════════════════════════════
+
+TIMING:
+───────
+Click OPTIMIZE → 5 seconds pass → Dialog appears
+
+POSITION:
+─────────
+Desktop:
+  - Top-right corner
+  - 20px from top edge
+  - 20px from right edge
+  - 380px wide
+  - Goals table visible on left side
+
+Mobile:
+  - Top-right corner
+  - 20px from top edge
+  - 20px from right edge
+  - Full width minus 40px margins
+  - Content scrollable underneath
+
+APPEARANCE:
+───────────
+  - Light semi-transparent overlay (20% black)
+  - White dialog box with shadow
+  - Slides in smoothly from right side
+  - Three emoji buttons (😊🤔😟)
+  - Optional comment textarea
+  - Skip and Submit buttons
+
+
+══════════════════════════════════════════════════════════════════════
+
+TROUBLESHOOTING:
+══════════════════════════════════════════════════════════════════════
+
+Problem: Dialog still appears in center
+Fix: Hard refresh (Ctrl+Shift+R) to clear cached CSS
+
+Problem: Dialog appears immediately (not after 5 seconds)
+Fix: Hard refresh to reload updated JavaScript
+
+Problem: Dialog blocks content on mobile
+Fix: This is expected on small screens - dialog is full width on mobile
+     User can scroll to see content underneath
+
+Problem: Can't see table at all
+Fix: Check screen size - on very small screens, dialog may overlap
+     This is acceptable as overlay is light and temporary
+
+
+══════════════════════════════════════════════════════════════════════
+
+RESPONSIVE BEHAVIOR:
+══════════════════════════════════════════════════════════════════════
+
+Desktop (≥768px width):
+┌────────────────────────────────────────────────────┐
+│                                     ┌────────────┐ │
+│  Goals Table                        │  Feedback  │ │
+│  ┌──────────────────────┐          │            │ │
+│  │ Goal 1: ₹12,000/mo  │          │   😊🤔😟   │ │
+│  │ Goal 2: ₹8,000/mo   │          │            │ │
+│  │ Total:  ₹20,000/mo  │          │  [Submit]  │ │
+│  └──────────────────────┘          └────────────┘ │
+│  ✅ Table visible!                                 │
+└────────────────────────────────────────────────────┘
+
+Mobile (<768px width):
+┌──────────────────────────┐
+│  ┌────────────────────┐  │
+│  │     Feedback       │  │
+│  │                    │  │
+│  │      😊🤔😟        │  │
+│  │                    │  │
+│  │     [Submit]       │  │
+│  └────────────────────┘  │
+│                          │
+│  Goals Table (below)     │
+│  ✅ Scrollable           │
+└──────────────────────────┘
+
+
+══════════════════════════════════════════════════════════════════════
+
+FILES MODIFIED:
+══════════════════════════════════════════════════════════════════════
+
+1. step6-ml-integration.js
+   - Line 199: Changed timeout from 1000ms to 5000ms
+   - Lines 376-395: Changed dialog position from center to top-right
+   - Line 371: Reduced overlay opacity from 0.5 to 0.2
+   - Lines 509-518: Updated animation from slideUp to slideInRight
+
+
+══════════════════════════════════════════════════════════════════════
+
+SUMMARY:
+══════════════════════════════════════════════════════════════════════
+
+✅ Dialog now appears after 5 seconds (was 1 second)
+✅ Dialog positioned at top-right corner (was center)
+✅ Goals table and SIP values remain visible (were blocked)
+✅ Lighter overlay for better content visibility
+✅ Smoother animation from right side
+
+User can now:
+- Review optimization results for 5 full seconds
+- See the complete goals table while dialog is open
+- Read SIP values without obstruction
+- Still interact with feedback dialog easily
+
+
+══════════════════════════════════════════════════════════════════════
+
+🎉 READY TO TEST!
+══════════════════════════════════════════════════════════════════════
+
+Refresh step6.html and click OPTIMIZE to see the new behavior!
+
+
+══════════════════════════════════════════════════════════════════════

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Step 5: Your Complete Financial Plan</title>
+  <link rel="stylesheet" href="../design-system.css" />
+  <link rel="stylesheet" href="8-events.css" />
+  <link rel="stylesheet" href="step5.css" />
+  <script src="../theme.js" defer></script>
+  
+  <script src="step5.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <button class="btn back" id="back-step4">← Back</button>
+      <div>
+        <h1>Step 5: Your Complete Financial Plan</h1>
+        <p class="subtitle">Consolidation, budget fitment, and smart optimization.</p>
+      </div>
+    </header>
+
+    <section class="cards">
+      <div class="card">
+        <div class="title">SIP Budget</div>
+        <div class="value" id="sipBudget">₹0</div>
+        <div class="note" id="budgetNote">Calculated from income and expenses.</div>
+      </div>
+      <div class="card">
+        <div class="title">Total Monthly SIP Required</div>
+        <div class="value" id="totalSipRequired">₹0</div>
+        <div class="note">Retirement + Other Goals</div>
+      </div>
+    </section>
+
+    <section class="progress">
+      <div class="label-row">
+        <span>Budget Utilization</span>
+        <span id="utilText">0%</span>
+      </div>
+      <div class="bar"><div class="fill" id="utilFill" style="width:0%"></div></div>
+      <div class="status" id="utilStatus">—</div>
+    </section>
+
+    <section class="goals-breakdown">
+      <h2 class="section-title">Your Goals Summary</h2>
+      <div id="goalsBreakdownBody"></div>
+    </section>
+
+    <div class="actions">
+      <button class="btn btn-lg" id="to-step6">Next →</button>
+    </div>
+  </main>
+</body>
+</html>
+
+

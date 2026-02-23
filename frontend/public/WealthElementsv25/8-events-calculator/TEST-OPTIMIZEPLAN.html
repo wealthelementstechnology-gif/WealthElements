@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test optimizePlan Function</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: system-ui, -apple-system, sans-serif;
+      padding: 40px 20px;
+      max-width: 800px;
+      margin: 0 auto;
+      background: #f8f9fa;
+    }
+    .card {
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      margin-bottom: 20px;
+    }
+    h1 { color: #2c3e50; margin-bottom: 10px; }
+    .subtitle { color: #7f8c8d; margin-bottom: 30px; }
+    .status {
+      padding: 15px;
+      margin: 10px 0;
+      border-radius: 8px;
+      border-left: 4px solid #95a5a6;
+      background: #ecf0f1;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+    .status.pass {
+      border-left-color: #27ae60;
+      background: #d5f4e6;
+    }
+    .status.fail {
+      border-left-color: #e74c3c;
+      background: #fadbd8;
+    }
+    .icon { font-size: 24px; min-width: 30px; }
+    .label { flex: 1; font-weight: 600; }
+    button {
+      background: #3498db;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover { background: #2980b9; }
+    .log {
+      background: #2c3e50;
+      color: #ecf0f1;
+      padding: 15px;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      max-height: 300px;
+      overflow-y: auto;
+      margin-top: 20px;
+    }
+    .log-line { margin: 3px 0; }
+    .success { color: #2ecc71; }
+    .error { color: #e74c3c; }
+    .warning { color: #f39c12; }
+  </style>
+
+  <!-- Load step6.js FIRST (without other dependencies for this test) -->
+  <script src="step6.js" defer></script>
+
+  <!-- Load ML integration SECOND -->
+  <script src="step6-ml-integration.js" defer></script>
+</head>
+<body>
+  <div class="card">
+    <h1>🧪 Test optimizePlan Function</h1>
+    <p class="subtitle">Checking if optimizePlan is exposed to window object</p>
+
+    <div id="status"></div>
+
+    <button onclick="runTest()">▶️ Run Test</button>
+    <button onclick="checkFunction()">🔍 Check Function</button>
+
+    <div id="log" class="log"></div>
+  </div>
+
+  <script>
+    const logs = [];
+
+    function log(message, type = 'info') {
+      const time = new Date().toLocaleTimeString();
+      const color = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : '';
+      logs.push({ message: `[${time}] ${message}`, color });
+      updateLog();
+      console.log(message);
+    }
+
+    function updateLog() {
+      const logDiv = document.getElementById('log');
+      logDiv.innerHTML = logs.map(l =>
+        `<div class="log-line ${l.color}">${l.message}</div>`
+      ).join('');
+      logDiv.scrollTop = logDiv.scrollHeight;
+    }
+
+    function showStatus(passed, message) {
+      const statusDiv = document.getElementById('status');
+      statusDiv.innerHTML = `
+        <div class="status ${passed ? 'pass' : 'fail'}">
+          <div class="icon">${passed ? '✅' : '❌'}</div>
+          <div class="label">${message}</div>
+        </div>
+      `;
+    }
+
+    function checkFunction() {
+      log('🔍 Checking for optimizePlan function...', 'info');
+
+      if (typeof window.optimizePlan === 'function') {
+        log('✅ window.optimizePlan is defined', 'success');
+        log(`   Function source: ${window.optimizePlan.toString().substring(0, 100)}...`, 'info');
+        showStatus(true, 'optimizePlan function is available on window object');
+      } else {
+        log('❌ window.optimizePlan is NOT defined', 'error');
+        log(`   Type: ${typeof window.optimizePlan}`, 'error');
+        showStatus(false, 'optimizePlan function NOT found on window object');
+      }
+    }
+
+    function runTest() {
+      logs.length = 0;
+      updateLog();
+
+      log('🚀 Starting test...', 'info');
+
+      // Wait 2 seconds for scripts to load
+      setTimeout(() => {
+        log('⏳ Scripts should be loaded by now...', 'info');
+
+        // Test 1: Check if optimizePlan exists
+        if (typeof window.optimizePlan === 'function') {
+          log('✅ TEST PASSED: window.optimizePlan exists', 'success');
+
+          // Test 2: Check if it's wrapped by ML integration
+          const fnString = window.optimizePlan.toString();
+          if (fnString.includes('ML-Enhanced')) {
+            log('✅ TEST PASSED: Function is wrapped by ML integration', 'success');
+            showStatus(true, 'Both step6.js and ML integration are working!');
+          } else {
+            log('⚠️ PARTIAL: Function exists but not wrapped yet', 'warning');
+            log('   This might mean ML integration is still loading...', 'warning');
+            showStatus(true, 'Function exists, ML integration may still be loading');
+          }
+        } else {
+          log('❌ TEST FAILED: window.optimizePlan does not exist', 'error');
+          log('   step6.js may not have loaded, or the function is not exposed', 'error');
+          showStatus(false, 'optimizePlan function NOT found - check step6.js');
+        }
+      }, 2000);
+    }
+
+    // Auto-run test on load
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        log('📄 Page loaded, running automatic test in 3 seconds...', 'info');
+        setTimeout(runTest, 3000);
+      }, 100);
+    });
+  </script>
+</body>
+</html>

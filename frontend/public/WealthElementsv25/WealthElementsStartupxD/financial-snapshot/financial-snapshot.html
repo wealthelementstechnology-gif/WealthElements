@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Your Financial Snapshot</title>
+  <link rel="stylesheet" href="../design-system.css" />
+  <link rel="stylesheet" href="../8-events-calculator/8-events.css" />
+  <link rel="stylesheet" href="financial-snapshot.css" />
+  <script src="../theme.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <script src="financial-snapshot.js" defer></script>
+</head>
+<body>
+  <main class="container">
+    <header class="page-header">
+      <button class="btn back" id="go-back">← Back</button>
+      <div>
+        <h1>Your Financial Snapshot</h1>
+        <p class="subtitle">Assets, Liabilities &amp; Surplus at a glance.</p>
+      </div>
+    </header>
+
+    <section class="cards">
+      <div class="card">
+        <div class="card-title">Net Worth</div>
+        <div class="card-value" id="card-networth">₹0</div>
+        <div class="card-desc">Total Assets - Total Liabilities</div>
+      </div>
+      <div class="card">
+        <div class="card-title">Monthly Surplus</div>
+        <div class="card-value" id="card-surplus">₹0</div>
+        <div class="card-desc">Income - Expenses - EMIs - Investments</div>
+      </div>
+      <div class="card danger">
+        <div class="card-title">Total EMIs</div>
+        <div class="card-value" id="card-emis">₹0</div>
+        <div class="card-desc">Sum of all monthly loan payments</div>
+      </div>
+    </section>
+
+    <section class="charts">
+      <div class="chart-panel networth-panel">
+        <div class="panel-title">Net Worth Breakdown</div>
+        <div class="networth-chart">
+          <canvas id="chart-networth"></canvas>
+        </div>
+        <div class="networth-legend" id="networth-legend"></div>
+      </div>
+      <div class="chart-panel liabilities-panel">
+        <div class="panel-title">Liabilities Overview</div>
+        <div class="liabilities-chart">
+          <canvas id="chart-liabilities"></canvas>
+        </div>
+        <div class="liabilities-legend" id="liabilities-legend"></div>
+      </div>
+      <div class="chart-panel wide cash-flow">
+        <div class="panel-title">Monthly Cash Flow</div>
+        <div class="cash-flow-chart">
+          <canvas id="chart-cashflow"></canvas>
+        </div>
+        <div class="cash-flow-legend" id="cash-flow-legend"></div>
+      </div>
+    </section>
+
+    <section class="invest-rules">
+      <h2 class="section-title">Investment Rules</h2>
+      <div class="invest-grid two-cols">
+        <div class="rule-card">
+          <div class="rule-header">Investment Percentage: <span id="investPctValue" class="pct">30%</span></div>
+          <input type="range" id="investPct" min="0" max="100" value="30" />
+          <div class="amount-wrap">
+            <div class="amount-label">Calculated Investment Amount</div>
+            <div class="amount-box" id="investAmount">₹0</div>
+          </div>
+          <div class="sr-only" id="investRuleNote">Income × Percentage ÷ 100</div>
+        </div>
+        
+      </div>
+    </section>
+
+    <div class="actions">
+      <button class="btn btn-lg" id="to-step3">Next →</button>
+    </div>
+  </main>
+</body>
+</html>
+

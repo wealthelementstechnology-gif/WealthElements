@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Retirement & Goals</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            "primary": "#10b981",
+            "primary-dark": "#059669",
+            "primary-light": "#ecfdf5",
+            "background-main": "#ffffff",
+            "background-subtle": "#f8fafc",
+            "card-white": "#ffffff",
+            "slate-heading": "#0f172a",
+            "slate-text": "#475569",
+            "slate-subtle": "#94a3b8",
+            "border-light": "#e2e8f0"
+          },
+          fontFamily: {
+            "display": ["Inter", "sans-serif"]
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    input[type=number]::-webkit-inner-spin-button,
+    input[type=number]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+    input[type=number] {
+      -moz-appearance: textfield;
+    }
+  </style>
+  <script src="step4.js" defer></script>
+</head>
+<body class="bg-gray-100 font-display text-slate-heading antialiased selection:bg-primary selection:text-white">
+  <div class="mx-auto max-w-md min-h-screen relative pb-28 shadow-2xl overflow-hidden bg-background-main">
+    <!-- Header -->
+    <header class="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-border-light px-4 py-3 shadow-sm">
+      <div class="flex items-center gap-3 mb-1">
+        <button id="back-step3" class="p-2 -ml-2 rounded-full hover:bg-gray-100 text-slate-heading transition-colors">
+          <span class="material-symbols-outlined">arrow_back</span>
+        </button>
+        <div class="flex-1">
+          <h1 class="text-lg font-bold leading-tight text-slate-heading">Step 4: Retirement & Goals</h1>
+        </div>
+        <div class="text-xs font-semibold text-primary bg-primary-light px-2 py-1 rounded-full border border-primary/20">4 of 8</div>
+      </div>
+      <p class="text-sm text-slate-text pl-10 leading-snug">Planning today for a worry-free tomorrow</p>
+    </header>
+
+    <!-- Progress Bar -->
+    <div class="px-6 py-4 flex justify-between gap-1.5 bg-background-main">
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-primary"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+      <div class="h-1.5 w-full rounded-full bg-gray-200"></div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="flex flex-col gap-6 px-4 bg-background-subtle pt-2 pb-6">
+      <!-- Retirement Age & Life Expectancy -->
+      <div class="grid grid-cols-2 gap-3">
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-border-light">
+          <label class="flex flex-col gap-2">
+            <span class="text-slate-text text-xs font-medium uppercase tracking-wide">Retirement Age</span>
+            <input type="number" id="ageRet" class="w-full text-2xl font-bold text-slate-heading bg-transparent border-none p-0 focus:outline-none focus:ring-0" placeholder="60" />
+            <span class="text-slate-subtle text-xs">Years</span>
+          </label>
+        </div>
+        <div class="bg-white rounded-xl p-4 shadow-sm border border-border-light">
+          <label class="flex flex-col gap-2">
+            <span class="text-slate-text text-xs font-medium uppercase tracking-wide">Life Expectancy</span>
+            <input type="number" id="lifeExp" class="w-full text-2xl font-bold text-slate-heading bg-transparent border-none p-0 focus:outline-none focus:ring-0" placeholder="85" />
+            <span class="text-slate-subtle text-xs">Years</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div id="outError" class="text-red-600 text-sm font-medium hidden"></div>
+
+      <!-- Big Cards for Retirement Corpus and SIP -->
+      <div class="flex flex-col gap-4">
+        <!-- Retirement Corpus Needed -->
+        <div class="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-6 shadow-lg border border-primary/20 relative overflow-hidden">
+          <div class="absolute right-0 top-0 h-full w-32 bg-gradient-to-l from-primary/10 to-transparent"></div>
+          <div class="relative z-10">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="material-symbols-outlined text-primary-dark text-[24px]">account_balance</span>
+              <p class="text-slate-text text-sm font-bold uppercase tracking-wider">Retirement Corpus Needed</p>
+            </div>
+            <p id="outCorpusBig" class="text-slate-heading text-4xl font-bold mb-2">₹0</p>
+            <p class="text-slate-text text-sm font-medium">The total amount you'll need when you retire</p>
+          </div>
+        </div>
+
+        <!-- Monthly SIP for Retirement -->
+        <div class="bg-gradient-to-br from-primary to-primary-dark rounded-2xl p-6 shadow-xl relative overflow-hidden">
+          <div class="absolute right-0 bottom-0 h-full w-32 bg-gradient-to-l from-white/10 to-transparent"></div>
+          <div class="relative z-10">
+            <div class="flex items-center gap-2 mb-2">
+              <span class="material-symbols-outlined text-white text-[24px]">trending_up</span>
+              <p class="text-white text-sm font-bold uppercase tracking-wider">Monthly SIP for Retirement</p>
+            </div>
+            <p id="outSIPBig" class="text-white text-4xl font-bold mb-2">₹0</p>
+            <p class="text-white/90 text-sm font-medium">The investment needed to build this corpus</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Other Goals & Aspirations -->
+      <div class="flex flex-col gap-4 mt-2">
+        <div class="flex items-center justify-between">
+          <h2 class="text-slate-heading text-lg font-bold">Other Goals & Aspirations</h2>
+          <button id="add-goal" class="flex items-center gap-1 px-3 py-2 bg-primary hover:bg-primary-dark text-white text-sm font-semibold rounded-lg transition-colors shadow-sm">
+            <span class="material-symbols-outlined text-[18px]">add</span>
+            <span>Add Goal</span>
+          </button>
+        </div>
+
+        <!-- Goals Container -->
+        <div id="goals-container" class="flex flex-col gap-3">
+          <!-- Goal cards will be dynamically generated here -->
+        </div>
+
+        <!-- Goals Totals Summary -->
+        <div class="bg-slate-800 rounded-2xl p-5 shadow-xl">
+          <div class="flex items-center gap-2 mb-4">
+            <span class="material-symbols-outlined text-primary text-[20px]">calculate</span>
+            <p class="text-white text-sm font-bold uppercase tracking-wider">Goals Summary</p>
+          </div>
+          <div class="grid grid-cols-2 gap-4">
+            <div>
+              <p class="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">Total Future Value</p>
+              <p id="goals-fv-total" class="text-white text-2xl font-bold">₹0</p>
+            </div>
+            <div>
+              <p class="text-slate-400 text-xs font-medium uppercase tracking-wide mb-1">Total Monthly SIP</p>
+              <p id="goals-sip-total" class="text-white text-2xl font-bold">₹0</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Hidden Table for Compatibility -->
+    <table class="hidden goals-table">
+      <thead>
+        <tr>
+          <th>Target Name</th>
+          <th>Current Cost (₹)</th>
+          <th>Target Year</th>
+          <th>Priority</th>
+          <th>Years Left</th>
+          <th>Future Value (₹)</th>
+          <th>Monthly SIP (₹)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="goals-tbody">
+        <!-- Will be populated by JavaScript -->
+      </tbody>
+      <tfoot>
+        <tr>
+          <td colspan="5">Totals</td>
+          <td id="goals-fv-total-hidden">₹0</td>
+          <td id="goals-sip-total-hidden">₹0</td>
+          <td></td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- Bottom Navigation -->
+    <nav class="fixed bottom-0 left-0 right-0 z-40">
+      <div class="absolute inset-0 bg-white/80 backdrop-blur-lg border-t border-gray-200 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"></div>
+      <div class="relative mx-auto max-w-md px-4 py-4 flex items-center gap-4">
+        <button id="to-step5" class="flex-1 py-3.5 px-6 rounded-xl bg-primary hover:bg-primary-dark text-white text-sm font-bold shadow-lg shadow-primary/30 transition-all flex items-center justify-center gap-2">
+          <span>Next</span>
+          <span class="material-symbols-outlined">arrow_forward</span>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <script>
+    // UI rendering for goal cards
+    function renderGoalCards() {
+      const goalsContainer = document.getElementById('goals-container');
+      const goalsTbody = document.getElementById('goals-tbody');
+
+      if (!goalsContainer || !goalsTbody) return;
+
+      // Clear existing cards
+      goalsContainer.innerHTML = '';
+
+      // Get all rows from the hidden table
+      const rows = Array.from(goalsTbody.querySelectorAll('tr'));
+
+      rows.forEach((tr, index) => {
+        const nameInput = tr.querySelector('input[type="text"]');
+        const costInput = tr.querySelector('input.gc');
+        const yearInput = tr.querySelector('input.gy');
+        const prioritySelect = tr.querySelector('select.priority');
+        const yearsCell = tr.querySelector('.years');
+        const fvCell = tr.querySelector('.fv');
+        const sipCell = tr.querySelector('.sip');
+
+        const goalName = nameInput?.value || '';
+        const currentCost = costInput?.value || '';
+        const targetYear = yearInput?.value || '';
+        const priority = prioritySelect?.value || 'Medium';
+        const yearsLeft = yearsCell?.textContent || '-';
+        const futureValue = fvCell?.textContent || '-';
+        const monthlySip = sipCell?.textContent || '-';
+
+        // Priority badge colors
+        const priorityColors = {
+          'High': 'bg-red-100 text-red-700 border-red-200',
+          'Medium': 'bg-yellow-100 text-yellow-700 border-yellow-200',
+          'Low': 'bg-green-100 text-green-700 border-green-200'
+        };
+
+        // Create goal card
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl p-5 shadow-sm border border-border-light hover:shadow-md transition-shadow';
+        card.innerHTML = `
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex-1">
+              <input
+                type="text"
+                class="goal-name-input text-slate-heading text-base font-bold bg-transparent border-none p-0 w-full focus:outline-none focus:ring-0"
+                placeholder="e.g., Home Purchase"
+                value="${goalName}"
+                data-row-index="${index}"
+              />
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="px-3 py-1 text-xs font-semibold rounded-full border ${priorityColors[priority]}">${priority}</span>
+              <button class="remove-goal-btn flex size-8 items-center justify-center rounded-full hover:bg-red-50 text-red-500 transition-colors" data-row-index="${index}">
+                <span class="material-symbols-outlined text-[20px]">close</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="text-slate-subtle text-xs font-medium uppercase tracking-wide mb-1 block">Current Cost</label>
+              <div class="relative">
+                <span class="absolute left-0 top-1/2 -translate-y-1/2 text-slate-text font-semibold">₹</span>
+                <input
+                  type="number"
+                  class="goal-cost-input w-full pl-4 pr-2 py-1 text-lg font-bold text-slate-heading bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                  placeholder="0"
+                  value="${currentCost}"
+                  data-row-index="${index}"
+                />
+              </div>
+            </div>
+            <div>
+              <label class="text-slate-subtle text-xs font-medium uppercase tracking-wide mb-1 block">Target Year</label>
+              <input
+                type="number"
+                class="goal-year-input w-full px-2 py-1 text-lg font-bold text-slate-heading bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary"
+                placeholder="${new Date().getFullYear() + 3}"
+                value="${targetYear}"
+                data-row-index="${index}"
+              />
+            </div>
+          </div>
+
+          <div class="mb-4">
+            <label class="text-slate-subtle text-xs font-medium uppercase tracking-wide mb-1 block">Priority</label>
+            <select class="goal-priority-select w-full px-3 py-2 text-sm font-semibold text-slate-heading bg-slate-50 border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary" data-row-index="${index}">
+              <option value="High" ${priority === 'High' ? 'selected' : ''}>High Priority</option>
+              <option value="Medium" ${priority === 'Medium' ? 'selected' : ''}>Medium Priority</option>
+              <option value="Low" ${priority === 'Low' ? 'selected' : ''}>Low Priority</option>
+            </select>
+          </div>
+
+          <div class="grid grid-cols-3 gap-2 pt-4 border-t border-slate-100">
+            <div class="text-center">
+              <p class="text-slate-subtle text-xs font-medium mb-1">Years Left</p>
+              <p class="goal-years-display text-slate-heading text-base font-bold">${yearsLeft}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-slate-subtle text-xs font-medium mb-1">Future Value</p>
+              <p class="goal-fv-display text-primary-dark text-base font-bold">${futureValue}</p>
+            </div>
+            <div class="text-center">
+              <p class="text-slate-subtle text-xs font-medium mb-1">Monthly SIP</p>
+              <p class="goal-sip-display text-primary text-base font-bold">${monthlySip}</p>
+            </div>
+          </div>
+        `;
+
+        goalsContainer.appendChild(card);
+      });
+
+      // Attach event listeners to the new cards
+      attachGoalCardListeners();
+    }
+
+    function attachGoalCardListeners() {
+      const goalsTbody = document.getElementById('goals-tbody');
+
+      // Name inputs
+      document.querySelectorAll('.goal-name-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const index = parseInt(e.target.dataset.rowIndex);
+          const row = goalsTbody.querySelectorAll('tr')[index];
+          const nameInput = row.querySelector('input[type="text"]');
+          if (nameInput) nameInput.value = e.target.value;
+          // Trigger the table's input event to recalculate
+          const event = new Event('input', { bubbles: true });
+          nameInput.dispatchEvent(event);
+        });
+      });
+
+      // Cost inputs
+      document.querySelectorAll('.goal-cost-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const index = parseInt(e.target.dataset.rowIndex);
+          const row = goalsTbody.querySelectorAll('tr')[index];
+          const costInput = row.querySelector('input.gc');
+          if (costInput) costInput.value = e.target.value;
+          const event = new Event('input', { bubbles: true });
+          costInput.dispatchEvent(event);
+        });
+      });
+
+      // Year inputs
+      document.querySelectorAll('.goal-year-input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const index = parseInt(e.target.dataset.rowIndex);
+          const row = goalsTbody.querySelectorAll('tr')[index];
+          const yearInput = row.querySelector('input.gy');
+          if (yearInput) yearInput.value = e.target.value;
+          const event = new Event('input', { bubbles: true });
+          yearInput.dispatchEvent(event);
+        });
+      });
+
+      // Priority selects
+      document.querySelectorAll('.goal-priority-select').forEach(select => {
+        select.addEventListener('change', (e) => {
+          const index = parseInt(e.target.dataset.rowIndex);
+          const row = goalsTbody.querySelectorAll('tr')[index];
+          const prioritySelect = row.querySelector('select.priority');
+          if (prioritySelect) prioritySelect.value = e.target.value;
+          const event = new Event('input', { bubbles: true });
+          prioritySelect.dispatchEvent(event);
+        });
+      });
+
+      // Remove buttons
+      document.querySelectorAll('.remove-goal-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const index = parseInt(e.target.closest('.remove-goal-btn').dataset.rowIndex);
+          const row = goalsTbody.querySelectorAll('tr')[index];
+          const removeBtn = row.querySelector('[data-remove]');
+          if (removeBtn) {
+            const event = new Event('click', { bubbles: true });
+            removeBtn.dispatchEvent(event);
+          }
+        });
+      });
+    }
+
+    // Watch for changes in the hidden table and update cards
+    function setupTableWatcher() {
+      const goalsTbody = document.getElementById('goals-tbody');
+      if (!goalsTbody) return;
+
+      // Use MutationObserver to watch for changes in the table
+      const observer = new MutationObserver(() => {
+        updateGoalCardsFromTable();
+      });
+
+      observer.observe(goalsTbody, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: false
+      });
+
+      // Also watch for input events on the table
+      goalsTbody.addEventListener('input', () => {
+        setTimeout(updateGoalCardsFromTable, 50);
+      });
+    }
+
+    function updateGoalCardsFromTable() {
+      const goalsTbody = document.getElementById('goals-tbody');
+      const rows = Array.from(goalsTbody.querySelectorAll('tr'));
+
+      rows.forEach((tr, index) => {
+        const yearsCell = tr.querySelector('.years');
+        const fvCell = tr.querySelector('.fv');
+        const sipCell = tr.querySelector('.sip');
+
+        const cards = document.querySelectorAll('.goal-years-display');
+        const fvDisplays = document.querySelectorAll('.goal-fv-display');
+        const sipDisplays = document.querySelectorAll('.goal-sip-display');
+
+        if (cards[index]) cards[index].textContent = yearsCell?.textContent || '-';
+        if (fvDisplays[index]) fvDisplays[index].textContent = fvCell?.textContent || '-';
+        if (sipDisplays[index]) sipDisplays[index].textContent = sipCell?.textContent || '-';
+      });
+    }
+
+    // Override the add goal button to also render cards
+    document.addEventListener('DOMContentLoaded', () => {
+      const addGoalBtn = document.getElementById('add-goal');
+      const originalAddGoal = addGoalBtn?.onclick;
+
+      if (addGoalBtn) {
+        addGoalBtn.addEventListener('click', () => {
+          setTimeout(() => {
+            renderGoalCards();
+          }, 100);
+        });
+      }
+
+      // Setup table watcher
+      setupTableWatcher();
+
+      // Initial render after a short delay to ensure step4.js has populated the table
+      setTimeout(() => {
+        renderGoalCards();
+      }, 200);
+    });
+
+    // Handle error display
+    const originalComputeCorpus = window.computeCorpus;
+    const outError = document.getElementById('outError');
+    if (outError) {
+      const observer = new MutationObserver(() => {
+        if (outError.textContent.trim()) {
+          outError.classList.remove('hidden');
+        } else {
+          outError.classList.add('hidden');
+        }
+      });
+      observer.observe(outError, { characterData: true, childList: true, subtree: true });
+    }
+  </script>
+</body>
+</html>

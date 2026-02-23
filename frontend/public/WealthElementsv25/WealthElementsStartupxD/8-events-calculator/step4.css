@@ -1,0 +1,328 @@
+/* Step 4 specific styles using design system */
+body {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+}
+.page-header h1 {
+  margin: 0;
+  font-size: var(--font-size-2xl);
+  font-weight: var(--font-weight-bold);
+}
+.subtitle {
+  margin: 0;
+  color: var(--text-muted);
+  font-size: var(--font-size-sm);
+}
+.btn {
+  background: transparent;
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-full);
+  padding: var(--space-2) var(--space-3);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+.btn:hover {
+  background: var(--primary-500);
+  border-color: var(--primary-500);
+  color: white;
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.summary {
+  background: var(--bg-card);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+}
+.two-inputs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+.two-inputs label {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-medium);
+}
+.two-inputs input {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  transition: all var(--transition-fast);
+}
+.two-inputs input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.big-cards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-4);
+  margin-top: var(--space-2);
+}
+.big-card {
+  background: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-xl);
+  padding: var(--space-4);
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-normal);
+}
+.big-card:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+.big-title {
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-bold);
+  margin-bottom: var(--space-2);
+}
+.big-value {
+  color: var(--primary-300);
+  font-size: var(--font-size-4xl);
+  font-weight: var(--font-weight-extrabold);
+}
+.big-note {
+  color: var(--text-muted);
+  margin-top: var(--space-2);
+}
+.meta {
+  margin-top: var(--space-3);
+  color: var(--text-secondary);
+  display: grid;
+  gap: var(--space-2);
+}
+.error {
+  color: var(--error);
+}
+
+.goals {
+  margin-top: var(--space-4);
+}
+.section-title {
+  margin: 0 0 var(--space-2) 0;
+  color: var(--text-secondary);
+  font-weight: var(--font-weight-extrabold);
+}
+.table-wrapper {
+  overflow-x: auto;
+}
+.goals-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid var(--border-primary);
+  background: var(--bg-tertiary);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.goals-table th,
+.goals-table td {
+  border-bottom: 1px solid var(--border-primary);
+  padding: var(--space-3);
+  text-align: left;
+  vertical-align: middle;
+}
+.goals-table th {
+  background: var(--bg-secondary);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-secondary);
+}
+.goals-table tfoot td {
+  background: var(--bg-secondary);
+  font-weight: var(--font-weight-bold);
+  text-align: center;
+}
+.goals-table input {
+  width: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--font-size-sm);
+  transition: all var(--transition-fast);
+}
+.goals-table input:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+.goals-table select.priority {
+  width: 100%;
+  min-width: 120px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-primary);
+  border-radius: var(--radius-md);
+  padding: var(--space-2) var(--space-4);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%2322c55e' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right var(--space-3) center;
+  padding-right: calc(var(--space-4) + 20px);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.goals-table select.priority:focus {
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+  outline: none;
+  background: var(--bg-secondary);
+}
+.goals-table select.priority:hover {
+  border-color: var(--primary-500);
+  background: var(--bg-secondary);
+  box-shadow: var(--shadow-sm);
+}
+.goals-table .years,
+.goals-table .fv,
+.goals-table .sip {
+  text-align: center;
+  font-weight: var(--font-weight-semibold);
+  color: var(--primary-300);
+}
+.row-actions {
+  width: 40px;
+  text-align: center;
+}
+.icon-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--error);
+  border: 1px solid var(--error);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-bold);
+  transition: all var(--transition-fast);
+}
+.icon-btn:hover {
+  background: var(--error-light);
+  transform: scale(1.1);
+}
+/* Actions styling is handled by main 8-events.css */
+
+/* ========================================
+   RESPONSIVE DESIGN - MOBILE FIRST
+   ======================================== */
+
+/* Mobile Base (< 480px) - Defaults already mobile-friendly */
+
+/* Small Mobile and Above (480px+) */
+@media (min-width: 480px) {
+  .two-inputs {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .big-cards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Tablet and Above (768px+) */
+@media (min-width: 768px) {
+  .page-header h1 {
+    font-size: var(--font-size-3xl);
+  }
+
+  .subtitle {
+    font-size: var(--font-size-base);
+  }
+
+  .two-inputs {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-4);
+  }
+
+  .big-cards {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-6);
+  }
+
+  .goals-table th,
+  .goals-table td {
+    padding: var(--space-4);
+  }
+}
+
+/* Desktop and Above (1024px+) */
+@media (min-width: 1024px) {
+  .page-header h1 {
+    font-size: var(--font-size-4xl);
+  }
+}
+
+/* MAX-WIDTH QUERIES FOR OVERRIDES */
+
+/* Mobile Devices (< 480px) */
+@media (max-width: 479px) {
+  .page-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .two-inputs {
+    grid-template-columns: 1fr;
+    gap: var(--space-2);
+  }
+
+  .big-cards {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .big-value {
+    font-size: var(--font-size-3xl);
+  }
+
+  .table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .goals-table {
+    font-size: var(--font-size-xs);
+  }
+
+  .goals-table th,
+  .goals-table td {
+    padding: var(--space-2);
+  }
+
+  .goals-table input,
+  .goals-table select {
+    font-size: var(--font-size-xs);
+    padding: var(--space-1) var(--space-2);
+  }
+}
+
+/* Tablet Devices (480px - 767px) */
+@media (max-width: 767px) {
+  .goals-table select.priority {
+    min-width: 100px;
+    font-size: var(--font-size-xs);
+  }
+}
+
