@@ -19,9 +19,19 @@ const app = express();
 
 // Security middleware
 app.use(helmet());
+
+const allowedOrigins = config.clientUrl;
+console.log('CORS allowed origins:', allowedOrigins);
+
 app.use(
   cors({
-    origin: config.clientUrl,
+    origin: (origin, callback) => {
+      // Allow requests with no origin (mobile apps, curl, Postman)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      console.warn(`CORS blocked origin: ${origin}`);
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
   })
 );
