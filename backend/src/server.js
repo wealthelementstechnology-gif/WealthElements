@@ -36,12 +36,15 @@ app.use(
   })
 );
 
-// Rate limiting — relaxed for development, seed routes excluded
+// Rate limiting — relaxed for development, seed/health/insight routes excluded
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 500, // raised from 100 → 500 to accommodate dashboard data fetches
+  max: config.nodeEnv === 'development' ? 5000 : 500,
   message: { success: false, message: 'Too many requests, please try again later' },
-  skip: (req) => req.path.startsWith('/api/v1/seed'), // never limit seed/demo endpoints
+  skip: (req) =>
+    req.path.startsWith('/api/v1/seed') ||
+    req.path === '/api/v1/health' ||
+    req.path === '/api/v1/chat/insight',
 });
 app.use('/api', limiter);
 

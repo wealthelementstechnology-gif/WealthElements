@@ -18,6 +18,7 @@ const OverviewTab = ({ onNavigateToTab }) => {
   const navigate = useNavigate();
   const [expanding, setExpanding] = useState(false);
   const barRef = useRef(null);
+  const { isAuthenticated } = useSelector((state) => state.auth);
   const { totalNetWorth, totalAssets, totalLiabilities, assetAccounts, trendData } =
     useSelector((state) => state.networth);
   const { activeSubscriptions, recurringPayments } = useSelector(
@@ -69,6 +70,7 @@ const OverviewTab = ({ onNavigateToTab }) => {
   const [proactiveInsight, setProactiveInsight] = useState(null);
 
   useEffect(() => {
+    if (!isAuthenticated) return;
     let cancelled = false;
     api.get('/chat/insight')
       .then((res) => {
@@ -78,7 +80,7 @@ const OverviewTab = ({ onNavigateToTab }) => {
       })
       .catch(() => {});
     return () => { cancelled = true; };
-  }, []);
+  }, [isAuthenticated]);
 
   const handleAIClick = (insightText) => {
     if (expanding) return;
