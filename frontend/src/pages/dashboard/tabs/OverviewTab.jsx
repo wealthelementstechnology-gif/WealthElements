@@ -80,11 +80,10 @@ const OverviewTab = ({ onNavigateToTab }) => {
     return () => { cancelled = true; };
   }, []);
 
-  const handleAIClick = () => {
+  const handleAIClick = (insightText) => {
     if (expanding) return;
     setExpanding(true);
-    // Navigate after the expand animation completes (400ms)
-    setTimeout(() => navigate('/ai-chat'), 380);
+    setTimeout(() => navigate('/ai-chat', { state: { initialMessage: insightText || null } }), 380);
   };
 
   return (
@@ -140,7 +139,7 @@ const OverviewTab = ({ onNavigateToTab }) => {
       {/* Proactive AI Insight */}
       {proactiveInsight && (
         <button
-          onClick={handleAIClick}
+          onClick={() => handleAIClick(proactiveInsight)}
           className="w-full text-left flex items-start gap-3 px-4 py-3.5 rounded-2xl border border-indigo-100 hover:border-indigo-300 hover:shadow-sm transition-all"
           style={{ background: 'rgba(238, 242, 255, 0.7)' }}
         >

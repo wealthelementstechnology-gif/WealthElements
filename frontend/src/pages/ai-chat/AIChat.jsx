@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { ArrowLeft, Send, Sparkles, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
@@ -84,6 +84,7 @@ const ThinkingBubble = () => (
 
 const AIChat = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { profile } = useSelector(state => state.auth);
   const { totalNetWorth } = useSelector(state => state.networth);
   const { monthlySummary } = useSelector(state => state.transactions);
@@ -104,6 +105,17 @@ const AIChat = () => {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
+
+  // Auto-send if navigated here with an initial message (e.g. from proactive insight card)
+  useEffect(() => {
+    const initial = location.state?.initialMessage;
+    if (initial) {
+      sendMessage(initial);
+      // Clear state so a back-navigation doesn't re-trigger
+      window.history.replaceState({}, '');
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const sendMessage = async (text) => {
     const messageText = (text || input).trim();
