@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector } from 'react-redux';
-import { ArrowLeft, Send, Sparkles, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Send, RefreshCw } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import chatService from '../../services/chat.service';
@@ -17,46 +17,48 @@ const SUGGESTED_QUESTIONS = [
 
 const MessageBubble = ({ role, content }) => {
   const isAI = role === 'assistant';
+
+  // User messages: full-width, large text, no bubble — like a heading
+  if (!isAI) {
+    return (
+      <div className="mb-6 px-1">
+        <p className="text-2xl font-semibold text-gray-900 leading-snug">
+          {'\u201C'}{content}{'\u201D'}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className={`flex ${isAI ? 'justify-start' : 'justify-end'} mb-5`}>
-      <div
-        className={`max-w-[88%] rounded-3xl px-5 py-4 leading-relaxed ${
-          isAI
-            ? 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-lg text-base'
-            : 'bg-gray-900 text-white rounded-tr-lg text-lg font-medium'
-        }`}
-      >
-        {isAI ? (
-          <ReactMarkdown
-            remarkPlugins={[remarkGfm]}
-            components={{
-              h2: ({ children }) => <p className="font-bold text-base mt-3 mb-1 text-gray-900">{children}</p>,
-              h3: ({ children }) => <p className="font-semibold text-sm mt-2 mb-0.5 text-gray-800">{children}</p>,
-              strong: ({ children }) => <span className="font-semibold text-gray-900">{children}</span>,
-              p: ({ children }) => <p className="mb-2 last:mb-0 text-base leading-relaxed">{children}</p>,
-              ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
-              ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
-              li: ({ children }) => <li className="text-gray-700 text-base">{children}</li>,
-              code: ({ children }) => <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800">{children}</code>,
-              pre: ({ children }) => <pre className="bg-gray-50 border border-gray-200 rounded-xl p-3 mt-2 mb-2 overflow-x-auto text-sm font-mono">{children}</pre>,
-              hr: () => <hr className="border-gray-200 my-3" />,
-              table: ({ children }) => (
-                <div className="overflow-x-auto my-3 rounded-xl border border-gray-200">
-                  <table className="w-full text-sm border-collapse">{children}</table>
-                </div>
-              ),
-              thead: ({ children }) => <thead className="bg-indigo-50">{children}</thead>,
-              tbody: ({ children }) => <tbody className="divide-y divide-gray-100">{children}</tbody>,
-              tr: ({ children }) => <tr className="divide-x divide-gray-100">{children}</tr>,
-              th: ({ children }) => <th className="px-3 py-2 text-left font-semibold text-indigo-700 whitespace-nowrap">{children}</th>,
-              td: ({ children }) => <td className="px-3 py-2 text-gray-700">{children}</td>,
-            }}
-          >
-            {content}
-          </ReactMarkdown>
-        ) : (
-          content
-        )}
+    <div className="flex justify-start mb-5">
+      <div className="w-full rounded-3xl px-5 py-4 leading-relaxed bg-white border border-gray-100 shadow-sm text-gray-800 text-base">
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm]}
+          components={{
+            h2: ({ children }) => <p className="font-bold text-base mt-3 mb-1 text-gray-900">{children}</p>,
+            h3: ({ children }) => <p className="font-semibold text-sm mt-2 mb-0.5 text-gray-800">{children}</p>,
+            strong: ({ children }) => <span className="font-semibold text-gray-900">{children}</span>,
+            p: ({ children }) => <p className="mb-2 last:mb-0 text-base leading-relaxed">{children}</p>,
+            ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+            ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+            li: ({ children }) => <li className="text-gray-700 text-base">{children}</li>,
+            code: ({ children }) => <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800">{children}</code>,
+            pre: ({ children }) => <pre className="bg-gray-50 border border-gray-200 rounded-xl p-3 mt-2 mb-2 overflow-x-auto text-sm font-mono">{children}</pre>,
+            hr: () => <hr className="border-gray-200 my-3" />,
+            table: ({ children }) => (
+              <div className="overflow-x-auto my-3 rounded-xl border border-gray-200">
+                <table className="w-full text-sm border-collapse">{children}</table>
+              </div>
+            ),
+            thead: ({ children }) => <thead className="bg-indigo-50">{children}</thead>,
+            tbody: ({ children }) => <tbody className="divide-y divide-gray-100">{children}</tbody>,
+            tr: ({ children }) => <tr className="divide-x divide-gray-100">{children}</tr>,
+            th: ({ children }) => <th className="px-3 py-2 text-left font-semibold text-indigo-700 whitespace-nowrap">{children}</th>,
+            td: ({ children }) => <td className="px-3 py-2 text-gray-700">{children}</td>,
+          }}
+        >
+          {content}
+        </ReactMarkdown>
       </div>
     </div>
   );
@@ -89,6 +91,7 @@ const AIChat = () => {
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
   const assistantHistoryRef = useRef([]);
+  const initialSentRef = useRef(false);
 
   const userName = profile?.name?.split(' ')[0] || 'there';
   const monthlyIncome = monthlySummary?.totalIncome || 0;
@@ -100,9 +103,10 @@ const AIChat = () => {
   // Auto-send if navigated here with an initial message (e.g. from proactive insight card)
   useEffect(() => {
     const initial = location.state?.initialMessage;
-    if (initial) {
-      sendMessage(initial);
+    if (initial && !initialSentRef.current) {
+      initialSentRef.current = true;
       window.history.replaceState({}, '');
+      sendMessage(initial);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

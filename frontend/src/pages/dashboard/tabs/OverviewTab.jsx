@@ -84,8 +84,16 @@ const OverviewTab = ({ onNavigateToTab }) => {
 
   const handleAIClick = (insightText) => {
     if (expanding) return;
+    // Only pass plain strings — never event objects
+    const message = typeof insightText === 'string' ? insightText : null;
     setExpanding(true);
-    setTimeout(() => navigate('/ai-chat', { state: { initialMessage: insightText || null } }), 380);
+    setTimeout(() => {
+      try {
+        navigate('/ai-chat', { state: { initialMessage: message } });
+      } catch {
+        setExpanding(false);
+      }
+    }, 380);
   };
 
   return (
@@ -123,7 +131,7 @@ const OverviewTab = ({ onNavigateToTab }) => {
       {/* AI Prompt Bar */}
       <button
         ref={barRef}
-        onClick={handleAIClick}
+        onClick={() => handleAIClick(null)}
         className="w-full flex items-center gap-3 px-4 py-3.5 bg-white border border-gray-200 rounded-2xl shadow-sm hover:border-indigo-300 hover:shadow-md transition-all group text-left"
         style={expanding ? { opacity: 0, transition: 'opacity 0.15s' } : {}}
       >
