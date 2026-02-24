@@ -1,8 +1,9 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, AlertCircle } from 'lucide-react';
+import api from '../../../services/api';
 import {
   NetWorthCard,
   BankBalanceCard,
@@ -65,6 +66,20 @@ const OverviewTab = ({ onNavigateToTab }) => {
     }
   };
 
+  const [proactiveInsight, setProactiveInsight] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    api.get('/chat/insight')
+      .then((res) => {
+        if (!cancelled && res.data?.insight) {
+          setProactiveInsight(res.data.insight);
+        }
+      })
+      .catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
   const handleAIClick = () => {
     if (expanding) return;
     setExpanding(true);
@@ -121,6 +136,24 @@ const OverviewTab = ({ onNavigateToTab }) => {
           <span className="text-indigo-500 text-xs font-bold">→</span>
         </div>
       </button>
+
+      {/* Proactive AI Insight */}
+      {proactiveInsight && (
+        <button
+          onClick={handleAIClick}
+          className="w-full text-left flex items-start gap-3 px-4 py-3.5 rounded-2xl border border-indigo-100 hover:border-indigo-300 hover:shadow-sm transition-all"
+          style={{ background: 'rgba(238, 242, 255, 0.7)' }}
+        >
+          <AlertCircle className="w-4 h-4 text-indigo-500 flex-shrink-0 mt-0.5" />
+          <div className="flex-1 min-w-0">
+            <p className="text-xs font-semibold text-indigo-600 mb-0.5 uppercase tracking-wide">
+              AI Notice
+            </p>
+            <p className="text-sm text-gray-700 leading-snug">{proactiveInsight}</p>
+          </div>
+          <span className="text-indigo-400 text-xs font-semibold flex-shrink-0 self-center">Ask →</span>
+        </button>
+      )}
 
       {/* Net Worth Card */}
       <NetWorthCard
