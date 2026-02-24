@@ -7,28 +7,23 @@ import remarkGfm from 'remark-gfm';
 import chatService from '../../services/chat.service';
 
 const SUGGESTED_QUESTIONS = [
-  'Am I saving enough every month?',
-  'How healthy is my emergency fund?',
-  'Should I pay off my loan or invest?',
-  'What is my biggest financial risk right now?',
-  'How long until I hit my home down payment goal?',
-  'Which subscriptions should I cancel?',
+  'Summarize my finances',
+  'How is my emergency fund?',
+  'Should I pay off debt or invest?',
+  'What is my biggest risk?',
+  'How long to hit my goal?',
+  'Which subscriptions to cut?',
 ];
 
 const MessageBubble = ({ role, content }) => {
   const isAI = role === 'assistant';
   return (
-    <div className={`flex ${isAI ? 'justify-start' : 'justify-end'} mb-4`}>
-      {isAI && (
-        <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center mr-2 mt-1 flex-shrink-0">
-          <Sparkles className="w-3.5 h-3.5 text-white" />
-        </div>
-      )}
+    <div className={`flex ${isAI ? 'justify-start' : 'justify-end'} mb-5`}>
       <div
-        className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-relaxed ${
+        className={`max-w-[88%] rounded-3xl px-5 py-4 leading-relaxed ${
           isAI
-            ? 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-sm'
-            : 'bg-indigo-600 text-white rounded-tr-sm'
+            ? 'bg-white border border-gray-100 shadow-sm text-gray-800 rounded-tl-lg text-base'
+            : 'bg-gray-900 text-white rounded-tr-lg text-lg font-medium'
         }`}
       >
         {isAI ? (
@@ -38,16 +33,16 @@ const MessageBubble = ({ role, content }) => {
               h2: ({ children }) => <p className="font-bold text-base mt-3 mb-1 text-gray-900">{children}</p>,
               h3: ({ children }) => <p className="font-semibold text-sm mt-2 mb-0.5 text-gray-800">{children}</p>,
               strong: ({ children }) => <span className="font-semibold text-gray-900">{children}</span>,
-              p: ({ children }) => <p className="mb-2 last:mb-0">{children}</p>,
-              ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-0.5">{children}</ul>,
-              ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-0.5">{children}</ol>,
-              li: ({ children }) => <li className="text-gray-700">{children}</li>,
-              code: ({ children }) => <code className="bg-gray-100 px-1.5 py-0.5 rounded text-xs font-mono text-gray-800">{children}</code>,
-              pre: ({ children }) => <pre className="bg-gray-50 border border-gray-200 rounded-xl p-3 mt-2 mb-2 overflow-x-auto text-xs font-mono">{children}</pre>,
-              hr: () => <hr className="border-gray-200 my-2" />,
+              p: ({ children }) => <p className="mb-2 last:mb-0 text-base leading-relaxed">{children}</p>,
+              ul: ({ children }) => <ul className="list-disc pl-4 mb-2 space-y-1">{children}</ul>,
+              ol: ({ children }) => <ol className="list-decimal pl-4 mb-2 space-y-1">{children}</ol>,
+              li: ({ children }) => <li className="text-gray-700 text-base">{children}</li>,
+              code: ({ children }) => <code className="bg-gray-100 px-1.5 py-0.5 rounded text-sm font-mono text-gray-800">{children}</code>,
+              pre: ({ children }) => <pre className="bg-gray-50 border border-gray-200 rounded-xl p-3 mt-2 mb-2 overflow-x-auto text-sm font-mono">{children}</pre>,
+              hr: () => <hr className="border-gray-200 my-3" />,
               table: ({ children }) => (
                 <div className="overflow-x-auto my-3 rounded-xl border border-gray-200">
-                  <table className="w-full text-xs border-collapse">{children}</table>
+                  <table className="w-full text-sm border-collapse">{children}</table>
                 </div>
               ),
               thead: ({ children }) => <thead className="bg-indigo-50">{children}</thead>,
@@ -68,15 +63,12 @@ const MessageBubble = ({ role, content }) => {
 };
 
 const ThinkingBubble = () => (
-  <div className="flex justify-start mb-4">
-    <div className="w-7 h-7 rounded-full bg-indigo-600 flex items-center justify-center mr-2 mt-1 flex-shrink-0">
-      <Sparkles className="w-3.5 h-3.5 text-white" />
-    </div>
-    <div className="bg-white border border-gray-100 shadow-sm rounded-2xl rounded-tl-sm px-4 py-3">
-      <div className="flex gap-1 items-center h-4">
-        <div className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '0ms' }} />
-        <div className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-        <div className="w-2 h-2 rounded-full bg-indigo-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+  <div className="flex justify-start mb-5">
+    <div className="bg-white border border-gray-100 shadow-sm rounded-3xl rounded-tl-lg px-5 py-4">
+      <div className="flex gap-1.5 items-center h-5">
+        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '0ms' }} />
+        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
+        <div className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
       </div>
     </div>
   </div>
@@ -96,10 +88,9 @@ const AIChat = () => {
 
   const messagesEndRef = useRef(null);
   const inputRef = useRef(null);
-  // Only store assistant messages in history for API context
   const assistantHistoryRef = useRef([]);
 
-  const userName = profile?.name || 'there';
+  const userName = profile?.name?.split(' ')[0] || 'there';
   const monthlyIncome = monthlySummary?.totalIncome || 0;
 
   useEffect(() => {
@@ -111,7 +102,6 @@ const AIChat = () => {
     const initial = location.state?.initialMessage;
     if (initial) {
       sendMessage(initial);
-      // Clear state so a back-navigation doesn't re-trigger
       window.history.replaceState({}, '');
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -123,8 +113,6 @@ const AIChat = () => {
 
     setInput('');
     setError('');
-
-    // Add user message to UI
     setMessages(prev => [...prev, { role: 'user', content: messageText }]);
     setIsLoading(true);
 
@@ -135,7 +123,6 @@ const AIChat = () => {
       });
 
       setMessages(prev => [...prev, { role: 'assistant', content: aiReply }]);
-      // Store assistant reply for next turn's context
       assistantHistoryRef.current = [
         ...assistantHistoryRef.current,
         { role: 'assistant', content: aiReply },
@@ -162,70 +149,70 @@ const AIChat = () => {
     inputRef.current?.focus();
   };
 
-  const showSuggestions = messages.length === 0 && !isLoading;
+  const showWelcome = messages.length === 0 && !isLoading;
 
   return (
     <div className="flex flex-col h-screen bg-gray-50">
 
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3 flex-shrink-0">
+      <div className="bg-gray-50 px-4 pt-4 pb-2 flex items-center justify-between flex-shrink-0">
         <button
           onClick={() => navigate('/dashboard')}
-          className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+          className="p-2 rounded-full hover:bg-gray-200 transition-colors"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-600" />
+          <ArrowLeft className="w-5 h-5 text-gray-700" />
         </button>
-        <div className="flex items-center gap-2.5 flex-1">
-          <div className="w-8 h-8 rounded-xl bg-indigo-600 flex items-center justify-center">
-            <Sparkles className="w-4 h-4 text-white" />
-          </div>
-          <div>
-            <p className="text-sm font-semibold text-gray-900">WealthElements AI</p>
-            <p className="text-xs text-gray-400">Personal finance advisor</p>
-          </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-green-400" />
+          <p className="text-sm text-gray-500">WealthElements AI</p>
         </div>
-        {messages.length > 0 && (
+        {messages.length > 0 ? (
           <button
             onClick={handleReset}
-            className="p-2 rounded-xl hover:bg-gray-100 transition-colors"
+            className="p-2 rounded-full hover:bg-gray-200 transition-colors"
             title="New conversation"
           >
-            <RefreshCw className="w-4 h-4 text-gray-400" />
+            <RefreshCw className="w-4 h-4 text-gray-500" />
           </button>
+        ) : (
+          <div className="w-9" />
         )}
       </div>
 
-      {/* Persona context pill */}
-      <div className="px-4 py-2 bg-indigo-50 border-b border-indigo-100 flex items-center gap-2">
-        <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
-        <p className="text-xs text-indigo-700">
-          <span className="font-medium">{userName}</span>
-          {monthlyIncome > 0 && <> · ₹{(monthlyIncome / 100000).toFixed(1)}L/mo</>}
-          {totalNetWorth !== 0 && <> · ₹{Math.abs(totalNetWorth / 100000).toFixed(1)}L net worth</>}
-          {' · '}
-          <span>Live data loaded</span>
-        </p>
-      </div>
+      {/* Messages / Welcome */}
+      <div className="flex-1 overflow-y-auto px-5 py-2">
 
-      {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+        {/* Welcome screen */}
+        {showWelcome && (
+          <div className="flex flex-col h-full">
+            {/* Greeting */}
+            <div className="flex-1 flex flex-col justify-center pb-4">
+              <p className="text-4xl font-bold mb-1">
+                <span className="text-indigo-500">Hello,</span>{' '}
+                <span className="text-gray-900">{userName}</span>
+              </p>
+              <p className="text-3xl font-semibold text-gray-300 leading-snug mt-1">
+                What can I help<br />you with?
+              </p>
+              {(monthlyIncome > 0 || totalNetWorth !== 0) && (
+                <p className="text-xs text-gray-400 mt-4">
+                  {monthlyIncome > 0 && `₹${(monthlyIncome / 100000).toFixed(1)}L/mo · `}
+                  {totalNetWorth !== 0 && `₹${Math.abs(totalNetWorth / 100000).toFixed(1)}L net worth · `}
+                  Live data loaded
+                </p>
+              )}
+            </div>
 
-        {/* Welcome + suggestions */}
-        {showSuggestions && (
-          <div className="mb-4">
-            <MessageBubble
-              role="assistant"
-              content={`Hi ${userName}! I can see your full financial snapshot — net worth, accounts, spending, goals, and subscriptions. Ask me anything about your money.`}
-            />
-            <div className="ml-9 mt-1">
-              <p className="text-xs text-gray-400 mb-2 font-medium uppercase tracking-wide">Try asking</p>
-              <div className="flex flex-col gap-2">
+            {/* Suggestion chips — horizontal scroll */}
+            <div className="pb-2">
+              <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                 {SUGGESTED_QUESTIONS.map((q, i) => (
                   <button
                     key={i}
                     onClick={() => sendMessage(q)}
                     disabled={isLoading}
-                    className="text-left text-sm px-4 py-2.5 bg-white border border-gray-200 rounded-xl hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 transition-all text-gray-700 disabled:opacity-50"
+                    className="flex-shrink-0 text-sm px-4 py-3 bg-white border border-gray-200 rounded-2xl hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700 transition-all text-gray-700 disabled:opacity-50 text-left"
+                    style={{ maxWidth: '180px' }}
                   >
                     {q}
                   </button>
@@ -240,12 +227,10 @@ const AIChat = () => {
           <MessageBubble key={i} role={msg.role} content={msg.content} />
         ))}
 
-        {/* Thinking indicator */}
         {isLoading && <ThinkingBubble />}
 
-        {/* Error */}
         {error && (
-          <div className="mx-auto max-w-sm mt-2 mb-3 px-4 py-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 text-center">
+          <div className="mx-auto max-w-sm mt-2 mb-3 px-4 py-3 bg-red-50 border border-red-200 rounded-2xl text-sm text-red-600 text-center">
             {error}
             <button onClick={() => setError('')} className="ml-2 underline text-red-500">
               Dismiss
@@ -257,33 +242,33 @@ const AIChat = () => {
       </div>
 
       {/* Input */}
-      <div className="bg-white border-t border-gray-100 px-4 py-3 flex-shrink-0">
-        <div className="flex items-end gap-2">
+      <div className="bg-gray-50 px-4 pb-6 pt-2 flex-shrink-0">
+        <div className="flex items-end gap-2 bg-white border border-gray-200 rounded-3xl px-4 py-3 shadow-sm">
           <textarea
             ref={inputRef}
             value={input}
             onChange={e => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Ask anything about your money..."
+            placeholder="Ask anything"
             rows={1}
             disabled={isLoading}
-            className="flex-1 resize-none bg-gray-50 border border-gray-200 rounded-xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-300 focus:border-transparent max-h-32 leading-relaxed"
-            style={{ minHeight: '44px' }}
+            className="flex-1 resize-none bg-transparent text-base text-gray-800 placeholder-gray-400 focus:outline-none leading-relaxed"
+            style={{ minHeight: '28px', maxHeight: '120px' }}
             onInput={e => {
               e.target.style.height = 'auto';
-              e.target.style.height = Math.min(e.target.scrollHeight, 128) + 'px';
+              e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px';
             }}
           />
           <button
             onClick={() => sendMessage()}
             disabled={!input.trim() || isLoading}
-            className="w-11 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-200 disabled:cursor-not-allowed flex items-center justify-center transition-colors flex-shrink-0"
+            className="w-9 h-9 rounded-full bg-gray-900 hover:bg-gray-700 disabled:bg-gray-200 disabled:cursor-not-allowed flex items-center justify-center transition-colors flex-shrink-0"
           >
             <Send className="w-4 h-4 text-white" />
           </button>
         </div>
         <p className="text-[10px] text-gray-300 text-center mt-2">
-          AI answers are based on your WealthElements data · Not professional financial advice
+          WealthElements AI · Not professional financial advice
         </p>
       </div>
 
