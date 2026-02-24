@@ -61,6 +61,9 @@ if (config.nodeEnv === 'development') {
   app.use(morgan('dev'));
 }
 
+// Health check (used by UptimeRobot to keep Render awake)
+app.get('/api/v1/health', (req, res) => res.json({ status: 'ok' }));
+
 // API routes
 app.use('/api/v1', v1Routes);
 
