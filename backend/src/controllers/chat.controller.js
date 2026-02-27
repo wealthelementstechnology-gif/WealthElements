@@ -198,7 +198,7 @@ const buildFinancialContext = async (userId) => {
 
   const userName = user?.profile?.name || 'the user';
 
-  return `=== PEAK FINANCE FINANCIAL SNAPSHOT FOR ${userName.toUpperCase()} ===
+  return `=== WEALTHELEMENTS FINANCIAL SNAPSHOT FOR ${userName.toUpperCase()} ===
 Generated: ${monthName(now)}
 
 ── NET WORTH ─────────────────────────────────────────────

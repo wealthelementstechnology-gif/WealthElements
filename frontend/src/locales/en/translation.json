@@ -1,7 +1,7 @@
 {
   "app": {
-    "name": "PeaK Finance",
-    "version": "PeaK Finance v1.0.0"
+    "name": "WealthElements",
+    "version": "WealthElements v1.0.0"
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -126,7 +126,7 @@
   },
   "dashboard": {
     "empty": "Your dashboard is empty",
-    "loadSample": "Load sample data to see how PeaK Finance looks with real financial data.",
+    "loadSample": "Load sample data to see how WealthElements looks with real financial data.",
     "loadSampleBtn": "Load sample data",
     "tabs": {
       "overview": "Overview",

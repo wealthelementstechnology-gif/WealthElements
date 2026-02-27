@@ -1,4 +1,4 @@
-# PeaK Finance AI — Absolute Rules
+# WealthElements AI — Absolute Rules
 
 ## NEVER Say
 

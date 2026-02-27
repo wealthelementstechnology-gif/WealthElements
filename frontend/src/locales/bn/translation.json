@@ -1,5 +1,5 @@
 {
-  "app": { "name": "PeaK Finance", "version": "PeaK Finance v1.0.0" },
+  "app": { "name": "WealthElements", "version": "WealthElements v1.0.0" },
   "nav": { "dashboard": "ড্যাশবোর্ড", "home": "হোম", "mutualFunds": "মিউচুয়াল ফান্ড", "settings": "সেটিংস", "back": "ফিরে যান", "backToWellness": "ওয়েলনেসে ফিরুন" },
   "auth": {
     "welcome": "স্বাগতম",
@@ -36,7 +36,7 @@
     "goals": { "title": "আপনি কীসের জন্য সঞ্চয় করছেন?", "subtitle": "এক বা একাধিক আর্থিক লক্ষ্য যোগ করুন। যেকোনো সময় সম্পাদনা করতে পারবেন।", "quickAdd": "দ্রুত যোগ করুন", "emergencyFund": "জরুরি তহবিল", "buyHome": "বাড়ি কিনুন", "retirement": "অবসর", "education": "শিক্ষা", "travel": "ভ্রমণ", "buyVehicle": "যানবাহন কিনুন", "wedding": "বিবাহ", "investments": "বিনিয়োগ", "goalName": "লক্ষ্যের নাম", "goalExample": "যেমন কলকাতায় ফ্ল্যাট কিনুন", "targetAmount": "লক্ষ্য পরিমাণ", "alreadySaved": "ইতিমধ্যে সঞ্চিত", "targetDate": "লক্ষ্য তারিখ", "priority": "অগ্রাধিকার", "high": "উচ্চ", "medium": "মধ্যম", "low": "নিম্ন", "addGoal": "লক্ষ্য যোগ করুন" },
     "nav": { "step": "{{total}} এর মধ্যে {{n}} ধাপ", "back": "← ফিরে যান", "saving": "সংরক্ষণ হচ্ছে...", "finish": "সম্পন্ন করুন ও ড্যাশবোর্ডে যান", "continue": "চালিয়ে যান →", "skip": "এখনের জন্য এড়িয়ে যান →", "skipStep": "এই ধাপ এড়িয়ে যান" }
   },
-  "dashboard": { "empty": "আপনার ড্যাশবোর্ড খালি", "loadSample": "বাস্তব আর্থিক ডেটা সহ PeaK Finance কেমন দেখায় তা দেখতে নমুনা ডেটা লোড করুন।", "loadSampleBtn": "নমুনা ডেটা লোড করুন", "tabs": { "overview": "সংক্ষিপ্ত বিবরণ", "assets": "সম্পদ", "spending": "ব্যয়", "subscriptions": "সাবস্ক্রিপশন", "wellness": "ওয়েলনেস", "report": "রিপোর্ট" } },
+  "dashboard": { "empty": "আপনার ড্যাশবোর্ড খালি", "loadSample": "বাস্তব আর্থিক ডেটা সহ WealthElements কেমন দেখায় তা দেখতে নমুনা ডেটা লোড করুন।", "loadSampleBtn": "নমুনা ডেটা লোড করুন", "tabs": { "overview": "সংক্ষিপ্ত বিবরণ", "assets": "সম্পদ", "spending": "ব্যয়", "subscriptions": "সাবস্ক্রিপশন", "wellness": "ওয়েলনেস", "report": "রিপোর্ট" } },
   "overview": { "netWorth": "নেট ওয়ার্থ", "totalAssets": "মোট সম্পদ", "thisMonth": "এই মাসে", "activeSubscriptions": "সক্রিয় সাবস্ক্রিপশন", "bankBalance": "ব্যাংক ব্যালেন্স", "spendingDown": "গত {{days}} দিনে ব্যয় {{n}}% কম", "recurringPayments": "পুনরাবৃত্তি পেমেন্ট", "seeAll": "সব দেখুন" },
   "assets": { "assets": "সম্পদ", "liabilities": "দায়", "totalAssets": "মোট সম্পদ", "totalLiabilities": "মোট দায়" },
   "spending": { "summary": "ব্যয় সারসংক্ষেপ", "upcomingPayments": "আসন্ন পেমেন্ট" },

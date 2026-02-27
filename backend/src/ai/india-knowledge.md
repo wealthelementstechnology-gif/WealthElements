@@ -1,4 +1,4 @@
-# PeaK Finance AI — India-Specific Knowledge Base
+# WealthElements AI — India-Specific Knowledge Base
 
 ## Property & Real Estate
 

@@ -63,7 +63,7 @@ const Step1Card = ({ onSubmit, onCancel }) => {
   return (
     <div>
       <p className="text-sm font-semibold text-gray-900 mb-1">Step 1 of 3 — Basic Details</p>
-      <p className="text-xs text-gray-400 mb-4">I'll use your PeaK Finance account for income & expenses</p>
+      <p className="text-xs text-gray-400 mb-4">I'll use your WealthElements account for income & expenses</p>
 
       {/* Planning for */}
       <div className="mb-4">
@@ -506,7 +506,7 @@ const AIChat = () => {
     if (messageText === '🗂 Run 8 Events Plan') {
       setMessages(prev => [...prev,
         { role: 'user', content: '🗂 Run 8 Events Plan' },
-        { role: 'assistant', type: 'intro', content: "Let's build your complete 8 Events financial plan.\n\nI'll use your PeaK Finance data for income and expenses — just fill in a few details below." },
+        { role: 'assistant', type: 'intro', content: "Let's build your complete 8 Events financial plan.\n\nI'll use your WealthElements data for income and expenses — just fill in a few details below." },
       ]);
       setEightEventsStep('step1');
       return;
@@ -605,7 +605,7 @@ const AIChat = () => {
       lines.push('Financial Goals: None specified — use only Emergency Fund and Retirement.');
     }
 
-    lines.push('', 'Use my PeaK Finance account data for income, expenses, assets, and liabilities. Run all steps: insurance gap, emergency fund, retirement corpus, goals SIPs, budget review with optimization if needed. Show the complete formatted plan.');
+    lines.push('', 'Use my WealthElements account data for income, expenses, assets, and liabilities. Run all steps: insurance gap, emergency fund, retirement corpus, goals SIPs, budget review with optimization if needed. Show the complete formatted plan.');
 
     const messageText = lines.join('\n');
 
@@ -679,7 +679,7 @@ const AIChat = () => {
         </button>
         <div className="flex items-center gap-2">
           <div className="w-2 h-2 rounded-full bg-green-400" />
-          <p className="text-sm text-gray-500">PeaK Finance AI</p>
+          <p className="text-sm text-gray-500">WealthElements AI</p>
         </div>
         {(messages.length > 0 || eightEventsStep) ? (
           <button onClick={handleReset} className="p-2 rounded-full hover:bg-gray-200 transition-colors" title="New conversation">
@@ -788,7 +788,7 @@ const AIChat = () => {
             </button>
           </div>
           <p className="text-[10px] text-gray-300 text-center mt-2">
-            PeaK Finance AI · Not professional financial advice
+            WealthElements AI · Not professional financial advice
           </p>
         </div>
       )}
