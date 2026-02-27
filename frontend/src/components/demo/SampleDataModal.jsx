@@ -44,6 +44,15 @@ const PERSONAS = [
     color: 'rose',
     highlights: ['Started deeply in debt', 'Personal loan + credit card dues', 'Now turning net worth positive', 'Side income fueling recovery'],
   },
+  {
+    id: 'kushal',
+    name: 'Kushal Sawant',
+    role: 'Salaried — Hidden Complexity',
+    income: '₹94K/month',
+    emoji: '🧩',
+    color: 'amber',
+    highlights: ['9 months · 190+ transactions', 'Lifestyle creep + emotion spending', '7 hidden financial patterns', 'Loan closed · CC surge · Gold hedge'],
+  },
 ];
 
 const colorMap = {
@@ -51,6 +60,7 @@ const colorMap = {
   violet: { border: 'border-violet-500', bg: 'bg-violet-500/10', ring: 'ring-violet-500', badge: 'bg-violet-500/20 text-violet-300', btn: 'bg-violet-600 hover:bg-violet-700' },
   emerald: { border: 'border-emerald-500', bg: 'bg-emerald-500/10', ring: 'ring-emerald-500', badge: 'bg-emerald-500/20 text-emerald-300', btn: 'bg-emerald-600 hover:bg-emerald-700' },
   rose: { border: 'border-rose-500', bg: 'bg-rose-500/10', ring: 'ring-rose-500', badge: 'bg-rose-500/20 text-rose-300', btn: 'bg-rose-600 hover:bg-rose-700' },
+  amber: { border: 'border-amber-500', bg: 'bg-amber-500/10', ring: 'ring-amber-500', badge: 'bg-amber-500/20 text-amber-300', btn: 'bg-amber-600 hover:bg-amber-700' },
 };
 
 const SampleDataModal = ({ onClose }) => {
@@ -91,7 +101,7 @@ const SampleDataModal = ({ onClose }) => {
   const colors = colorMap[selectedPersona.color];
 
   return (
-    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center">
+    <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center overflow-hidden">
       {/* Backdrop */}
       <div
         className="absolute inset-0 bg-black/70 backdrop-blur-sm"
@@ -99,7 +109,7 @@ const SampleDataModal = ({ onClose }) => {
       />
 
       {/* Modal — sits above the 64px bottom nav on mobile */}
-      <div className="relative w-full sm:max-w-lg bg-gray-900 rounded-t-3xl sm:rounded-2xl border border-gray-800 mx-0 sm:mx-4 shadow-2xl flex flex-col max-h-[calc(90vh-4rem)] sm:max-h-[90vh] mb-16 sm:mb-0">
+      <div className="relative w-full sm:max-w-lg bg-gray-900 rounded-t-3xl sm:rounded-2xl border border-gray-800 mx-0 sm:mx-4 shadow-2xl flex flex-col" style={{ maxHeight: 'calc(100dvh - 72px)', marginBottom: '64px' }}>
 
         {/* Handle bar + Header — fixed */}
         <div className="p-6 pb-0 flex-shrink-0">

@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Sparkles, AlertCircle } from 'lucide-react';
+import { Sparkles, AlertCircle, X, ChevronDown, ChevronUp } from 'lucide-react';
 import api from '../../../services/api';
 import {
   NetWorthCard,
@@ -68,6 +68,8 @@ const OverviewTab = ({ onNavigateToTab }) => {
   };
 
   const [proactiveInsight, setProactiveInsight] = useState(null);
+  const [insightExpanded, setInsightExpanded] = useState(false);
+  const [insightDismissed, setInsightDismissed] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated) return;
@@ -139,7 +141,7 @@ const OverviewTab = ({ onNavigateToTab }) => {
           <Sparkles className="w-4 h-4 text-white" />
         </div>
         <p className="flex-1 text-sm text-gray-400 group-hover:text-gray-600 transition-colors">
-          Ask WealthElements AI anything about your money...
+          Ask PeaK Finance AI anything about your money...
         </p>
         <div className="w-7 h-7 rounded-lg bg-indigo-50 group-hover:bg-indigo-100 flex items-center justify-center flex-shrink-0 transition-colors">
           <span className="text-indigo-500 text-xs font-bold">→</span>
@@ -147,21 +149,59 @@ const OverviewTab = ({ onNavigateToTab }) => {
       </button>
 
       {/* Proactive AI Insight */}
-      {proactiveInsight && (
-        <button
-          onClick={() => handleAIClick(proactiveInsight)}
-          className="w-full text-left flex items-start gap-3 px-4 py-3.5 rounded-2xl border border-indigo-100 hover:border-indigo-300 hover:shadow-sm transition-all"
+      {proactiveInsight && !insightDismissed && (
+        <div
+          className="w-full rounded-2xl border border-indigo-100 overflow-hidden"
           style={{ background: 'rgba(238, 242, 255, 0.7)' }}
         >
-          <AlertCircle className="w-4 h-4 text-indigo-500 flex-shrink-0 mt-0.5" />
-          <div className="flex-1 min-w-0">
-            <p className="text-xs font-semibold text-indigo-600 mb-0.5 uppercase tracking-wide">
-              AI Notice
-            </p>
-            <p className="text-sm text-gray-700 leading-snug">{proactiveInsight}</p>
+          {/* Always-visible top row */}
+          <div className="flex items-start gap-2.5 px-4 pt-3.5 pb-3">
+            <AlertCircle className="w-4 h-4 text-indigo-500 flex-shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs font-semibold text-indigo-600 uppercase tracking-wide mb-1">AI Notice</p>
+              {/* Preview — 2 lines, truncated */}
+              <p
+                className="text-sm text-gray-700 leading-snug"
+                style={!insightExpanded ? {
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
+                  overflow: 'hidden',
+                } : {}}
+              >
+                {proactiveInsight}
+              </p>
+            </div>
+            {/* Close */}
+            <button
+              onClick={() => setInsightDismissed(true)}
+              className="p-0.5 rounded-full hover:bg-indigo-100 transition-colors flex-shrink-0"
+            >
+              <X className="w-3.5 h-3.5 text-indigo-400" />
+            </button>
           </div>
-          <span className="text-indigo-400 text-xs font-semibold flex-shrink-0 self-center">Ask →</span>
-        </button>
+
+          {/* Bottom action row */}
+          <div className="flex items-center justify-between px-4 pb-3 pt-0">
+            <button
+              onClick={() => setInsightExpanded(e => !e)}
+              className="text-xs font-semibold text-indigo-500 flex items-center gap-0.5 hover:text-indigo-700 transition-colors"
+            >
+              {insightExpanded
+                ? <><ChevronUp className="w-3.5 h-3.5" /> Show less</>
+                : <><ChevronDown className="w-3.5 h-3.5" /> Learn more</>}
+            </button>
+            {insightExpanded && (
+              <button
+                onClick={() => handleAIClick(proactiveInsight)}
+                className="text-xs font-semibold text-white px-3 py-1.5 rounded-xl transition-colors"
+                style={{ background: '#4f46e5' }}
+              >
+                Ask AI →
+              </button>
+            )}
+          </div>
+        </div>
       )}
 
       {/* Net Worth Card */}

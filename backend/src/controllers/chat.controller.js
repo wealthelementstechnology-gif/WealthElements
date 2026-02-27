@@ -5,10 +5,14 @@ const Subscription = require('../models/Subscription');
 const Goal = require('../models/Goal');
 const FinancialProfile = require('../models/FinancialProfile');
 const User = require('../models/User');
+const { loadInstructions } = require('../ai/loadInstructions');
+const EightEventsPlan = require('../models/EightEventsPlan');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
 // ─── Model routing ─────────────────────────────────────────────────────────────
+// Sonnet: 8 events, complex questions, long messages, deep conversations
+// Haiku: simple greetings, short factual questions
 const COMPLEX_KEYWORDS = [
   'should i', 'compare', 'scenario', 'what if', 'buy or rent', 'buy vs rent',
   'invest', 'plan', 'strategy', 'afford', 'emi', 'loan', 'retire', 'goal',
@@ -18,6 +22,7 @@ const COMPLEX_KEYWORDS = [
   'salary', 'raise', 'job', 'resign', 'layoff', 'freelance', 'business',
   'withdrawal', 'break fd', 'redeem', 'corpus', 'pension', 'epf',
   'debt', 'credit card', 'personal loan', 'prepay', 'foreclose',
+  '8 events', 'eight events', 'financial plan',
 ];
 
 const selectModel = (message, historyLength) => {
@@ -39,13 +44,14 @@ const monthName = (d) => d.toLocaleString('en-IN', { month: 'long', year: 'numer
 const buildFinancialContext = async (userId) => {
   const now = new Date();
 
-  const [accounts, allTx, subscriptions, goals, profile, user] = await Promise.all([
+  const [accounts, allTx, subscriptions, goals, profile, user, eightEventsPlan] = await Promise.all([
     Account.find({ userId, isActive: true }).lean(),
     Transaction.find({ userId }).sort({ date: -1 }).limit(150).lean(),
     Subscription.find({ userId }).lean(),
     Goal.find({ userId }).lean(),
     FinancialProfile.findOne({ userId }).lean(),
     User.findById(userId).select('profile').lean(),
+    EightEventsPlan.findOne({ userId }).lean(),
   ]);
 
   // ── Accounts ──────────────────────────────────────────────────────────────
@@ -192,7 +198,7 @@ const buildFinancialContext = async (userId) => {
 
   const userName = user?.profile?.name || 'the user';
 
-  return `=== WEALTHELEMENTS FINANCIAL SNAPSHOT FOR ${userName.toUpperCase()} ===
+  return `=== PEAK FINANCE FINANCIAL SNAPSHOT FOR ${userName.toUpperCase()} ===
 Generated: ${monthName(now)}
 
 ── NET WORTH ─────────────────────────────────────────────
@@ -235,76 +241,23 @@ ${profile?.monthlyExpenses ? `Monthly Expenses (profile): ${fmt(profile.monthlyE
 ── BEHAVIORAL FLAGS ──────────────────────────────────────
 ${flags.length > 0 ? flags.join('\n') : '✓ No critical flags detected'}
 
+── 8 EVENTS PLAN ─────────────────────────────────────────
+${eightEventsPlan ? `Computed: ${monthName(new Date(eightEventsPlan.computedAt))}
+Age: ${eightEventsPlan.age} | Retirement Age: ${eightEventsPlan.retirementAge} | Years Left: ${eightEventsPlan.yearsToRetirement}
+City: ${eightEventsPlan.city || 'not set'} (${eightEventsPlan.isMetroCity ? 'Metro' : 'Non-Metro'})
+Retirement Corpus Needed: ${fmt(eightEventsPlan.retirementCorpus)} | Retirement SIP: ${fmt(eightEventsPlan.retirementSIP)}/mo
+Life Insurance Gap: ${fmt(eightEventsPlan.lifeInsuranceGap)} | Health Insurance Gap: ${fmt(eightEventsPlan.healthInsuranceGap)}
+Emergency Fund: ${fmt(eightEventsPlan.emergencyFundCorpus)} (SIP: ${fmt(eightEventsPlan.emergencyFundSIP)}/mo)
+Goals (${eightEventsPlan.goals.length}): ${eightEventsPlan.goals.map(g => `${g.name} — SIP ${fmt(g.sip)}/mo`).join(' | ') || 'none'}
+Total SIP Required: ${fmt(eightEventsPlan.totalMonthlySIPRequired)}/mo | Budget: ${fmt(eightEventsPlan.monthlyInvestmentBudget)}/mo (${eightEventsPlan.budgetUtilizationPct.toFixed(0)}% utilized)${eightEventsPlan.wasOptimized ? ' [plan was auto-optimized to fit budget]' : ''}` : '(no 8 events plan computed yet — user can trigger it in chat)'}
+
 === END SNAPSHOT ===`;
 };
 
 // ─── System prompt ─────────────────────────────────────────────────────────────
-const SYSTEM_PROMPT = `You are WealthElements — not a chatbot. You are the financial intelligence layer of a person's life, built specifically for India's middle class.
-
-Your job is not to answer questions politely. Your job is to make sure this person never makes a financially naive decision again.
-
-═══ YOUR IDENTITY ═══
-You think like a CA + CFP who genuinely cares about this user's outcome. You are the smartest financial mind this person has regular access to.
-
-You know India deeply:
-- Mumbai, Delhi, Bengaluru, Pune, Hyderabad property price ranges and market realities
-- SBI, HDFC, ICICI, Axis, Kotak home loan rates (currently ~8.5-9.5% floating)
-- Stamp duty by state: Maharashtra 5-6%, Karnataka 5%, Delhi 4-6%, Telangana 4%
-- EPFO rules: EPF transfer on job change, partial withdrawal conditions, UAN
-- Tax: Section 80C (₹1.5L limit), 80D (health insurance), Section 24 (home loan interest up to ₹2L), HRA exemption calculation
-- LTCG: 10% on equity gains above ₹1L (held 1+ year), STCG: 15% (held under 1 year)
-- PPF: 15-year lock-in, 7.1% current rate, partial withdrawal from year 7
-- NPS: Tier 1 (locked till 60, extra ₹50K deduction under 80CCD(1B)), Tier 2 (flexible)
-- Indian spending patterns: Zepto/Blinkit impulse buys, Swiggy/Zomato lifestyle inflation, Amazon Prime/Netflix subscription creep
-- Middle-class financial pressure: parents expecting financial support, weddings as financial events, property as social status, gold as savings habit
-- SIP culture in India: Groww, Zerodha Coin, MF Central, CAMS
-
-═══ HOW YOU THINK ═══
-Before answering:
-1. Read the user's financial snapshot — use their real numbers
-2. Notice what they didn't ask about but you should flag
-3. Run the actual math with their numbers
-4. Consider the 10-year consequence of today's decision
-5. Acknowledge emotional reality before showing math
-
-═══ ABSOLUTE RULES ═══
-
-NEVER say:
-- "It depends" without immediately computing both scenarios
-- "Consult a financial advisor" — you ARE the advisor
-- "Great question!" or "Certainly!" — not a customer service bot
-- "I cannot provide financial advice" — yes you can
-- Generic advice that ignores their actual numbers
-
-ALWAYS:
-- Take a clear position with clear reasoning
-- Use their exact numbers from the snapshot
-- Acknowledge emotions before math when life context is given (marriage, family pressure, job loss fear)
-- Show the 10-year consequence of major decisions
-- Proactively flag data issues even if not asked (low emergency fund, credit card debt, spending spikes)
-- Format: ₹1,20,000 not ₹120000 — always Indian number format
-- End with exactly ONE sharp follow-up question
-- Use code blocks for financial scenario tables
-
-═══ RESPONSE STRUCTURE FOR COMPLEX QUESTIONS ═══
-1. What I see in your data (1-2 lines, real numbers)
-2. The real risk / problem (direct — don't soften dangerous situations)
-3. Scenario analysis in a code block with actual rupee calculations
-4. Clear recommendation with reasoning
-5. 2-3 concrete next steps (actionable this week)
-6. One follow-up question
-
-═══ BEHAVIORAL INTELLIGENCE ═══
-When you see flags in the snapshot, weave them into answers:
-- Emergency fund < 3 months → mention before giving investment advice
-- Credit card balance → address this first before other goals
-- Savings rate < 10% → flag as dangerous before answering spending questions
-- Spending spike → bring it up if relevant
-
-The user asked about X but Y in their data contradicts it — say so directly.
-
-═══ THE STANDARD ═══
-For complex questions, the bar is: show exact cash flow tables, hidden costs, multiple scenarios with real numbers, a clear recommendation, and one follow-up question. No hedging. No disclaimers. The user came to you because they want an actual answer.`;
+// Instructions are loaded from backend/src/ai/*.md files (alphabetical order).
+// Edit or add .md files there — restart server to pick up changes.
+const getSystemPrompt = () => loadInstructions();
 
 // ─── Proactive insight generator ───────────────────────────────────────────────
 const getProactiveInsight = async (req, res, next) => {
@@ -335,6 +288,30 @@ const getProactiveInsight = async (req, res, next) => {
   }
 };
 
+// ─── Anthropic call with retry on overload ─────────────────────────────────────
+const callAnthropicWithRetry = async (params, maxRetries = 3) => {
+  const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+  let lastError;
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await anthropic.messages.create(params);
+    } catch (err) {
+      const status = err.status || err.statusCode;
+      const isOverloaded = status === 529 || err.message?.includes('overloaded');
+      const isRateLimit = status === 429 || err.message?.includes('rate limit');
+      if ((isOverloaded || isRateLimit) && attempt < maxRetries - 1) {
+        const wait = (attempt + 1) * 3000; // 3s, 6s
+        console.log(`Anthropic overloaded (attempt ${attempt + 1}), retrying in ${wait}ms…`);
+        await delay(wait);
+        lastError = err;
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError;
+};
+
 // ─── Main chat handler ─────────────────────────────────────────────────────────
 const chat = async (req, res, next) => {
   try {
@@ -362,10 +339,10 @@ const chat = async (req, res, next) => {
       ];
     }
 
-    const response = await anthropic.messages.create({
+    const response = await callAnthropicWithRetry({
       model,
-      max_tokens: 4096,
-      system: SYSTEM_PROMPT,
+      max_tokens: 8000,
+      system: getSystemPrompt(),
       messages,
     });
 
@@ -375,6 +352,28 @@ const chat = async (req, res, next) => {
 
   } catch (error) {
     console.error('Chat error:', error.message);
+
+    // Anthropic API errors — return a clean user-facing message instead of raw JSON
+    const status = error.status || error.statusCode;
+    if (status === 529 || error.message?.includes('overloaded')) {
+      return res.status(503).json({
+        success: false,
+        message: 'The AI is currently busy. Please wait a few seconds and try again.',
+      });
+    }
+    if (status === 429 || error.message?.includes('rate limit')) {
+      return res.status(429).json({
+        success: false,
+        message: 'Too many requests. Please wait a moment before sending another message.',
+      });
+    }
+    if (status === 401) {
+      return res.status(500).json({
+        success: false,
+        message: 'AI service configuration error. Please contact support.',
+      });
+    }
+
     next(error);
   }
 };

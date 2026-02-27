@@ -18,7 +18,7 @@ const Sidebar = () => {
           <div className="flex items-center justify-center w-10 h-10 bg-emerald-600 rounded-xl">
             <TrendingUp className="w-6 h-6 text-white" />
           </div>
-          <span className="text-xl font-bold text-gray-900">WealthElements</span>
+          <span className="text-xl font-bold text-gray-900">PeaK Finance</span>
         </div>
 
         {/* Navigation */}
@@ -65,7 +65,7 @@ const Sidebar = () => {
             <div className="flex items-center justify-center w-8 h-8 bg-emerald-600 rounded-lg">
               <TrendingUp className="w-5 h-5 text-white" />
             </div>
-            <span className="text-lg font-bold text-gray-900">WealthElements</span>
+            <span className="text-lg font-bold text-gray-900">PeaK Finance</span>
           </div>
 
           {/* Settings Icon */}
