@@ -872,7 +872,7 @@ const AIChat = () => {
   const showWelcome = messages.length === 0 && !isLoading && !eightEventsStep;
 
   return (
-    <div className="flex flex-col" style={{ background: '#0f0f14', height: '100dvh' }}>
+    <div className="flex flex-col" style={{ background: '#0f0f14', height: '100svh' }}>
 
       {/* Header */}
       <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0"
