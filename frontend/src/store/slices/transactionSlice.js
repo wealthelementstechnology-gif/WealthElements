@@ -11,9 +11,15 @@ export const fetchMonthlySummary = createAsyncThunk('transactions/fetchMonthlySu
   catch (err) { return rejectWithValue(err.response?.data?.message || 'Failed to load summary'); }
 });
 
+export const fetchSpendingTrend = createAsyncThunk('transactions/fetchSpendingTrend', async (_, { rejectWithValue }) => {
+  try { return await transactionsService.getSpendingTrend(); }
+  catch (err) { return rejectWithValue(err.response?.data?.message || 'Failed to load trend'); }
+});
+
 const initialState = {
   transactions: [],
   monthlySummary: null,
+  spendingTrend: [],
   isLoading: false,
   error: null,
 };
@@ -82,6 +88,9 @@ const transactionSlice = createSlice({
       })
       .addCase(fetchMonthlySummary.rejected, (state, action) => {
         state.error = action.payload;
+      })
+      .addCase(fetchSpendingTrend.fulfilled, (state, action) => {
+        state.spendingTrend = action.payload || [];
       });
   },
 });
