@@ -5,11 +5,12 @@ import api from './api';
  * Returns { message, model } on success.
  * Throws on error.
  */
-const sendMessage = async ({ message, history = [] }) => {
-  const response = await api.post('/chat', { message, history });
+const sendMessage = async ({ message, history = [], language_code }) => {
+  const response = await api.post('/chat', { message, history, language_code });
   return {
     message: response.data.message,
     model: response.data.model,
+    language_code: response.data.language_code,
   };
 };
 

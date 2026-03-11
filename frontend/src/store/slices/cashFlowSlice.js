@@ -177,7 +177,8 @@ const cashFlowSlice = createSlice({
 // Helper function to generate plain English explanations
 function generateExplanations(comparison) {
   const explanations = [];
-  const { changes } = comparison;
+  const changes = comparison.changes || comparison;
+  if (!changes) return explanations;
 
   if (changes.incomeChange > 0) {
     explanations.push(

@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   isAuthenticated: false,
+  isInitializing: true,
   userId: null,
   phone: null,
   profile: null,
@@ -48,6 +49,9 @@ const authSlice = createSlice({
     clearError: (state) => {
       state.error = null;
     },
+    setInitialized: (state) => {
+      state.isInitializing = false;
+    },
   },
 });
 
@@ -59,6 +63,7 @@ export const {
   setError,
   logout,
   clearError,
+  setInitialized,
 } = authSlice.actions;
 
 export default authSlice.reducer;

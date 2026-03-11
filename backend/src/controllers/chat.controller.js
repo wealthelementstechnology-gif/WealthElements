@@ -7,6 +7,7 @@ const FinancialProfile = require('../models/FinancialProfile');
 const User = require('../models/User');
 const { loadInstructions } = require('../ai/loadInstructions');
 const EightEventsPlan = require('../models/EightEventsPlan');
+const { compute8Events, parse8EventsMessage } = require('../ai/eightEventsCalc');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -254,6 +255,83 @@ Total SIP Required: ${fmt(eightEventsPlan.totalMonthlySIPRequired)}/mo | Budget:
 === END SNAPSHOT ===`;
 };
 
+// ─── 8 Events detection ────────────────────────────────────────────────────────
+const isEightEventsMessage = (msg) =>
+  msg.startsWith('Run my complete 8 events financial plan.');
+
+// Compute 6-month average monthly spend from raw transactions
+// Returns { avgMonthlyExpenses, spendingCategories (6mo avg per category) }
+const buildSixMonthSnapshot = async (userId) => {
+  const now = new Date();
+  const sixMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 6, 1);
+
+  const txns = await Transaction.find({
+    userId,
+    type: 'DEBIT',
+    date: { $gte: sixMonthsAgo },
+  }).lean();
+
+  if (txns.length === 0) return null;
+
+  // Group spend by (year, month)
+  const monthMap = {};
+  const catTotals = {};
+  for (const tx of txns) {
+    const d = new Date(tx.date);
+    const key = `${d.getFullYear()}-${d.getMonth()}`;
+    monthMap[key] = (monthMap[key] || 0) + tx.amount;
+    const cat = tx.category || 'Other';
+    catTotals[cat] = (catTotals[cat] || 0) + tx.amount;
+  }
+
+  const months = Object.values(monthMap);
+  // Only include months that have any spend (avoids counting future empty months)
+  const activeMths = months.filter(m => m > 0).length || 1;
+  const avgMonthlyExpenses = Math.round(months.reduce((s, m) => s + m, 0) / activeMths);
+
+  // Per-category 6-month averages
+  const spendingCategories = Object.entries(catTotals).map(([category, total]) => ({
+    category,
+    amount: Math.round(total / activeMths),
+  }));
+
+  return { avgMonthlyExpenses, spendingCategories };
+};
+
+// Build snapshot object for the calculator from already-built financial context
+const buildCalcSnapshot = (financialContext, sixMonthData) => {
+  const incomeMatch = financialContext.match(/Monthly Income \(profile\):\s+₹([\d,]+)/);
+  const expenseMatch = financialContext.match(/Monthly Expenses \(profile\):\s+₹([\d,]+)/);
+  const spendMatch = financialContext.match(/This Month Spend[^:]*:\s+₹([\d,]+)/);
+
+  const monthlyIncome = incomeMatch ? parseInt(incomeMatch[1].replace(/,/g, '')) : 0;
+
+  // Prefer 6-month average; fall back to profile expenses, then current month spend
+  const monthlyExpenses = sixMonthData?.avgMonthlyExpenses
+    || (expenseMatch ? parseInt(expenseMatch[1].replace(/,/g, '')) : 0)
+    || (spendMatch ? parseInt(spendMatch[1].replace(/,/g, '')) : 0);
+
+  // Use 6-month category averages if available, else parse from context
+  let spendingCategories = sixMonthData?.spendingCategories || [];
+  if (spendingCategories.length === 0) {
+    const catSection = financialContext.match(/SPENDING BREAKDOWN[^\n]*\n([\s\S]*?)(?:\n──|\n===)/);
+    if (catSection) {
+      const lines = catSection[1].split('\n').filter(l => l.includes('•'));
+      for (const line of lines) {
+        const m = line.match(/•\s*([^:]+):\s*₹([\d,]+)/);
+        if (m) {
+          spendingCategories.push({
+            category: m[1].trim(),
+            amount: parseInt(m[2].replace(/,/g, '')),
+          });
+        }
+      }
+    }
+  }
+
+  return { monthlyIncome, monthlyExpenses, spendingCategories };
+};
+
 // ─── System prompt ─────────────────────────────────────────────────────────────
 // Instructions are loaded from backend/src/ai/*.md files (alphabetical order).
 // Edit or add .md files there — restart server to pick up changes.
@@ -315,40 +393,72 @@ const callAnthropicWithRetry = async (params, maxRetries = 3) => {
 // ─── Main chat handler ─────────────────────────────────────────────────────────
 const chat = async (req, res, next) => {
   try {
-    const { message, history = [] } = req.body;
+    const { message, history = [], language_code } = req.body;
 
     if (!message || typeof message !== 'string' || message.trim().length === 0) {
       return res.status(400).json({ success: false, message: 'Message is required' });
     }
+    if (message.length > 8000) {
+      return res.status(400).json({ success: false, message: 'Message is too long.' });
+    }
+
+    // Validate history: must be array of {role, content} pairs, capped at 40 turns
+    if (!Array.isArray(history)) {
+      return res.status(400).json({ success: false, message: 'Invalid history format.' });
+    }
+    const sanitizedHistory = history
+      .filter(h => h && typeof h.role === 'string' && typeof h.content === 'string')
+      .slice(-40);
 
     const userId = req.user._id;
     const financialContext = await buildFinancialContext(userId);
-    const model = selectModel(message, history.length);
+    const model = selectModel(message, sanitizedHistory.length);
+
+    // For 8 Events: compute all numbers in JS and inject into the message
+    let finalMessage = message;
+    const is8Events = isEightEventsMessage(message);
+    if (is8Events) {
+      try {
+        const inputs = parse8EventsMessage(message);
+        const sixMonthData = await buildSixMonthSnapshot(userId);
+        const snapshot = buildCalcSnapshot(financialContext, sixMonthData);
+        const computed = compute8Events(inputs, snapshot);
+        finalMessage = `${message}\n\n[COMPUTED_8_EVENTS]\n${JSON.stringify(computed)}\n[/COMPUTED_8_EVENTS]\n\nAll numbers above are pre-computed. Use them exactly as provided — do not recalculate anything.`;
+      } catch (calcErr) {
+        console.error('8 Events calc error (falling back to AI math):', calcErr.message);
+        // Fall through — AI will attempt math on its own
+      }
+    }
+
+    // Language instruction — tell AI to reply in the user's detected language
+    const langInstruction = language_code && language_code !== 'en-IN'
+      ? `\n\n[LANGUAGE INSTRUCTION: The user spoke/wrote in language code "${language_code}". Reply ENTIRELY in that language. Do not switch to English.]`
+      : '';
 
     let messages;
-    if (history.length === 0) {
+    if (sanitizedHistory.length === 0) {
       messages = [{
         role: 'user',
-        content: `${financialContext}\n\nMy question: ${message}`,
+        content: `${financialContext}\n\nMy question: ${finalMessage}${langInstruction}`,
       }];
     } else {
       messages = [
         { role: 'user', content: `${financialContext}\n\n[conversation follows]` },
-        ...history,
-        { role: 'user', content: message },
+        ...sanitizedHistory,
+        { role: 'user', content: `${finalMessage}${langInstruction}` },
       ];
     }
 
     const response = await callAnthropicWithRetry({
       model,
-      max_tokens: 8000,
+      max_tokens: is8Events ? 2500 : 1800,
       system: getSystemPrompt(),
       messages,
     });
 
     const aiText = response.content[0]?.text || 'Sorry, I could not generate a response.';
 
-    return res.status(200).json({ success: true, message: aiText, model });
+    return res.status(200).json({ success: true, message: aiText, model, language_code: language_code || 'en-IN' });
 
   } catch (error) {
     console.error('Chat error:', error.message);

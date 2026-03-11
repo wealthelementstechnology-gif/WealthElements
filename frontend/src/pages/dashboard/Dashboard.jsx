@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { AppLayout } from '../../components/layout';
 import { DASHBOARD_TABS } from '../../utils/constants';
 import { fetchAccounts } from '../../store/slices/networthSlice';
-import { fetchTransactions, fetchMonthlySummary } from '../../store/slices/transactionSlice';
+import { fetchTransactions, fetchMonthlySummary, fetchSpendingTrend } from '../../store/slices/transactionSlice';
 import { fetchSubscriptions } from '../../store/slices/subscriptionSlice';
 import { fetchGoals } from '../../store/slices/goalsSlice';
 import { setEmergencyFundData } from '../../store/slices/emergencyFundSlice';
@@ -37,19 +37,25 @@ const Dashboard = () => {
 
   const { isAuthenticated, onboardingCompleted } = useSelector(state => state.auth);
   const { assetAccounts, liabilityAccounts, totalNetWorth, totalLiabilities, isLoading: networthLoading } = useSelector(state => state.networth);
-  const { monthlySummary, isLoading: txLoading } = useSelector(state => state.transactions);
+  const { monthlySummary, spendingTrend, isLoading: txLoading } = useSelector(state => state.transactions);
 
   // Show sample data prompt automatically when dashboard is empty after load
   const isEmpty = !networthLoading && assetAccounts.length === 0;
 
+  // Auth guard — only redirects, no data fetching
   useEffect(() => {
     if (!isAuthenticated) { navigate('/auth'); return; }
     if (!onboardingCompleted) { navigate('/onboarding'); return; }
+  }, [isAuthenticated, onboardingCompleted, navigate]);
 
+  // Data fetch — runs once when authenticated
+  useEffect(() => {
+    if (!isAuthenticated) return;
     const now = new Date();
     dispatch(fetchAccounts());
     dispatch(fetchTransactions({ limit: 100 }));
     dispatch(fetchMonthlySummary({ month: now.getMonth() + 1, year: now.getFullYear() }));
+    dispatch(fetchSpendingTrend());
     dispatch(fetchSubscriptions());
     dispatch(fetchGoals());
 
@@ -57,7 +63,7 @@ const Dashboard = () => {
     profileService.getProfile().then(profile => {
       monthlyIncomeRef.current = profile?.monthlyIncome || 0;
     }).catch(() => {});
-  }, [dispatch, isAuthenticated, onboardingCompleted, navigate]);
+  }, [isAuthenticated, dispatch]);
 
   // Compute derived wellness/report slices once accounts + transactions are loaded
   useEffect(() => {
@@ -94,8 +100,16 @@ const Dashboard = () => {
     }));
 
     // ── Cash Flow ─────────────────────────────────────────────────────────────
+    // Build monthlyHistory from spending trend: [{ _id: { year, month }, total }]
+    const monthlyHistory = (spendingTrend || []).map(item => ({
+      totalExpenses: item.total || 0,
+      totalIncome: monthlyIncome,
+      month: `${item._id.year}-${String(item._id.month).padStart(2, '0')}`,
+    }));
+
     dispatch(setCashFlowData({
       totalMonthlyIncome: monthlyIncome,
+      monthlyHistory,
       currentMonthSummary: {
         totalIncome: monthlyIncome,
         totalExpenses: monthlyExpenses,
@@ -298,7 +312,7 @@ const Dashboard = () => {
       lifestyleInflation: null,
       previousMonth: null,
     }));
-  }, [networthLoading, txLoading, assetAccounts, liabilityAccounts, totalNetWorth, totalLiabilities, monthlySummary, dispatch]);
+  }, [networthLoading, txLoading, assetAccounts, liabilityAccounts, totalNetWorth, totalLiabilities, monthlySummary, spendingTrend, dispatch]);
 
   // Auto-show modal once when dashboard first loads empty
   useEffect(() => {
