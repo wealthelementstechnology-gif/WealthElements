@@ -872,7 +872,7 @@ const AIChat = () => {
   const showWelcome = messages.length === 0 && !isLoading && !eightEventsStep;
 
   return (
-    <div className="flex flex-col h-screen" style={{ background: '#0f0f14' }}>
+    <div className="flex flex-col" style={{ background: '#0f0f14', height: '100dvh' }}>
 
       {/* Header */}
       <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0"
@@ -1020,7 +1020,7 @@ const AIChat = () => {
 
       {/* Input — hidden during step flow */}
       {!eightEventsStep && (
-        <div className="px-4 pb-8 pt-2 flex-shrink-0">
+        <div className="px-4 pt-2 flex-shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
           <div className="flex items-end gap-2 rounded-2xl px-3 py-2.5"
             style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
 
