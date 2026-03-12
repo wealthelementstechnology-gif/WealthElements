@@ -112,8 +112,20 @@ const textToSpeech = async (req, res) => {
       .replace(/\n/g, ' ')
       .trim();
 
+    // Expand Indian currency shorthand so TTS reads naturally
+    // e.g. ₹42L/mo → 42 lakh rupees per month, ₹1.2Cr → 1 point 2 crore rupees
+    const normalized = plain
+      .replace(/₹\s*([\d,]+(?:\.\d+)?)\s*[Cc][Rr]\/mo/g, (_, n) => `${n.replace(',','')} crore rupees per month`)
+      .replace(/₹\s*([\d,]+(?:\.\d+)?)\s*[Cc][Rr]/g,     (_, n) => `${n.replace(',','')} crore rupees`)
+      .replace(/₹\s*([\d,]+(?:\.\d+)?)\s*[Ll]\/mo/g,     (_, n) => `${n.replace(',','')} lakh rupees per month`)
+      .replace(/₹\s*([\d,]+(?:\.\d+)?)\s*[Ll]/g,         (_, n) => `${n.replace(',','')} lakh rupees`)
+      .replace(/₹\s*([\d,]+(?:\.\d+)?)\s*[Kk]\/mo/g,     (_, n) => `${n.replace(',','')} thousand rupees per month`)
+      .replace(/₹\s*([\d,]+(?:\.\d+)?)\s*[Kk]/g,         (_, n) => `${n.replace(',','')} thousand rupees`)
+      .replace(/₹\s*([\d,]+(?:\.\d+)?)/g,                 (_, n) => `${n.replace(/,/g,'')} rupees`)
+      .replace(/(\d+\.\d+)/g, (_, n) => n.replace('.', ' point ')); // 2.5 → 2 point 5
+
     // Sarvam TTS v3 max: 2500 chars per request
-    const chunk = plain.slice(0, 2500);
+    const chunk = normalized.slice(0, 2500);
 
     // Auto-detect language if not supplied
     const langCode = language_code || detectLanguageCode(chunk);

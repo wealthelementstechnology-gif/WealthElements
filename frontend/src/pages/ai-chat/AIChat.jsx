@@ -411,11 +411,10 @@ const MessageBubble = ({ role, content, type, name }) => {
 
   if (!isAI) {
     return (
-      <div className="flex justify-end mb-4">
-        <div className="max-w-[80%] px-4 py-3 rounded-2xl rounded-br-sm text-sm leading-relaxed text-white"
-          style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}>
-          {content}
-        </div>
+      <div className="mb-6 px-1">
+        <p className="text-white font-medium leading-snug" style={{ fontSize: '1.25rem' }}>
+          "{content}"
+        </p>
       </div>
     );
   }
@@ -748,7 +747,7 @@ const AIChat = () => {
         { role: 'assistant', content: aiReply },
       ];
       // Use the language the API confirmed (or detected from AI reply text)
-      speakText(aiReply.slice(0, 600), replyLang || effectiveLang);
+      speakText(aiReply, replyLang || effectiveLang);
     } catch (err) {
       const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
       setError(msg);
@@ -845,7 +844,7 @@ const AIChat = () => {
         ...assistantHistoryRef.current,
         { role: 'assistant', content: aiReply },
       ];
-      speakText(aiReply.slice(0, 600), replyLang || detectedLang);
+      speakText(aiReply, replyLang || detectedLang);
     } catch (err) {
       // Remove intro card on error
       setMessages(prev => prev.filter(m => m.type !== '8events-intro'));
