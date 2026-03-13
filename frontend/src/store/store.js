@@ -12,6 +12,7 @@ import riskGuardrailsReducer from './slices/riskGuardrailsSlice';
 import lifeEventsReducer from './slices/lifeEventsSlice';
 import hygieneReducer from './slices/hygieneSlice';
 import realityReportReducer from './slices/realityReportSlice';
+import alertsReducer from './slices/alertsSlice';
 
 export const store = configureStore({
   reducer: {
@@ -28,6 +29,7 @@ export const store = configureStore({
     lifeEvents: lifeEventsReducer,
     hygiene: hygieneReducer,
     realityReport: realityReportReducer,
+    alerts: alertsReducer,
   },
 });
 

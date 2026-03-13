@@ -8,6 +8,7 @@ const User = require('../models/User');
 const { loadInstructions } = require('../ai/loadInstructions');
 const EightEventsPlan = require('../models/EightEventsPlan');
 const { compute8Events, parse8EventsMessage } = require('../ai/eightEventsCalc');
+const ProactiveAlert = require('../models/ProactiveAlert');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
@@ -255,6 +256,30 @@ Total SIP Required: ${fmt(eightEventsPlan.totalMonthlySIPRequired)}/mo | Budget:
 === END SNAPSHOT ===`;
 };
 
+// Append active proactive alerts to the financial context
+const appendAlertsToContext = async (userId, context) => {
+  try {
+    const recentAlerts = await ProactiveAlert.find({ userId, status: 'PENDING' })
+      .sort({ createdAt: -1 })
+      .limit(3)
+      .lean();
+
+    if (recentAlerts.length === 0) return context;
+
+    const alertLines = recentAlerts.map((a) =>
+      `- [${a.urgency}] ${a.recommendation.headline}: ${a.recommendation.rationale} Suggested action: ${a.recommendation.suggestedAction}`
+    ).join('\n');
+
+    return context.replace(
+      '=== END SNAPSHOT ===',
+      `── ACTIVE MARKET ALERTS (Proactive) ─────────────────\n${alertLines}\n\n=== END SNAPSHOT ===`
+    );
+  } catch (err) {
+    // Non-critical — don't break chat if alerts fail
+    return context;
+  }
+};
+
 // ─── 8 Events detection ────────────────────────────────────────────────────────
 const isEightEventsMessage = (msg) =>
   msg.startsWith('Run my complete 8 events financial plan.');
@@ -411,7 +436,8 @@ const chat = async (req, res, next) => {
       .slice(-40);
 
     const userId = req.user._id;
-    const financialContext = await buildFinancialContext(userId);
+    const baseContext = await buildFinancialContext(userId);
+    const financialContext = await appendAlertsToContext(userId, baseContext);
     const model = selectModel(message, sanitizedHistory.length);
 
     // For 8 Events: compute all numbers in JS and inject into the message

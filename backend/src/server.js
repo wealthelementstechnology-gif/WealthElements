@@ -11,6 +11,7 @@ const connectDB = require('./config/db');
 const config = require('./config');
 const errorHandler = require('./middleware/errorHandler');
 const v1Routes = require('./routes/v1');
+const { startProactiveAdvisorJobs } = require('./jobs/proactiveAdvisorJob');
 
 // Connect to database
 connectDB();
@@ -82,4 +83,6 @@ const PORT = config.port;
 
 app.listen(PORT, () => {
   console.log(`Server running in ${config.nodeEnv} mode on port ${PORT}`);
+  // Start proactive advisor cron jobs after server is up
+  startProactiveAdvisorJobs();
 });

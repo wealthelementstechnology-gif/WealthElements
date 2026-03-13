@@ -1,16 +1,18 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useSelector, useDispatch } from 'react-redux';
-import { ArrowLeft, Send, RefreshCw, ChevronRight, X, Check, Mic, MicOff, Volume2, VolumeX } from 'lucide-react';
+import { ArrowLeft, Send, RefreshCw, ChevronRight, X, Check, Mic, MicOff, Volume2, VolumeX, Bell, AlertTriangle, TrendingUp, Info, ChevronDown, ChevronUp } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import chatService from '../../services/chat.service';
 import eightEventsService from '../../services/eightEvents.service';
 import voiceService from '../../services/voice.service';
+import alertsService from '../../services/alerts.service';
 import { fetchAccounts } from '../../store/slices/networthSlice';
 import { fetchMonthlySummary, fetchSpendingTrend } from '../../store/slices/transactionSlice';
 import { setAuthenticated, setOnboardingCompleted } from '../../store/slices/authSlice';
 import { setCashFlowData } from '../../store/slices/cashFlowSlice';
+import { fetchAlerts, dismissAlert as dismissAlertAction, actOnAlert as actOnAlertAction } from '../../store/slices/alertsSlice';
 import authService from '../../services/auth.service';
 import profileService from '../../services/profile.service';
 
@@ -499,6 +501,161 @@ const ThinkingBubble = () => (
   </div>
 );
 
+// ─── Alert Card ────────────────────────────────────────────────────────────────
+const URGENCY_CONFIG = {
+  HIGH: { color: '#ef4444', bg: 'rgba(239,68,68,0.1)', border: 'rgba(239,68,68,0.25)', label: 'High Priority' },
+  MEDIUM: { color: '#f59e0b', bg: 'rgba(245,158,11,0.1)', border: 'rgba(245,158,11,0.25)', label: 'Medium' },
+  LOW: { color: '#6366f1', bg: 'rgba(99,102,241,0.1)', border: 'rgba(99,102,241,0.25)', label: 'Low' },
+};
+
+const AlertCard = ({ alert, onDismiss, onAskPriya }) => {
+  const [expanded, setExpanded] = useState(false);
+  const cfg = URGENCY_CONFIG[alert.urgency] || URGENCY_CONFIG.LOW;
+  const timeAgo = (date) => {
+    const mins = Math.floor((Date.now() - new Date(date)) / 60000);
+    if (mins < 60) return `${mins}m ago`;
+    if (mins < 1440) return `${Math.floor(mins / 60)}h ago`;
+    return `${Math.floor(mins / 1440)}d ago`;
+  };
+
+  return (
+    <div className="rounded-2xl overflow-hidden mb-3"
+      style={{ background: cfg.bg, border: `1px solid ${cfg.border}` }}>
+      {/* Header row */}
+      <div className="px-4 pt-3 pb-2">
+        <div className="flex items-center justify-between mb-2">
+          <div className="flex items-center gap-1.5">
+            <div className="w-2 h-2 rounded-full" style={{ background: cfg.color }} />
+            <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: cfg.color }}>{cfg.label}</span>
+            <span className="text-xs text-gray-500">· {timeAgo(alert.createdAt)}</span>
+          </div>
+          <span className="text-xs px-2 py-0.5 rounded-full text-gray-400"
+            style={{ background: 'rgba(255,255,255,0.06)' }}>
+            {alert.alertType?.replace('_', ' ')}
+          </span>
+        </div>
+
+        <p className="text-sm font-semibold text-white leading-snug mb-2">
+          {alert.recommendation?.headline}
+        </p>
+
+        {/* News source */}
+        {alert.newsHeadline && (
+          <p className="text-xs text-gray-500 mb-2 italic line-clamp-1">
+            News: {alert.newsHeadline}
+          </p>
+        )}
+
+        {/* Rationale — expandable */}
+        {expanded && (
+          <div className="mt-1 mb-2">
+            <p className="text-xs text-gray-300 leading-relaxed">{alert.recommendation?.rationale}</p>
+            {alert.recommendation?.suggestedAction && (
+              <div className="mt-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
+                <p className="text-xs font-medium text-gray-200">Action: {alert.recommendation.suggestedAction}</p>
+              </div>
+            )}
+            {alert.recommendation?.affectedFunds?.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mt-2">
+                {alert.recommendation.affectedFunds.map((f, i) => (
+                  <span key={i} className="text-xs px-2 py-0.5 rounded-full text-gray-300"
+                    style={{ background: 'rgba(255,255,255,0.08)' }}>{f}</span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        <button onClick={() => setExpanded(e => !e)}
+          className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-200 transition-colors mb-1">
+          {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
+          {expanded ? 'Less' : 'See analysis'}
+        </button>
+      </div>
+
+      {/* Action buttons */}
+      <div className="flex border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+        <button onClick={() => onAskPriya(alert)}
+          className="flex-1 py-2.5 text-xs font-medium transition-colors"
+          style={{ color: cfg.color, borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+          Discuss in Chat
+        </button>
+        <button onClick={() => onDismiss(alert._id)}
+          className="px-4 py-2.5 text-xs text-gray-500 hover:text-gray-300 transition-colors">
+          Dismiss
+        </button>
+      </div>
+    </div>
+  );
+};
+
+// ─── Alerts Tab ────────────────────────────────────────────────────────────────
+const AlertsTab = ({ onAskPriya, onSwitchToChat }) => {
+  const dispatch = useDispatch();
+  const { alerts, pendingCount, loading } = useSelector(state => state.alerts);
+
+  useEffect(() => {
+    dispatch(fetchAlerts('PENDING'));
+  }, [dispatch]);
+
+  const handleDismiss = (id) => {
+    dispatch(dismissAlertAction(id));
+  };
+
+  const handleTriggerFetch = async () => {
+    try {
+      await alertsService.triggerFetch();
+      dispatch(fetchAlerts('PENDING'));
+    } catch {}
+  };
+
+  return (
+    <div className="flex-1 overflow-y-auto px-4 py-4">
+      {/* Header */}
+      <div className="flex items-center justify-between mb-4">
+        <div>
+          <p className="text-sm font-semibold text-white">Market Alerts</p>
+          <p className="text-xs text-gray-500 mt-0.5">Priya is watching the markets for you</p>
+        </div>
+        <button onClick={handleTriggerFetch}
+          className="text-xs px-3 py-1.5 rounded-xl transition-colors"
+          style={{ background: 'rgba(255,255,255,0.06)', color: '#9ca3af', border: '1px solid rgba(255,255,255,0.08)' }}>
+          Refresh
+        </button>
+      </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <div className="w-5 h-5 border-2 border-indigo-400 border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : alerts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+            style={{ background: 'rgba(99,102,241,0.15)' }}>
+            <Bell className="w-6 h-6 text-indigo-400" />
+          </div>
+          <p className="text-sm font-medium text-gray-300 mb-1">No alerts right now</p>
+          <p className="text-xs text-gray-500 max-w-48 leading-relaxed">
+            Priya scans news every 30 minutes and alerts you when market events impact your portfolio.
+          </p>
+        </div>
+      ) : (
+        <>
+          <p className="text-xs text-gray-500 mb-3">{pendingCount} pending {pendingCount === 1 ? 'alert' : 'alerts'}</p>
+          {alerts.map((alert) => (
+            <AlertCard
+              key={alert._id}
+              alert={alert}
+              onDismiss={handleDismiss}
+              onAskPriya={onAskPriya}
+            />
+          ))}
+        </>
+      )}
+    </div>
+  );
+};
+
 // ─── Main component ─────────────────────────────────────────────────────────────
 const AIChat = () => {
   const navigate = useNavigate();
@@ -507,6 +664,9 @@ const AIChat = () => {
   const { profile } = useSelector(state => state.auth);
   const { totalNetWorth, accounts } = useSelector(state => state.networth);
   const { currentMonthSummary, monthlyHistory } = useSelector(state => state.cashFlow);
+  const { pendingCount, hasHighUrgency } = useSelector(state => state.alerts);
+
+  const [activeTab, setActiveTab] = useState('Chat');
 
   // 8 events multi-step state: null | 'step1' | 'step2' | 'step3'
   const [eightEventsStep, setEightEventsStep] = useState(null);
@@ -525,6 +685,7 @@ const AIChat = () => {
   const [voiceEnabled, setVoiceEnabled] = useState(true); // TTS on/off toggle
   const [detectedLang, setDetectedLang] = useState(null); // language from last STT
   const voiceEnabledRef = useRef(true); // ref mirror to avoid stale closure in speakText
+  const lastInputWasVoiceRef = useRef(false); // true only when last message was sent via mic
   const mediaRecorderRef = useRef(null);
   const audioChunksRef = useRef([]);
   const currentAudioRef = useRef(null); // currently playing Audio object
@@ -584,8 +745,8 @@ const AIChat = () => {
           const result = await voiceService.speechToText(blob);
           if (result?.transcript?.trim()) {
             setDetectedLang(result.language_code || null);
-            setInput(result.transcript.trim());
-            inputRef.current?.focus();
+            lastInputWasVoiceRef.current = true;
+            sendMessage(result.transcript.trim());
           }
         } catch {
           setError('Could not understand audio. Please try again.');
@@ -692,6 +853,9 @@ const AIChat = () => {
     let messageText = (text || input).trim();
     if (!messageText || isLoading) return;
 
+    const shouldSpeak = lastInputWasVoiceRef.current;
+    lastInputWasVoiceRef.current = false;
+
     // If no detectedLang from mic, try to detect from typed text
     const effectiveLang = detectedLang || detectTypedLang(messageText);
 
@@ -746,8 +910,8 @@ const AIChat = () => {
         ...assistantHistoryRef.current,
         { role: 'assistant', content: aiReply },
       ];
-      // Use the language the API confirmed (or detected from AI reply text)
-      speakText(aiReply, replyLang || effectiveLang);
+      // Only speak if the message was sent via mic
+      if (shouldSpeak) speakText(aiReply, replyLang || effectiveLang);
     } catch (err) {
       const msg = err.response?.data?.message || 'Something went wrong. Please try again.';
       setError(msg);
@@ -844,7 +1008,7 @@ const AIChat = () => {
         ...assistantHistoryRef.current,
         { role: 'assistant', content: aiReply },
       ];
-      speakText(aiReply, replyLang || detectedLang);
+      // 8 Events plan is always form-submitted — no TTS
     } catch (err) {
       // Remove intro card on error
       setMessages(prev => prev.filter(m => m.type !== '8events-intro'));
@@ -868,24 +1032,32 @@ const AIChat = () => {
     inputRef.current?.focus();
   };
 
-  const showWelcome = messages.length === 0 && !isLoading && !eightEventsStep;
+  // Switch to Chat tab and pre-fill input with alert context
+  const handleAskPriyaAboutAlert = (alert) => {
+    setActiveTab('Chat');
+    const prefill = `Tell me more about this alert: "${alert.recommendation?.headline}". What should I specifically do with my portfolio?`;
+    setInput(prefill);
+    setTimeout(() => inputRef.current?.focus(), 100);
+  };
+
+  const showWelcome = messages.length === 0 && !isLoading && !eightEventsStep && activeTab === 'Chat';
 
   return (
-    <div className="flex flex-col" style={{ background: '#0f0f14', height: '100svh' }}>
+    <div className="flex flex-col" style={{ background: showWelcome ? '#ffffff' : '#0f0f14', height: '100svh' }}>
 
       {/* Header */}
       <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        style={{ borderBottom: showWelcome ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>
         <button onClick={() => navigate('/dashboard')}
           className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-          style={{ background: 'rgba(255,255,255,0.06)' }}>
-          <ArrowLeft className="w-4 h-4 text-gray-400" />
+          style={{ background: showWelcome ? '#f3f4f6' : 'rgba(255,255,255,0.06)' }}>
+          <ArrowLeft className="w-4 h-4" style={{ color: showWelcome ? '#6b7280' : '#9ca3af' }} />
         </button>
 
         <div className="flex items-center gap-2.5">
           <AIAvatar size="sm" />
           <div>
-            <p className="text-sm font-semibold text-white leading-none">WealthElements AI</p>
+            <p className="text-sm font-semibold leading-none" style={{ color: showWelcome ? '#111827' : '#ffffff' }}>WealthElements AI</p>
             <div className="flex items-center gap-1 mt-0.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               <p className="text-[10px] text-gray-500">Your AI advisor</p>
@@ -893,7 +1065,7 @@ const AIChat = () => {
           </div>
         </div>
 
-        {(messages.length > 0 || eightEventsStep) ? (
+        {(messages.length > 0 || eightEventsStep) && activeTab === 'Chat' ? (
           <button onClick={handleReset}
             className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
             style={{ background: 'rgba(255,255,255,0.06)' }}
@@ -905,44 +1077,64 @@ const AIChat = () => {
         )}
       </div>
 
+      {/* Tab bar */}
+      <div className="flex flex-shrink-0 px-4 gap-1"
+        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        {['Chat', 'Alerts'].map((tab) => (
+          <button key={tab} onClick={() => setActiveTab(tab)}
+            className="relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors"
+            style={{
+              color: activeTab === tab ? '#818cf8' : '#6b7280',
+              borderBottom: activeTab === tab ? '2px solid #6366f1' : '2px solid transparent',
+            }}>
+            {tab === 'Alerts' && <Bell className="w-3.5 h-3.5" />}
+            {tab}
+            {tab === 'Alerts' && pendingCount > 0 && (
+              <span className="w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+                style={{ background: hasHighUrgency ? '#ef4444' : '#6366f1' }}>
+                {pendingCount > 9 ? '9+' : pendingCount}
+              </span>
+            )}
+          </button>
+        ))}
+      </div>
+
+      {/* Alerts Tab */}
+      {activeTab === 'Alerts' && (
+        <AlertsTab
+          onAskPriya={handleAskPriyaAboutAlert}
+          onSwitchToChat={() => setActiveTab('Chat')}
+        />
+      )}
+
       {/* Messages / Welcome */}
+      {activeTab === 'Chat' && (
       <div className="flex-1 overflow-y-auto px-4 py-4">
 
         {/* Welcome */}
         {showWelcome && (
           <div className="flex flex-col h-full">
             <div className="flex-1 flex flex-col justify-center pb-6">
-              {/* Avatar + greeting */}
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-14 h-14 rounded-2xl flex items-center justify-center text-white text-xl font-bold flex-shrink-0"
-                  style={{ background: 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' }}>
-                  ✦
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 mb-0.5">Your AI advisor</p>
-                  <p className="text-white font-semibold">WealthElements AI</p>
-                </div>
-              </div>
-
-              <p className="text-3xl font-bold text-white mb-1">
+              <p className="text-3xl font-bold mb-1" style={{ color: '#111827' }}>
                 Hello, {userName} 👋
               </p>
-              <p className="text-xl font-medium leading-snug mt-1" style={{ color: 'rgba(255,255,255,0.3)' }}>
+              <p className="text-xl font-medium leading-snug mt-1" style={{ color: '#9ca3af' }}>
                 What can I help<br />you with today?
               </p>
+
               {(monthlyIncome > 0 || totalNetWorth !== 0) && (
                 <div className="mt-5 flex items-center gap-2 flex-wrap">
                   {monthlyIncome > 0 && (
-                    <span className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: 'rgba(99,102,241,0.15)', color: '#a5b4fc' }}>
+                    <span className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: 'rgba(99,102,241,0.1)', color: '#6366f1' }}>
                       ₹{(monthlyIncome / 100000).toFixed(1)}L/mo
                     </span>
                   )}
                   {totalNetWorth !== 0 && (
-                    <span className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: 'rgba(16,185,129,0.12)', color: '#6ee7b7' }}>
+                    <span className="text-xs px-3 py-1.5 rounded-full font-medium" style={{ background: 'rgba(16,185,129,0.1)', color: '#059669' }}>
                       ₹{Math.abs(totalNetWorth / 100000).toFixed(1)}L net worth
                     </span>
                   )}
-                  <span className="text-xs px-3 py-1.5 rounded-full" style={{ background: 'rgba(255,255,255,0.05)', color: 'rgba(255,255,255,0.3)' }}>
+                  <span className="text-xs px-3 py-1.5 rounded-full" style={{ background: '#f3f4f6', color: '#9ca3af' }}>
                     Live data
                   </span>
                 </div>
@@ -951,15 +1143,15 @@ const AIChat = () => {
 
             {/* Suggestion chips */}
             <div className="pb-2">
-              <p className="text-[11px] text-gray-600 mb-2.5 uppercase tracking-wider">Suggested</p>
+              <p className="text-[11px] mb-2.5 uppercase tracking-wider" style={{ color: '#d1d5db' }}>Suggested</p>
               <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                 {SUGGESTED_QUESTIONS.map((q, i) => (
                   <button key={i} onClick={() => sendMessage(q)} disabled={isLoading}
                     className="flex-shrink-0 text-xs px-4 py-2.5 rounded-2xl transition-all disabled:opacity-50 text-left"
                     style={{
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.1)',
-                      color: 'rgba(255,255,255,0.7)',
+                      background: '#f3f4f6',
+                      border: '1px solid #e5e7eb',
+                      color: '#374151',
                       maxWidth: '160px',
                     }}>{q}</button>
                 ))}
@@ -1016,12 +1208,13 @@ const AIChat = () => {
 
         <div ref={messagesEndRef} />
       </div>
+      )}
 
-      {/* Input — hidden during step flow */}
-      {!eightEventsStep && (
+      {/* Input — hidden during step flow and alerts tab */}
+      {activeTab === 'Chat' && !eightEventsStep && (
         <div className="px-4 pt-2 flex-shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
           <div className="flex items-end gap-2 rounded-2xl px-3 py-2.5"
-            style={{ background: 'rgba(255,255,255,0.07)', border: '1px solid rgba(255,255,255,0.1)' }}>
+            style={{ background: showWelcome ? '#f9fafb' : 'rgba(255,255,255,0.07)', border: showWelcome ? '1px solid #e5e7eb' : '1px solid rgba(255,255,255,0.1)' }}>
 
             {/* Mic button */}
             <button
@@ -1048,7 +1241,7 @@ const AIChat = () => {
               placeholder={isRecording ? '🎙 Listening…' : isTranscribing ? 'Transcribing…' : 'Ask anything…'}
               rows={1} disabled={isLoading || isRecording || isTranscribing}
               className="flex-1 resize-none bg-transparent text-sm leading-relaxed focus:outline-none"
-              style={{ minHeight: '24px', maxHeight: '120px', color: 'rgba(255,255,255,0.85)', caretColor: '#6366f1' }}
+              style={{ minHeight: '24px', maxHeight: '120px', color: showWelcome ? '#111827' : 'rgba(255,255,255,0.85)', caretColor: '#6366f1' }}
               onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; }} />
 
             {/* TTS toggle */}
@@ -1068,9 +1261,11 @@ const AIChat = () => {
             <button onClick={() => sendMessage()} disabled={!input.trim() || isLoading}
               className="w-8 h-8 rounded-xl flex items-center justify-center transition-all flex-shrink-0"
               style={{
-                background: input.trim() && !isLoading ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)' : 'rgba(255,255,255,0.06)',
+                background: input.trim() && !isLoading
+                  ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
+                  : showWelcome ? '#e5e7eb' : 'rgba(255,255,255,0.06)',
               }}>
-              <Send className="w-3.5 h-3.5 text-white" />
+              <Send className="w-3.5 h-3.5" style={{ color: input.trim() && !isLoading ? '#ffffff' : showWelcome ? '#9ca3af' : 'rgba(255,255,255,0.3)' }} />
             </button>
           </div>
 
@@ -1079,7 +1274,7 @@ const AIChat = () => {
               Recording… release to send
             </p>
           ) : (
-            <p className="text-[10px] text-center mt-2" style={{ color: 'rgba(255,255,255,0.15)' }}>
+            <p className="text-[10px] text-center mt-2" style={{ color: showWelcome ? '#d1d5db' : 'rgba(255,255,255,0.15)' }}>
               Not professional financial advice
             </p>
           )}
