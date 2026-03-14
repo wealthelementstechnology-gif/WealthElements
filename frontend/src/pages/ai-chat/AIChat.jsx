@@ -529,19 +529,19 @@ const AlertCard = ({ alert, onDismiss, onAskPriya }) => {
             <span className="text-xs font-semibold uppercase tracking-wide" style={{ color: cfg.color }}>{cfg.label}</span>
             <span className="text-xs text-gray-500">· {timeAgo(alert.createdAt)}</span>
           </div>
-          <span className="text-xs px-2 py-0.5 rounded-full text-gray-400"
-            style={{ background: 'rgba(255,255,255,0.06)' }}>
+          <span className="text-xs px-2 py-0.5 rounded-full"
+            style={{ background: '#f3f4f6', color: '#6b7280' }}>
             {alert.alertType?.replace('_', ' ')}
           </span>
         </div>
 
-        <p className="text-sm font-semibold text-white leading-snug mb-2">
+        <p className="text-sm font-semibold leading-snug mb-2" style={{ color: '#111827' }}>
           {alert.recommendation?.headline}
         </p>
 
         {/* News source */}
         {alert.newsHeadline && (
-          <p className="text-xs text-gray-500 mb-2 italic line-clamp-1">
+          <p className="text-xs mb-2 italic line-clamp-1" style={{ color: '#9ca3af' }}>
             News: {alert.newsHeadline}
           </p>
         )}
@@ -549,17 +549,17 @@ const AlertCard = ({ alert, onDismiss, onAskPriya }) => {
         {/* Rationale — expandable */}
         {expanded && (
           <div className="mt-1 mb-2">
-            <p className="text-xs text-gray-300 leading-relaxed">{alert.recommendation?.rationale}</p>
+            <p className="text-xs leading-relaxed" style={{ color: '#6b7280' }}>{alert.recommendation?.rationale}</p>
             {alert.recommendation?.suggestedAction && (
-              <div className="mt-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(255,255,255,0.05)' }}>
-                <p className="text-xs font-medium text-gray-200">Action: {alert.recommendation.suggestedAction}</p>
+              <div className="mt-2 px-3 py-2 rounded-xl" style={{ background: 'rgba(0,0,0,0.04)', border: '1px solid #e5e7eb' }}>
+                <p className="text-xs font-medium" style={{ color: '#374151' }}>Action: {alert.recommendation.suggestedAction}</p>
               </div>
             )}
             {alert.recommendation?.affectedFunds?.length > 0 && (
               <div className="flex flex-wrap gap-1.5 mt-2">
                 {alert.recommendation.affectedFunds.map((f, i) => (
-                  <span key={i} className="text-xs px-2 py-0.5 rounded-full text-gray-300"
-                    style={{ background: 'rgba(255,255,255,0.08)' }}>{f}</span>
+                  <span key={i} className="text-xs px-2 py-0.5 rounded-full"
+                    style={{ background: '#f3f4f6', color: '#374151' }}>{f}</span>
                 ))}
               </div>
             )}
@@ -567,21 +567,21 @@ const AlertCard = ({ alert, onDismiss, onAskPriya }) => {
         )}
 
         <button onClick={() => setExpanded(e => !e)}
-          className="flex items-center gap-1 text-xs text-gray-400 hover:text-gray-200 transition-colors mb-1">
+          className="flex items-center gap-1 text-xs transition-colors mb-1" style={{ color: '#9ca3af' }}>
           {expanded ? <ChevronUp className="w-3 h-3" /> : <ChevronDown className="w-3 h-3" />}
           {expanded ? 'Less' : 'See analysis'}
         </button>
       </div>
 
       {/* Action buttons */}
-      <div className="flex border-t" style={{ borderColor: 'rgba(255,255,255,0.06)' }}>
+      <div className="flex border-t" style={{ borderColor: '#e5e7eb' }}>
         <button onClick={() => onAskPriya(alert)}
           className="flex-1 py-2.5 text-xs font-medium transition-colors"
-          style={{ color: cfg.color, borderRight: '1px solid rgba(255,255,255,0.06)' }}>
+          style={{ color: cfg.color, borderRight: '1px solid #e5e7eb' }}>
           Discuss in Chat
         </button>
         <button onClick={() => onDismiss(alert._id)}
-          className="px-4 py-2.5 text-xs text-gray-500 hover:text-gray-300 transition-colors">
+          className="px-4 py-2.5 text-xs transition-colors" style={{ color: '#9ca3af' }}>
           Dismiss
         </button>
       </div>
@@ -614,12 +614,12 @@ const AlertsTab = ({ onAskPriya, onSwitchToChat }) => {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <p className="text-sm font-semibold text-white">Market Alerts</p>
-          <p className="text-xs text-gray-500 mt-0.5">Priya is watching the markets for you</p>
+          <p className="text-sm font-semibold" style={{ color: '#111827' }}>Market Alerts</p>
+          <p className="text-xs mt-0.5" style={{ color: '#9ca3af' }}>AI is watching the markets for you</p>
         </div>
         <button onClick={handleTriggerFetch}
           className="text-xs px-3 py-1.5 rounded-xl transition-colors"
-          style={{ background: 'rgba(255,255,255,0.06)', color: '#9ca3af', border: '1px solid rgba(255,255,255,0.08)' }}>
+          style={{ background: '#f3f4f6', color: '#6b7280', border: '1px solid #e5e7eb' }}>
           Refresh
         </button>
       </div>
@@ -634,8 +634,8 @@ const AlertsTab = ({ onAskPriya, onSwitchToChat }) => {
             style={{ background: 'rgba(99,102,241,0.15)' }}>
             <Bell className="w-6 h-6 text-indigo-400" />
           </div>
-          <p className="text-sm font-medium text-gray-300 mb-1">No alerts right now</p>
-          <p className="text-xs text-gray-500 max-w-48 leading-relaxed">
+          <p className="text-sm font-medium mb-1" style={{ color: '#374151' }}>No alerts right now</p>
+          <p className="text-xs max-w-48 leading-relaxed" style={{ color: '#9ca3af' }}>
             Priya scans news every 30 minutes and alerts you when market events impact your portfolio.
           </p>
         </div>
@@ -1043,21 +1043,21 @@ const AIChat = () => {
   const showWelcome = messages.length === 0 && !isLoading && !eightEventsStep && activeTab === 'Chat';
 
   return (
-    <div className="flex flex-col" style={{ background: showWelcome ? '#ffffff' : '#0f0f14', height: '100svh' }}>
+    <div className="flex flex-col" style={{ background: '#ffffff', height: '100svh' }}>
 
       {/* Header */}
       <div className="px-4 pt-4 pb-3 flex items-center justify-between flex-shrink-0"
-        style={{ borderBottom: showWelcome ? 'none' : '1px solid rgba(255,255,255,0.06)' }}>
+        style={{ borderBottom: showWelcome ? 'none' : '1px solid #f3f4f6' }}>
         <button onClick={() => navigate('/dashboard')}
           className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-          style={{ background: showWelcome ? '#f3f4f6' : 'rgba(255,255,255,0.06)' }}>
-          <ArrowLeft className="w-4 h-4" style={{ color: showWelcome ? '#6b7280' : '#9ca3af' }} />
+          style={{ background: '#f3f4f6' }}>
+          <ArrowLeft className="w-4 h-4" style={{ color: '#6b7280' }} />
         </button>
 
         <div className="flex items-center gap-2.5">
           <AIAvatar size="sm" />
           <div>
-            <p className="text-sm font-semibold leading-none" style={{ color: showWelcome ? '#111827' : '#ffffff' }}>WealthElements AI</p>
+            <p className="text-sm font-semibold leading-none" style={{ color: '#111827' }}>WealthElements AI</p>
             <div className="flex items-center gap-1 mt-0.5">
               <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
               <p className="text-[10px] text-gray-500">Your AI advisor</p>
@@ -1068,9 +1068,9 @@ const AIChat = () => {
         {(messages.length > 0 || eightEventsStep) && activeTab === 'Chat' ? (
           <button onClick={handleReset}
             className="w-9 h-9 rounded-full flex items-center justify-center transition-colors"
-            style={{ background: 'rgba(255,255,255,0.06)' }}
+            style={{ background: '#f3f4f6' }}
             title="New conversation">
-            <RefreshCw className="w-4 h-4 text-gray-400" />
+            <RefreshCw className="w-4 h-4" style={{ color: '#6b7280' }} />
           </button>
         ) : (
           <div className="w-9" />
@@ -1079,7 +1079,7 @@ const AIChat = () => {
 
       {/* Tab bar */}
       <div className="flex flex-shrink-0 px-4 gap-1"
-        style={{ borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
+        style={{ borderBottom: '1px solid #f3f4f6' }}>
         {['Chat', 'Alerts'].map((tab) => (
           <button key={tab} onClick={() => setActiveTab(tab)}
             className="relative flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium transition-colors"
@@ -1109,7 +1109,8 @@ const AIChat = () => {
 
       {/* Messages / Welcome */}
       {activeTab === 'Chat' && (
-      <div className="flex-1 overflow-y-auto px-4 py-4">
+      <div className="flex-1 overflow-y-auto px-4 py-4"
+        style={{ background: showWelcome ? '#ffffff' : '#0f0f14' }}>
 
         {/* Welcome */}
         {showWelcome && (
@@ -1214,7 +1215,7 @@ const AIChat = () => {
       {activeTab === 'Chat' && !eightEventsStep && (
         <div className="px-4 pt-2 flex-shrink-0" style={{ paddingBottom: 'max(16px, env(safe-area-inset-bottom))' }}>
           <div className="flex items-end gap-2 rounded-2xl px-3 py-2.5"
-            style={{ background: showWelcome ? '#f9fafb' : 'rgba(255,255,255,0.07)', border: showWelcome ? '1px solid #e5e7eb' : '1px solid rgba(255,255,255,0.1)' }}>
+            style={{ background: '#f9fafb', border: '1px solid #e5e7eb' }}>
 
             {/* Mic button */}
             <button
@@ -1241,7 +1242,7 @@ const AIChat = () => {
               placeholder={isRecording ? '🎙 Listening…' : isTranscribing ? 'Transcribing…' : 'Ask anything…'}
               rows={1} disabled={isLoading || isRecording || isTranscribing}
               className="flex-1 resize-none bg-transparent text-sm leading-relaxed focus:outline-none"
-              style={{ minHeight: '24px', maxHeight: '120px', color: showWelcome ? '#111827' : 'rgba(255,255,255,0.85)', caretColor: '#6366f1' }}
+              style={{ minHeight: '24px', maxHeight: '120px', color: '#111827', caretColor: '#6366f1' }}
               onInput={e => { e.target.style.height = 'auto'; e.target.style.height = Math.min(e.target.scrollHeight, 120) + 'px'; }} />
 
             {/* TTS toggle */}
@@ -1263,9 +1264,9 @@ const AIChat = () => {
               style={{
                 background: input.trim() && !isLoading
                   ? 'linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%)'
-                  : showWelcome ? '#e5e7eb' : 'rgba(255,255,255,0.06)',
+                  : '#e5e7eb',
               }}>
-              <Send className="w-3.5 h-3.5" style={{ color: input.trim() && !isLoading ? '#ffffff' : showWelcome ? '#9ca3af' : 'rgba(255,255,255,0.3)' }} />
+              <Send className="w-3.5 h-3.5" style={{ color: input.trim() && !isLoading ? '#ffffff' : '#9ca3af' }} />
             </button>
           </div>
 
@@ -1274,7 +1275,7 @@ const AIChat = () => {
               Recording… release to send
             </p>
           ) : (
-            <p className="text-[10px] text-center mt-2" style={{ color: showWelcome ? '#d1d5db' : 'rgba(255,255,255,0.15)' }}>
+            <p className="text-[10px] text-center mt-2" style={{ color: '#d1d5db' }}>
               Not professional financial advice
             </p>
           )}
